@@ -1,0 +1,2 @@
+-keep class com.lamps.sdk.** { *; }
+-keep interface com.lamps.sdk.** { *; }
