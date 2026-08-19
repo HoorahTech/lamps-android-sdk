@@ -1,5 +1,6 @@
 package com.lamps.sdk.data.sdk.channel
 
+import android.app.Activity
 import android.app.Application
 import com.bytedance.sdk.openadsdk.TTAdConfig
 import com.bytedance.sdk.openadsdk.TTAdConstant
@@ -7,6 +8,7 @@ import com.bytedance.sdk.openadsdk.TTAdSdk
 import com.bytedance.sdk.openadsdk.TTCustomController
 import com.lamps.sdk.config.LampsConfig
 import com.lamps.sdk.core.LampsErrorCode
+import com.lamps.sdk.reward.RewardAdShowCallback
 
 object TTSdkManager {
     fun isInitialized(): Boolean = TTAdSdk.isInitSuccess()
@@ -14,7 +16,7 @@ object TTSdkManager {
     fun initSdk(
         application: Application,
         appId: String,
-        callback: ThirdSdkInitCallback
+        callback: SdkInitCallback
     ) {
         if (isInitialized()) {
             callback.success()
@@ -61,5 +63,28 @@ object TTSdkManager {
                 error.message ?: "TTAdSdk init failed"
             )
         }
+    }
+
+    internal fun loadReward(
+        activity: Activity,
+        slotId: String,
+        callback: RewardAdSdkLoadCallback
+    ) {
+        if (!isInitialized()) {
+            callback.onLoadFailed(
+                LampsErrorCode.TT_SDK_INIT_FAILED,
+                "TTAdSdk is not initialized"
+            )
+            return
+        }
+        TTRewardVideoAd(activity, slotId).loadAD(callback)
+    }
+
+    internal fun showReward(
+        activity: Activity,
+        rewardAd: TTRewardVideoAd,
+        callback: RewardAdShowCallback
+    ) {
+        rewardAd.showAD(activity, callback)
     }
 }

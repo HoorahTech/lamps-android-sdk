@@ -1,4 +1,4 @@
-package com.lamps.sdk.reward
+package com.lamps.sdk.data.sdk.reward
 
 object RewardAdErrorCode {
     const val SDK_NOT_READY = 2001
@@ -9,4 +9,6 @@ object RewardAdErrorCode {
     const val INVALID_SLOT = 2006
     const val PROVIDER_ERROR = 2007
     const val LOAD_TIMEOUT = 2008
+    const val ALL_SDK_LOAD_FAILED = 2009
+    const val AD_NOT_LOADED = 2010
 }

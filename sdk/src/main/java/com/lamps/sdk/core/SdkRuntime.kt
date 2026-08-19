@@ -1,10 +1,16 @@
 package com.lamps.sdk.core
 
+import android.app.Activity
 import android.content.Context
 import com.lamps.sdk.config.LampsConfig
 import com.lamps.sdk.data.init.AppInitDataLoader
-import com.lamps.sdk.data.sdk.channel.ThirdSdkInitCallback
+import com.lamps.sdk.data.sdk.channel.SdkInitCallback
 import com.lamps.sdk.data.sdk.init.SdkInitDispatcher
+import com.lamps.sdk.data.sdk.reward.RewardAdErrorCode
+import com.lamps.sdk.data.sdk.reward.SdkRewardDispatcher
+import com.lamps.sdk.reward.LampsRewardAd
+import com.lamps.sdk.reward.RewardAdLoadCallback
+import com.lamps.sdk.reward.RewardAdShowCallback
 import com.lamps.sdk.utils.SdkLog
 import com.lamps.sdk.utils.ThreadUtils
 import java.util.concurrent.CopyOnWriteArrayList
@@ -95,6 +101,50 @@ internal object SdkRuntime {
 
     fun isReady(): Boolean = runtime.get() == InitState.Ready
 
+    fun loadReward(activity: Activity, callback: RewardAdLoadCallback) {
+        if (!isReady()) {
+            callback.onAdLoadFailed(
+                RewardAdErrorCode.SDK_NOT_READY,
+                "LampsSdk is not ready"
+            )
+            return
+        }
+        if (activity.isFinishing || activity.isDestroyed) {
+            callback.onAdLoadFailed(
+                RewardAdErrorCode.ACTIVITY_NOT_FOUND,
+                "Activity is unavailable"
+            )
+            return
+        }
+        val config = LampsConfig.current
+        if (config == null) {
+            callback.onAdLoadFailed(
+                RewardAdErrorCode.SDK_NOT_READY,
+                "LampsSdk config is unavailable"
+            )
+            return
+        }
+        SdkRewardDispatcher.loadReward(activity, config, callback)
+    }
+
+    fun showReward(activity: Activity, ad: LampsRewardAd, callback: RewardAdShowCallback) {
+        if (!isReady()) {
+            callback.onAdShowFailed(
+                RewardAdErrorCode.SDK_NOT_READY,
+                "LampsSdk is not ready"
+            )
+            return
+        }
+        if (activity.isFinishing || activity.isDestroyed) {
+            callback.onAdShowFailed(
+                RewardAdErrorCode.ACTIVITY_NOT_FOUND,
+                "Activity is unavailable"
+            )
+            return
+        }
+        SdkRewardDispatcher.showReward(activity, ad, callback)
+    }
+
     fun updateConfig(config: LampsConfig) {
         val current = LampsConfig.current ?: return
         LampsConfig.replace(current.mergedWith(config))
@@ -124,7 +174,7 @@ internal object SdkRuntime {
             notifyFail(LampsErrorCode.APP_INIT_DATA_REQUEST_FAILED, "appInitData request failed")
             return
         }
-        SdkInitDispatcher.initSdk(config, object : ThirdSdkInitCallback {
+        SdkInitDispatcher.initSdk(config, object : SdkInitCallback {
             override fun success() {
                 notifySuccess()
             }

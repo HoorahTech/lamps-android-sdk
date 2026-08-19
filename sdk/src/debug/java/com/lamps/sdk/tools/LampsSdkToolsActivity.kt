@@ -1,23 +1,30 @@
 package com.lamps.sdk.tools
 
 import android.app.Activity
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Bundle
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
+import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import android.widget.Toast
 import com.lamps.sdk.BuildConfig
 import com.lamps.sdk.LampsSdk
+import com.lamps.sdk.R
 import com.lamps.sdk.config.LampsConfig
 import com.lamps.sdk.core.SdkInitMetrics
 import com.lamps.sdk.data.sdk.channel.NoahSdkManager
 import com.lamps.sdk.data.sdk.channel.TTSdkManager
 import com.lamps.sdk.data.sdk.channel.YLHSdkManager
+import com.lamps.sdk.data.sdk.init.SdkInitDispatcher
+import com.lamps.sdk.data.sdk.reward.SdkRewardDispatcher
 import com.lamps.sdk.utils.DeviceUtils
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -73,12 +80,15 @@ class LampsSdkToolsActivity : Activity() {
             gravity = Gravity.CENTER_VERTICAL
             setBackgroundColor(Color.rgb(245, 245, 245))
             addView(
-                Button(this@LampsSdkToolsActivity).apply {
-                    text = "返回"
+                ImageButton(this@LampsSdkToolsActivity).apply {
+                    setImageResource(R.drawable.lamps_ic_arrow_back)
+                    contentDescription = "返回"
+                    setBackgroundColor(Color.TRANSPARENT)
+                    setPadding(dp(14), dp(14), dp(14), dp(14))
                     setOnClickListener { finish() }
                 },
                 LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    dp(52),
                     ViewGroup.LayoutParams.MATCH_PARENT
                 )
             )
@@ -92,16 +102,27 @@ class LampsSdkToolsActivity : Activity() {
                 LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
             )
             addView(
-                Button(this@LampsSdkToolsActivity).apply {
-                    text = "刷新"
-                    setOnClickListener { renderInfo() }
+                ImageButton(this@LampsSdkToolsActivity).apply {
+                    setImageResource(R.drawable.lamps_ic_content_copy)
+                    contentDescription = "复制"
+                    setBackgroundColor(Color.TRANSPARENT)
+                    setPadding(dp(14), dp(14), dp(14), dp(14))
+                    setOnClickListener { copyInfo() }
                 },
                 LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    dp(52),
                     ViewGroup.LayoutParams.MATCH_PARENT
                 )
             )
         }
+    }
+
+    private fun copyInfo() {
+        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        clipboard.setPrimaryClip(
+            ClipData.newPlainText("Lamps SDK Tools", infoView.text)
+        )
+        Toast.makeText(this, "已复制", Toast.LENGTH_SHORT).show()
     }
 
     private fun renderInfo() {
@@ -175,6 +196,55 @@ class LampsSdkToolsActivity : Activity() {
                     line("  end", timing.endTimeMillis?.let(::formatTime) ?: "-")
                     line("  duration", "${timing.durationMillis} ms")
                     line("  result", timing.result)
+                }
+            }
+
+            val initSdkList = SdkInitDispatcher.getInitDataList()
+            if (initSdkList.isEmpty()) {
+                appendLine()
+                appendLine("第三方 SDK:")
+                appendLine("  暂无第三方 SDK 初始化数据")
+            } else {
+                appendLine()
+                appendLine("第三方 SDK:")
+                initSdkList.forEachIndexed { index, data ->
+                    appendLine("  [${index}] ${data.provider.name}")
+                    line("    channelName", data.slot.channelName)
+                    line("    appId", data.slot.appId)
+                    line("    state", data.state.name)
+                    line("    start", data.startTimeMillis?.let(::formatTime) ?: "-")
+                    line("    end", data.endTimeMillis?.let(::formatTime) ?: "-")
+                    line("    duration", data.durationMillis?.let { "$it ms" } ?: "-")
+                    if (data.errorCode != null || !data.errorMessage.isNullOrEmpty()) {
+                        line("    errorCode", data.errorCode ?: "-")
+                        line("    errorMessage", data.errorMessage.orEmpty())
+                    }
+                }
+            }
+
+            section("激励视频")
+            val rewardAds = SdkRewardDispatcher.getRewardDataList()
+            if (rewardAds.isEmpty()) {
+                appendLine("暂无激励视频加载数据")
+            } else {
+                rewardAds.forEachIndexed { index, ad ->
+                    appendLine("[${index}] ${ad.channelName}")
+                    line("  provider", ad.provider.name)
+                    line("  slotId", ad.slotId)
+                    line("  state", ad.state.name)
+                    line("  price", ad.price)
+                    line("  isValid", ad.isValid)
+                    line("  rewarded", ad.rewarded)
+                    line("  loadStart", ad.loadStartTimeMillis?.let(::formatTime) ?: "-")
+                    line("  loadEnd", ad.loadEndTimeMillis?.let(::formatTime) ?: "-")
+                    line("  loadDuration", ad.loadDurationMillis?.let { "$it ms" } ?: "-")
+                    line("  showStart", ad.showStartTimeMillis?.let(::formatTime) ?: "-")
+                    line("  showEnd", ad.showEndTimeMillis?.let(::formatTime) ?: "-")
+                    line("  showDuration", ad.showDurationMillis?.let { "$it ms" } ?: "-")
+                    if (ad.errorCode != null || !ad.errorMessage.isNullOrEmpty()) {
+                        line("  errorCode", ad.errorCode ?: "-")
+                        line("  errorMessage", ad.errorMessage.orEmpty())
+                    }
                 }
             }
         }

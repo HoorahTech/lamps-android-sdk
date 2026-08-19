@@ -1,10 +1,13 @@
-package com.lamps.sdk.reward
+package com.lamps.sdk.data.sdk.reward
 
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import com.lamps.sdk.LampsSdk
 import com.lamps.sdk.config.LampsConfig
+import com.lamps.sdk.reward.LampsRewardAd
+import com.lamps.sdk.reward.RewardAdLoadCallback
+import com.lamps.sdk.reward.RewardAdShowCallback
 import com.lamps.sdk.webview.LampsWebView
 import com.lamps.sdk.webview.bridge.LampsAbility
 import com.lamps.sdk.webview.bridge.LampsAbilityInstaller
@@ -59,17 +62,8 @@ private class RewardAdAbility : LampsAbility {
             return
         }
 
-        BuiltInRewardAdProviders.installAvailable()
-        val candidates = config!!.appInitData!!.rewardAdSlots.map {
-            RewardAdSlot(
-                slotId = it.slotId,
-                type = it.type,
-                channelName = it.channelName,
-                channelId = it.channelId,
-                appId = it.appId
-            )
-        }
-        val validCandidates = candidates.filter { it.slotId.isNotBlank() && it.appId.isNotBlank() }
+        val validCandidates = config!!.appInitData!!.rewardAdSlots
+            .filter { it.slotId.isNotBlank() && it.appId.isNotBlank() }
         if (validCandidates.isEmpty()) {
             flowInProgress.set(false)
             callback.callback(
@@ -78,23 +72,6 @@ private class RewardAdAbility : LampsAbility {
             )
             return
         }
-
-        val selected = validCandidates.firstNotNullOfOrNullCompat { slot ->
-            RewardAdProviderRegistry.find(slot)?.let { provider -> slot to provider }
-        }
-        if (selected == null) {
-            flowInProgress.set(false)
-            callback.callback(
-                errorResult(
-                    RewardAdErrorCode.PROVIDER_NOT_FOUND,
-                    "no installed provider supports the configured reward slots"
-                ),
-                callbackId
-            )
-            return
-        }
-
-        val (slot, provider) = selected
         callback.callback(
             JSONObject()
                 .put("code", 0)
@@ -104,16 +81,7 @@ private class RewardAdAbility : LampsAbility {
         )
 
         runCatching {
-            provider.loadAndShow(
-                activity!!,
-                slot,
-                RewardAdEnvironment(
-                    application = activity.application,
-                    oaid = config.resolveOaid(),
-                    debug = config.debug
-                ),
-                createProviderCallback(webView)
-            )
+            LampsSdk.loadReward(activity!!, createLoadCallback(webView, activity))
         }.onFailure { error ->
             sendError(
                 webView,
@@ -128,37 +96,53 @@ private class RewardAdAbility : LampsAbility {
         flowInProgress.set(false)
     }
 
-    private fun createProviderCallback(webView: LampsWebView): RewardAdCallback {
-        return object : RewardAdCallback {
-            private var rewarded = false
-            private var shown = false
-
-            override fun onLoaded() {
+    private fun createLoadCallback(
+        webView: LampsWebView,
+        activity: Activity
+    ): RewardAdLoadCallback {
+        return object : RewardAdLoadCallback {
+            override fun onAdLoadSuccess(ad: LampsRewardAd) {
                 sendEvent(webView, "onLoadSuccess")
+                LampsSdk.showReward(activity, ad, createShowCallback(webView))
             }
 
-            override fun onShown() {
-                shown = true
+            override fun onAdLoadFailed(code: Int, message: String?) {
+                flowInProgress.set(false)
+                sendEvent(
+                    webView,
+                    "onLoadError",
+                    code,
+                    message ?: "reward ad load failed"
+                )
+            }
+        }
+    }
+
+    private fun createShowCallback(webView: LampsWebView): RewardAdShowCallback {
+        return object : RewardAdShowCallback {
+            private var rewarded = false
+
+            override fun onAdShown() {
                 sendEvent(webView, "onShowSuccess")
             }
 
-            override fun onRewarded() {
+            override fun onAdRewarded() {
                 rewarded = true
                 sendEvent(webView, "onRewardArrived", rewardStatus = true)
             }
 
-            override fun onClosed() {
+            override fun onAdClosed() {
                 flowInProgress.set(false)
                 sendEvent(webView, "onClose", rewardStatus = rewarded)
             }
 
-            override fun onError(code: Int, message: String?) {
+            override fun onAdShowFailed(code: Int, message: String?) {
                 flowInProgress.set(false)
                 sendEvent(
                     webView,
-                    if (shown) "onShowError" else "onLoadError",
+                    "onShowError",
                     code,
-                    message ?: "reward ad failed"
+                    message ?: "reward ad show failed"
                 )
             }
         }
@@ -214,14 +198,4 @@ private fun Context.findActivity(): Activity? {
         current = base
     }
     return current as? Activity
-}
-
-private inline fun <T, R> Iterable<T>.firstNotNullOfOrNullCompat(
-    transform: (T) -> R?
-): R? {
-    for (element in this) {
-        val result = transform(element)
-        if (result != null) return result
-    }
-    return null
 }

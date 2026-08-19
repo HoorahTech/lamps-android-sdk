@@ -10,7 +10,7 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import com.lamps.sdk.config.LampsConfig
-import com.lamps.sdk.reward.RewardAdAbilityInstaller
+import com.lamps.sdk.data.sdk.reward.RewardAdAbilityInstaller
 import com.lamps.sdk.webview.bridge.LampsAbilityInstaller
 import com.lamps.sdk.webview.bridge.LampsWebViewBridge
 

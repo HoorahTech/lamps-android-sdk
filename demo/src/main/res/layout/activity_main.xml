@@ -6,11 +6,6 @@
     android:orientation="vertical"
     android:padding="24dp">
 
-    <TextView
-        android:id="@+id/statusText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="16sp" />
 
     <Button
         android:id="@+id/openWebViewButton"
@@ -25,5 +20,21 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:text="@string/open_lamps_sdk_tools" />
+
+    <Button
+        android:id="@+id/showRewardVideoButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="@string/show_reward_video" />
+
+    <TextView
+        android:id="@+id/rewardStatusView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:gravity="center"
+        android:text="@string/reward_idle"
+        android:textSize="13sp" />
 
 </LinearLayout>

@@ -1,7 +1,9 @@
 package com.lamps.sdk.data.sdk.channel
 
+import android.app.Activity
 import android.app.Application
 import com.lamps.sdk.core.LampsErrorCode
+import com.lamps.sdk.reward.RewardAdShowCallback
 import com.qq.e.comm.managers.GDTAdSdk
 import com.qq.e.comm.managers.setting.GlobalSetting
 
@@ -14,7 +16,7 @@ object YLHSdkManager {
     fun initSdk(
         application: Application,
         appId: String,
-        callback: ThirdSdkInitCallback
+        callback: SdkInitCallback
     ) {
         if (initialized) {
             callback.success()
@@ -42,5 +44,28 @@ object YLHSdkManager {
                 error.message ?: "GDTAdSdk init failed"
             )
         }
+    }
+
+    internal fun loadReward(
+        activity: Activity,
+        slotId: String,
+        callback: RewardAdSdkLoadCallback
+    ) {
+        if (!isInitialized()) {
+            callback.onLoadFailed(
+                LampsErrorCode.YLH_SDK_INIT_FAILED,
+                "GDTAdSdk is not initialized"
+            )
+            return
+        }
+        YLHRewardVideoAd(activity, slotId).loadAD(callback)
+    }
+
+    internal fun showReward(
+        activity: Activity,
+        rewardAd: YLHRewardVideoAd,
+        callback: RewardAdShowCallback
+    ) {
+        rewardAd.showAD(activity, callback)
     }
 }

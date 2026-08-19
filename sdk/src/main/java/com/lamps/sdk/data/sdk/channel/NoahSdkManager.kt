@@ -1,8 +1,10 @@
 package com.lamps.sdk.data.sdk.channel
 
+import android.app.Activity
 import android.app.Application
 import com.lamps.sdk.config.LampsConfig
 import com.lamps.sdk.core.LampsErrorCode
+import com.lamps.sdk.reward.RewardAdShowCallback
 import com.noah.api.GlobalConfig
 import com.noah.api.NoahSdk
 import com.noah.api.NoahSdkConfig
@@ -14,7 +16,7 @@ object NoahSdkManager {
     fun initSdk(
         application: Application,
         appId: String,
-        callback: ThirdSdkInitCallback
+        callback: SdkInitCallback
     ) {
         if (isInitialized()) {
             callback.success()
@@ -57,5 +59,28 @@ object NoahSdkManager {
                 error.message ?: "NoahSdk init failed"
             )
         }
+    }
+
+    internal fun loadReward(
+        activity: Activity,
+        slotId: String,
+        callback: RewardAdSdkLoadCallback
+    ) {
+        if (!isInitialized()) {
+            callback.onLoadFailed(
+                LampsErrorCode.NOAH_SDK_INIT_FAILED,
+                "NoahSdk is not initialized"
+            )
+            return
+        }
+        NoahRewardVideoAd(activity, slotId).loadAD(callback)
+    }
+
+    internal fun showReward(
+        activity: Activity,
+        rewardAd: NoahRewardVideoAd,
+        callback: RewardAdShowCallback
+    ) {
+        rewardAd.showAD(activity, callback)
     }
 }

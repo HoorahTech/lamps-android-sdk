@@ -1,4 +1,4 @@
-package com.lamps.demo
+package com.hupu.games
 
 import android.app.Application
 import android.util.Log

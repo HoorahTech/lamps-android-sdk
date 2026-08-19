@@ -4,20 +4,43 @@ plugins {
 }
 
 android {
-    namespace = "com.lamps.demo"
+    namespace = "com.hupu.games"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.lamps.demo"
+        applicationId = "com.hupu.games"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
         versionName = "0.1.0"
     }
 
+    signingConfigs {
+        register("release") {
+            storeFile = file("hupu_news.news")
+            storePassword = "cmhaha123"
+            keyAlias = "hupu_android"
+            keyPassword = "cmhaha123"
+            enableV2Signing = true
+            enableV1Signing = true
+        }
+        getByName("debug") {
+            storeFile = file("hupu_news.news")
+            storePassword = "cmhaha123"
+            keyAlias = "hupu_android"
+            keyPassword = "cmhaha123"
+            enableV2Signing = true
+            enableV1Signing = true
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("release")
+        }
+        debug {
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 

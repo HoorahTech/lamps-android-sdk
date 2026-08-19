@@ -49,6 +49,30 @@ LampsSdk.startAsync(object : InitCallback {
 
 `sdk` 内置穿山甲、优量汇和汇川三个激励视频 Provider，最低支持 Android API 24。首次广告请求时，SDK 根据 `rewardAdSlots` 的 `channelName/channelId` 选择 Provider，并使用同一条配置中的 `appId`、`slotId` 懒初始化和加载广告。
 
+Native 接入先 `loadReward`，在成功回调中拿到 `LampsRewardAd` 后再 `show`：
+
+```kotlin
+import com.lamps.sdk.LampsSdk
+import com.lamps.sdk.reward.LampsRewardAd
+import com.lamps.sdk.reward.RewardAdLoadCallback
+import com.lamps.sdk.reward.RewardAdShowCallback
+
+LampsSdk.loadReward(activity, object : RewardAdLoadCallback {
+    override fun onAdLoadSuccess(ad: LampsRewardAd) {
+        ad.show(activity, object : RewardAdShowCallback {
+            override fun onAdShown() = Unit
+            override fun onAdRewarded() = Unit
+            override fun onAdClosed() = Unit
+            override fun onAdShowFailed(code: Int, message: String?) = Unit
+        })
+    }
+
+    override fun onAdLoadFailed(code: Int, message: String?) = Unit
+})
+```
+
+`LampsRewardAd` 对外只暴露 `price`、`slotId`、`channelName`、`isValid` 和 `show()`。也可调用 `LampsSdk.showReward(activity, ad, callback)`。
+
 ```kotlin
 dependencies {
     implementation("com.lamps:sdk:0.1.0")
