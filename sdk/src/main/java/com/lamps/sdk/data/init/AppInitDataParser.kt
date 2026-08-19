@@ -39,7 +39,8 @@ internal object AppInitDataParser {
                     slotId = item.optString("slotId"),
                     type = item.optString("type"),
                     channelName = item.optString("channelName"),
-                    channelId = item.optString("channelId")
+                    channelId = item.optString("channelId"),
+                    appId = item.optString("appId")
                 )
             )
         }

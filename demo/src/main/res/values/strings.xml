@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Lamps SDK Demo</string>
+    <string name="open_lamps_webview">Open LampsWebView</string>
+    <string name="open_lamps_sdk_tools">Open Lamps SDK Tools</string>
 </resources>

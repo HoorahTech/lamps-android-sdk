@@ -11,7 +11,8 @@ internal class RewardSlotResponse(
     val slotId: String,
     val type: String,
     val channelName: String,
-    val channelId: String
+    val channelId: String,
+    val appId: String
 )
 
 internal class MonitorLinksResponse(

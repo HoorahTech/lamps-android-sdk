@@ -18,6 +18,8 @@ dependencyResolutionManagement {
         maven("https://maven.aliyun.com/repository/public")
         google()
         mavenCentral()
+        maven("https://nexus.hupu.io/repository/hupu-android-public/")
+        maven("https://artifact.bytedance.com/repository/pangle")
     }
 }
 

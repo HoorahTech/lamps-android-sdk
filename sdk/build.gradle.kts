@@ -8,7 +8,7 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        minSdk = 21
+        minSdk = 24
         consumerProguardFiles("consumer-rules.pro")
         buildConfigField("String", "SDK_VERSION", "\"0.1.0\"")
     }
@@ -38,4 +38,7 @@ android {
 }
 
 dependencies {
+    implementation("com.pangle.cn:ads-sdk-pro:7.6.1.2")
+    implementation("com.qq.e.union:union:4.690.1560")
+    implementation("com.noah:noah:15.1.4002")
 }

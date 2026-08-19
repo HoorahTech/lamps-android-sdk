@@ -3,6 +3,8 @@ package com.lamps.sdk.core
 import android.content.Context
 import com.lamps.sdk.config.LampsConfig
 import com.lamps.sdk.data.init.AppInitDataLoader
+import com.lamps.sdk.data.sdk.channel.ThirdSdkInitCallback
+import com.lamps.sdk.data.sdk.init.SdkInitDispatcher
 import com.lamps.sdk.utils.SdkLog
 import com.lamps.sdk.utils.ThreadUtils
 import java.util.concurrent.CopyOnWriteArrayList
@@ -99,26 +101,43 @@ internal object SdkRuntime {
     }
 
     private fun doStart() {
+        SdkInitMetrics.reset()
+        SdkInitMetrics.start(METRIC_TOTAL, "Lamps SDK 总初始化")
         runtime.set(InitState.Starting)
         val config = LampsConfig.current
         if (config == null) {
             notifyFail(LampsErrorCode.NOT_INITIALIZED, "call init() before start()")
             return
         }
-        if (config.resolveOaid().isEmpty()) {
+        SdkInitMetrics.start(METRIC_OAID, "读取 OAID")
+        val oaid = config.resolveOaid()
+        SdkInitMetrics.end(
+            METRIC_OAID,
+            if (oaid.isEmpty()) SdkInitMetrics.RESULT_FAILED else SdkInitMetrics.RESULT_SUCCESS
+        )
+        if (oaid.isEmpty()) {
             notifyFail(LampsErrorCode.OAID_EMPTY, "oaid is required")
             return
         }
-        if (AppInitDataLoader.load(config)) {
-            runtime.set(InitState.Ready)
-            notifySuccess()
-        } else {
+        val loadResult = AppInitDataLoader.load(config)
+        if (!loadResult.hasData) {
             notifyFail(LampsErrorCode.APP_INIT_DATA_REQUEST_FAILED, "appInitData request failed")
+            return
         }
+        SdkInitDispatcher.initSdk(config, object : ThirdSdkInitCallback {
+            override fun success() {
+                notifySuccess()
+            }
+
+            override fun fail(code: Int, message: String?) {
+                notifyFail(code, message)
+            }
+        })
     }
 
 
     private fun notifySuccess() {
+        SdkInitMetrics.end(METRIC_TOTAL, SdkInitMetrics.RESULT_SUCCESS)
         runtime.set(InitState.Ready)
         ThreadUtils.runOnMain {
             try {
@@ -132,6 +151,7 @@ internal object SdkRuntime {
     }
 
     private fun notifyFail(code: Int = 0, message: String? = null) {
+        SdkInitMetrics.end(METRIC_TOTAL, SdkInitMetrics.RESULT_FAILED)
         runtime.set(InitState.Failed(code = code, message = message))
         ThreadUtils.runOnMain {
             try {
@@ -143,4 +163,7 @@ internal object SdkRuntime {
             }
         }
     }
+
+    private const val METRIC_TOTAL = "lamps.total"
+    private const val METRIC_OAID = "lamps.oaid"
 }
