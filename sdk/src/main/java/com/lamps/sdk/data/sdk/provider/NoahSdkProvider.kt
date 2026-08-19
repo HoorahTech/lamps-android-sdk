@@ -13,7 +13,7 @@ import com.lamps.sdk.reward.RewardAdShowCallback
 import java.util.Locale
 
 internal class NoahSdkProvider : ISdkProvider {
-    override val name: String = "汇川 SDK 初始化"
+    override val name: String = "汇川"
 
     override fun supports(slot: RewardSlotResponse): Boolean {
         val channelName = slot.channelName.trim().lowercase(Locale.US)

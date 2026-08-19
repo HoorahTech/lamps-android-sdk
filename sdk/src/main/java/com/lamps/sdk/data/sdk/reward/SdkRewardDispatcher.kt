@@ -184,15 +184,17 @@ internal object SdkRewardDispatcher {
                     compareBy<LampsRewardAd> { it.price }
                 )
             if (winner == null) {
-                val failure = rewardDataList.lastOrNull {
-                    it.state == SdkRewardState.LOAD_FAILED
-                }
+                val failures = rewardDataList.filter { it.state == SdkRewardState.LOAD_FAILED }
                 callback.onAdLoadFailed(
                     RewardAdErrorCode.ALL_SDK_LOAD_FAILED,
                     buildString {
                         append("all reward ad SDKs failed to load")
-                        if (failure != null) {
-                            append(": code=")
+                        failures.forEachIndexed { index, failure ->
+                            if (index == 0) append(": ") else append("; ")
+                            append(failure.channelName)
+                            append("(")
+                            append(failure.slotId)
+                            append(") code=")
                             append(failure.errorCode)
                             append(", message=")
                             append(failure.errorMessage.orEmpty())

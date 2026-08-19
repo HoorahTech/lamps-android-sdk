@@ -13,7 +13,7 @@ import com.lamps.sdk.reward.RewardAdShowCallback
 import java.util.Locale
 
 internal class TTSdkProvider : ISdkProvider {
-    override val name: String = "穿山甲 SDK 初始化"
+    override val name: String = "穿山甲"
 
     override fun supports(slot: RewardSlotResponse): Boolean {
         val channelName = slot.channelName.trim().lowercase(Locale.US)

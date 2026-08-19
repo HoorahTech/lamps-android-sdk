@@ -13,7 +13,7 @@ import com.lamps.sdk.data.sdk.channel.YLHRewardVideoAd
 import java.util.Locale
 
 internal class YLHSdkProvider : ISdkProvider {
-    override val name: String = "优量汇 SDK 初始化"
+    override val name: String = "优量汇"
 
     override fun supports(slot: RewardSlotResponse): Boolean {
         val channelName = slot.channelName.trim().lowercase(Locale.US)
