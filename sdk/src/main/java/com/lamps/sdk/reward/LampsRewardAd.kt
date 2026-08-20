@@ -26,9 +26,16 @@ class LampsRewardAd internal constructor(
     internal var adData: RewardVideoAd? = null
         private set
 
-    /** 当前广告实时价格，平台未返回有效价格时为 `0.0`。 */
+    /**
+     * 当前广告用于竞价的价格。
+     * 优先取平台 SDK 实时价格，拿不到或无效时回落到接口下发的 `price`。
+     */
     val price: Double
-        get() = adData?.getPrice() ?: 0.0
+        get() {
+            val sdkPrice = adData?.getPrice() ?: 0.0
+            if (sdkPrice > 0.0) return sdkPrice
+            return slot.price.takeIf { it > 0.0 } ?: 0.0
+        }
 
     /** 服务端下发的广告位 ID。 */
     val slotId: String

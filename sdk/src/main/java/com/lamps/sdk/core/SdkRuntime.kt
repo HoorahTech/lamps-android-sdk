@@ -150,11 +150,6 @@ internal object SdkRuntime {
         SdkRewardDispatcher.showReward(activity, ad, callback)
     }
 
-    fun updateConfig(config: LampsConfig) {
-        val current = LampsConfig.current ?: return
-        LampsConfig.replace(current.mergedWith(config))
-    }
-
     private fun doStart() {
         SdkInitMetrics.reset()
         SdkInitMetrics.start(METRIC_TOTAL, "Lamps SDK 总初始化")

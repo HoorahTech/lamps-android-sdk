@@ -18,6 +18,10 @@ object NoahSdkManager {
         appId: String,
         callback: SdkInitCallback
     ) {
+        if (LampsConfig.current?.initNoahSdk == false) {
+            callback.success()
+            return
+        }
         if (isInitialized()) {
             callback.success()
             return

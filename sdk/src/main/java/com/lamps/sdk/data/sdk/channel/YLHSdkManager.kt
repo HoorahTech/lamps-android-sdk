@@ -2,6 +2,7 @@ package com.lamps.sdk.data.sdk.channel
 
 import android.app.Activity
 import android.app.Application
+import com.lamps.sdk.config.LampsConfig
 import com.lamps.sdk.core.LampsErrorCode
 import com.lamps.sdk.reward.RewardAdShowCallback
 import com.qq.e.comm.managers.GDTAdSdk
@@ -11,14 +12,15 @@ object YLHSdkManager {
     @Volatile
     private var initialized = false
 
-    fun isInitialized(): Boolean = initialized
+    fun isInitialized(): Boolean = initialized || GlobalSetting.getChannel() != null
 
     fun initSdk(
         application: Application,
         appId: String,
         callback: SdkInitCallback
     ) {
-        if (initialized) {
+        if (initialized || LampsConfig.current?.initYlhSdk == false || GlobalSetting.getChannel() != null) {
+            initialized = true
             callback.success()
             return
         }

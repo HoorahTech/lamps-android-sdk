@@ -2,7 +2,9 @@ package com.lamps.sdk.data.sdk.provider
 
 import android.app.Activity
 import android.app.Application
+import com.lamps.sdk.config.LampsConfig
 import com.lamps.sdk.data.init.RewardSlotResponse
+import com.lamps.sdk.data.sdk.channel.SdkChannel
 import com.lamps.sdk.data.sdk.channel.SdkInitCallback
 import com.lamps.sdk.data.sdk.channel.TTRewardVideoAd
 import com.lamps.sdk.data.sdk.channel.TTSdkManager
@@ -10,15 +12,15 @@ import com.lamps.sdk.data.sdk.reward.RewardAdErrorCode
 import com.lamps.sdk.data.sdk.channel.RewardAdSdkLoadCallback
 import com.lamps.sdk.data.sdk.channel.RewardVideoAd
 import com.lamps.sdk.reward.RewardAdShowCallback
-import java.util.Locale
 
 internal class TTSdkProvider : ISdkProvider {
-    override val name: String = "穿山甲"
+    override val name: String = SdkChannel.PANGLE.channelName
 
     override fun supports(slot: RewardSlotResponse): Boolean {
-        val channelName = slot.channelName.trim().lowercase(Locale.US)
-        return channelName == "穿山甲"
+        return SdkChannel.PANGLE.matches(slot.channelName)
     }
+
+    override fun shouldInitInternally(config: LampsConfig): Boolean = config.initPangleSdk
 
     override fun initSdk(
         application: Application,

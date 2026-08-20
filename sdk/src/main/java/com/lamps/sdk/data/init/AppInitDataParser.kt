@@ -38,7 +38,8 @@ internal object AppInitDataParser {
             list.add(
                 RewardSlotResponse(
                     slotId = item.optString("slotId"),
-                    type = item.optString("type"),
+                    type = RewardSlotType.from(item.optString("type")),
+                    price = parsePrice(item),
                     channelName = item.optString("channelName"),
                     channelId = item.optString("channelId"),
                     appId = item.optString("appId")
@@ -59,6 +60,15 @@ internal object AppInitDataParser {
             wm = stringList(obj?.optJSONArray("wm")),
             dm = rem
         )
+    }
+
+    private fun parsePrice(item: JSONObject): Double {
+        if (!item.has("price") || item.isNull("price")) return 0.0
+        return when (val value = item.opt("price")) {
+            is Number -> value.toDouble()
+            is String -> value.toDoubleOrNull() ?: 0.0
+            else -> 0.0
+        }.coerceAtLeast(0.0)
     }
 
     private fun stringList(array: JSONArray?): List<String> {

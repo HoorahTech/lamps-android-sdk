@@ -18,6 +18,10 @@ object TTSdkManager {
         appId: String,
         callback: SdkInitCallback
     ) {
+        if (LampsConfig.current?.initPangleSdk == false) {
+            callback.success()
+            return
+        }
         if (isInitialized()) {
             callback.success()
             return

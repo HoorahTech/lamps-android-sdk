@@ -13,9 +13,21 @@ internal class AppInitResponse(
     }
 }
 
+internal enum class RewardSlotType {
+    PD,
+    BD;
+
+    companion object {
+        fun from(raw: String): RewardSlotType {
+            return entries.firstOrNull { it.name.equals(raw.trim(), ignoreCase = true) } ?: PD
+        }
+    }
+}
+
 internal class RewardSlotResponse(
     val slotId: String,
-    val type: String,
+    val type: RewardSlotType,
+    val price: Double,
     val channelName: String,
     val channelId: String,
     val appId: String

@@ -45,7 +45,7 @@ internal object SdkInitDispatcher {
         SdkInitMetrics.start(METRIC_DISPATCH, "第三方 SDK 初始化分发")
         if (initDataList.isNotEmpty()) {
             dispatchInitData(application, initDataList, callback)
-        }else {
+        } else {
             SdkInitMetrics.end(METRIC_DISPATCH, SdkInitMetrics.RESULT_SKIPPED)
             callback.success()
         }

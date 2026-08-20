@@ -63,14 +63,6 @@ object LampsSdk {
         SdkRuntime.showReward(activity, ad, callback)
     }
 
-    /**
-     * 更新已缓存配置。目前用于后续 [LampsConfig.Builder.setCustomData] 等增量字段，不改变 appId。
-     */
-    @JvmStatic
-    fun updateConfig(config: LampsConfig) {
-        SdkRuntime.updateConfig(config)
-    }
-
     @JvmStatic
     fun getSdkVersion(): String = BuildConfig.SDK_VERSION
 }
