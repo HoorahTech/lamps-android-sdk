@@ -32,5 +32,5 @@ internal object MonitorConstant {
 
     const val REM_SIGN = "__REM_SIGN__"
     const val ACTION = "__ACTION__"
-    const val ACTION_REWARD_SUCCESS = "30"
+    const val ACTION_REWARD_SUCCESS = "30" // 激励视频任务完成
 }

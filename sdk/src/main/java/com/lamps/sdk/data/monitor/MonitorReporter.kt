@@ -1,6 +1,8 @@
 package com.lamps.sdk.data.monitor
 
 import com.lamps.sdk.config.LampsConfig
+import com.lamps.sdk.data.monitor.MonitorConstant.ACTION
+import com.lamps.sdk.data.monitor.MonitorConstant.ACTION_REWARD_SUCCESS
 import com.lamps.sdk.data.monitor.MonitorConstant.FORWARD_SOURCE
 import com.lamps.sdk.data.monitor.MonitorConstant.PRICE
 import com.lamps.sdk.data.monitor.MonitorConstant.REQUEST_ID
@@ -30,7 +32,7 @@ internal object MonitorReporter {
     fun reportPm(rewardData: LampsRewardAd) {
         val config = LampsConfig.current ?: return
         val pmList = config.appInitData?.monitorLinks?.pm
-        MonitorUtil.report(pmList, reportValues(rewardData))
+        MonitorUtil.report(pmList, reportValues(rewardData), needSign = true)
     }
 
     fun reportCm(rewardData: LampsRewardAd) {
@@ -42,7 +44,11 @@ internal object MonitorReporter {
     fun reportDm(rewardData: LampsRewardAd) {
         val config = LampsConfig.current ?: return
         val dmList = config.appInitData?.monitorLinks?.dm
-        MonitorUtil.report(dmList, reportValues(rewardData))
+        MonitorUtil.report(
+            dmList,
+            reportValues(rewardData) + (ACTION to ACTION_REWARD_SUCCESS),
+            needSign = true
+        )
     }
 
     private fun reportValues(ad: LampsRewardAd): Map<String, String> {

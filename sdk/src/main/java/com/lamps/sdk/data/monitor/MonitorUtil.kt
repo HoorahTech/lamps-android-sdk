@@ -4,7 +4,6 @@ import android.net.Uri
 import android.os.Build
 import com.lamps.sdk.BuildConfig
 import com.lamps.sdk.config.LampsConfig
-import com.lamps.sdk.data.init.MonitorLinksResponse
 import com.lamps.sdk.data.monitor.MonitorConstant.ANDROID_ID
 import com.lamps.sdk.data.monitor.MonitorConstant.APP_ID
 import com.lamps.sdk.data.monitor.MonitorConstant.IMEI
@@ -14,6 +13,7 @@ import com.lamps.sdk.data.monitor.MonitorConstant.NETWORK
 import com.lamps.sdk.data.monitor.MonitorConstant.OAID
 import com.lamps.sdk.data.monitor.MonitorConstant.OS
 import com.lamps.sdk.data.monitor.MonitorConstant.PHONE_BRAND
+import com.lamps.sdk.data.monitor.MonitorConstant.REM_SIGN
 import com.lamps.sdk.data.monitor.MonitorConstant.SDK_VERSION
 import com.lamps.sdk.data.monitor.MonitorConstant.SH
 import com.lamps.sdk.data.monitor.MonitorConstant.SW
@@ -40,24 +40,30 @@ object MonitorUtil {
     fun report(
         urls: List<String>?,
         values: Map<String, String>,
+        needSign: Boolean = false
     ) {
         if (urls.isNullOrEmpty()) return
         ThreadUtils.runOnWork {
             urls.forEach { template ->
-                val url = replaceMacros(template, values)
+                val url = replaceMacros(template, values, needSign)
                 HttpUtils.get(url, headers = mapOf("Accept" to "*/*"))
             }
         }
     }
 
-
-
-    private fun replaceMacros(url: String, values: Map<String, String>): String {
+    private fun replaceMacros(
+        url: String,
+        values: Map<String, String>,
+        needSign: Boolean
+    ): String {
         var result = url
         values.forEach { (macro, value) ->
             if (result.contains(macro)) {
                 result = result.replace(macro, encode(value))
             }
+        }
+        if (needSign && result.contains(REM_SIGN)) {
+            result = result.replace(REM_SIGN, computeSign(result).orEmpty())
         }
         return result
     }
