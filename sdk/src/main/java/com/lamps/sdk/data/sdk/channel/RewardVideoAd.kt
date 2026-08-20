@@ -14,5 +14,5 @@ internal abstract class RewardVideoAd {
 internal interface RewardAdSdkLoadCallback {
     fun onLoadSuccess(ad: RewardVideoAd)
 
-    fun onLoadFailed(code: Int, message: String?)
+    fun onLoadFailed(code: Int, message: String?, ad: RewardVideoAd? = null)
 }

@@ -42,10 +42,17 @@ object LampsSdk {
 
     /**
      * 并发加载所有受支持的激励视频广告位，完成竞价后缓存最高价广告。
+     *
+     * [forwardSource] 由 H5 传入，格式「页面 ID:会话 ID:前向来源」，用于监测链接 `__FORWARD_SOURCE__`。
      */
     @JvmStatic
-    fun loadReward(activity: Activity, callback: RewardAdLoadCallback) {
-        SdkRuntime.loadReward(activity, callback)
+    @JvmOverloads
+    fun loadReward(
+        activity: Activity,
+        callback: RewardAdLoadCallback,
+        forwardSource: String = ""
+    ) {
+        SdkRuntime.loadReward(activity, callback, forwardSource)
     }
 
     /**

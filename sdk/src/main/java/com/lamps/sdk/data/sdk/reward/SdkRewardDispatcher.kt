@@ -3,6 +3,7 @@ package com.lamps.sdk.data.sdk.reward
 import android.app.Activity
 import com.lamps.sdk.config.LampsConfig
 import com.lamps.sdk.data.init.RewardSlotResponse
+import com.lamps.sdk.data.monitor.MonitorReporter
 import com.lamps.sdk.data.sdk.channel.RewardAdSdkLoadCallback
 import com.lamps.sdk.data.sdk.channel.RewardVideoAd
 import com.lamps.sdk.data.sdk.provider.ISdkProvider
@@ -13,6 +14,7 @@ import com.lamps.sdk.reward.LampsRewardAd
 import com.lamps.sdk.reward.RewardAdLoadCallback
 import com.lamps.sdk.reward.RewardAdShowCallback
 import com.lamps.sdk.utils.ThreadUtils
+import java.util.UUID
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
@@ -39,7 +41,8 @@ internal object SdkRewardDispatcher {
     fun loadReward(
         activity: Activity,
         config: LampsConfig,
-        callback: RewardAdLoadCallback
+        callback: RewardAdLoadCallback,
+        forwardSource: String = ""
     ) {
         if (!loading.compareAndSet(false, true)) {
             callback.onAdLoadFailed(
@@ -69,7 +72,13 @@ internal object SdkRewardDispatcher {
             return
         }
 
-        rewardDataList.addAll(createRewardDataList(validSlots))
+        rewardDataList.addAll(
+            createRewardDataList(
+                validSlots,
+                UUID.randomUUID().toString().replace("-", ""),
+                forwardSource
+            )
+        )
         if (rewardDataList.isEmpty()) {
             finishLoadValidationFailed(
                 callback,
@@ -122,10 +131,14 @@ internal object SdkRewardDispatcher {
     }
 
 
-    private fun createRewardDataList(slots: List<RewardSlotResponse>): List<LampsRewardAd> {
+    private fun createRewardDataList(
+        slots: List<RewardSlotResponse>,
+        requestId: String,
+        forwardSource: String
+    ): List<LampsRewardAd> {
         return slots.mapNotNull { slot ->
             providers.firstOrNull { it.supports(slot) }?.let { provider ->
-                LampsRewardAd(provider, slot)
+                LampsRewardAd(provider, slot, requestId, forwardSource)
             }
         }
     }
@@ -147,6 +160,9 @@ internal object SdkRewardDispatcher {
                     object : RewardAdSdkLoadCallback {
                         override fun onLoadSuccess(ad: RewardVideoAd) {
                             if (!rewardData.markLoadSuccess(ad)) return
+
+                            MonitorReporter.reportRmSuccess(rewardData)
+
                             completeLoad(
                                 remaining,
                                 finished,
@@ -154,8 +170,11 @@ internal object SdkRewardDispatcher {
                             )
                         }
 
-                        override fun onLoadFailed(code: Int, message: String?) {
-                            if (!rewardData.markLoadFailed(code, message)) return
+                        override fun onLoadFailed(code: Int, message: String?, ad: RewardVideoAd?) {
+                            if (!rewardData.markLoadFailed(code, message, ad)) return
+
+                            MonitorReporter.reportRmFail(rewardData)
+
                             completeLoad(
                                 remaining,
                                 finished,
@@ -203,7 +222,16 @@ internal object SdkRewardDispatcher {
                 )
                 return@runOnMain
             }
+            MonitorReporter.reportWm(winner)
             winner.markSelected()
+            rewardDataList.forEach { candidate ->
+                if (candidate !== winner) {
+                    candidate.markBidFailed(
+                        RewardAdErrorCode.BID_FAILED,
+                        "reward ad lost bidding"
+                    )
+                }
+            }
             callback.onAdLoadSuccess(winner)
         }
     }
@@ -215,17 +243,24 @@ internal object SdkRewardDispatcher {
         return object : RewardAdShowCallback {
             override fun onAdShown() {
                 rewardData.markShown()
+                MonitorReporter.reportPm(rewardData)
                 callback.onAdShown()
             }
 
             override fun onAdRewarded() {
                 rewardData.markRewarded()
+                MonitorReporter.reportDm(rewardData)
                 callback.onAdRewarded()
             }
 
             override fun onAdClosed() {
                 rewardData.markClosed()
                 callback.onAdClosed()
+            }
+
+            override fun onAdClicked() {
+                MonitorReporter.reportCm(rewardData)
+                callback.onAdClicked()
             }
 
             override fun onAdShowFailed(code: Int, message: String?) {

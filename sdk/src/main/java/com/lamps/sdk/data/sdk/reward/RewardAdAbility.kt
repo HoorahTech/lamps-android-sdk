@@ -81,7 +81,13 @@ private class RewardAdAbility : LampsAbility {
         )
 
         runCatching {
-            LampsSdk.loadReward(activity!!, createLoadCallback(webView, activity))
+            val forwardSource = params.optString("forward_source")
+                .ifBlank { params.optString("forwardSource") }
+            LampsSdk.loadReward(
+                activity!!,
+                createLoadCallback(webView, activity),
+                forwardSource
+            )
         }.onFailure { error ->
             sendError(
                 webView,

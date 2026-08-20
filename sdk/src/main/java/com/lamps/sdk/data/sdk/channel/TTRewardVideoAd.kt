@@ -22,7 +22,8 @@ internal class TTRewardVideoAd(
         finishLoad {
             loadCallback?.onLoadFailed(
                 RewardAdErrorCode.LOAD_TIMEOUT,
-                "Pangle reward ad load timed out"
+                "Pangle reward ad load timed out",
+                this@TTRewardVideoAd
             )
         }
     }
@@ -65,7 +66,7 @@ internal class TTRewardVideoAd(
             .loadRewardVideoAd(adSlot, object : TTRewardVideoAdListenerAdapter() {
                 override fun onError(code: Int, message: String?) {
                     mainHandler.removeCallbacks(timeout)
-                    finishLoad { loadCallback?.onLoadFailed(code, message) }
+                    finishLoad { loadCallback?.onLoadFailed(code, message, this@TTRewardVideoAd) }
                 }
 
                 override fun onRewardVideoAdLoad(ad: PangleRewardVideoAd?) {
@@ -75,7 +76,8 @@ internal class TTRewardVideoAd(
                         finishLoad {
                             loadCallback?.onLoadFailed(
                                 RewardAdErrorCode.PROVIDER_ERROR,
-                                "Pangle reward ad is null"
+                                "Pangle reward ad is null",
+                                this@TTRewardVideoAd
                             )
                         }
                         return
@@ -104,6 +106,10 @@ internal class TTRewardVideoAd(
                 object : TTRewardAdInteractionListenerAdapter() {
                     override fun onAdShow() {
                         showCallback?.onAdShown()
+                    }
+
+                    override fun onAdVideoBarClick() {
+                        showCallback?.onAdClicked()
                     }
 
                     override fun onAdClose() {

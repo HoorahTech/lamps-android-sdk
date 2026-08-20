@@ -4,7 +4,8 @@ internal class AppInitResponse(
     val token: String,
     val clientIp: String,
     val rewardAdSlots: List<RewardSlotResponse>,
-    val monitorLinks: MonitorLinksResponse
+    val monitorLinks: MonitorLinksResponse,
+    val rewardSignKey: String
 )
 
 internal class RewardSlotResponse(
@@ -19,8 +20,8 @@ internal class MonitorLinksResponse(
     val rm: List<String>,
     val pm: List<String>,
     val cm: List<String>,
-    val dm: List<String>,
-    val wm: List<String>
+    val wm: List<String>,
+    val dm: List<String>
 )
 
 internal data class AppInitRequest(

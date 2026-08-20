@@ -20,7 +20,8 @@ internal class NoahRewardVideoAd(
         finishLoad {
             loadCallback?.onLoadFailed(
                 RewardAdErrorCode.LOAD_TIMEOUT,
-                "Noah reward ad load timed out"
+                "Noah reward ad load timed out",
+                this@NoahRewardVideoAd
             )
         }
     }
@@ -54,7 +55,8 @@ internal class NoahRewardVideoAd(
                     finishLoad {
                         loadCallback?.onLoadFailed(
                             error?.errorCode ?: RewardAdErrorCode.PROVIDER_ERROR,
-                            error?.errorMessage
+                            error?.errorMessage,
+                            this@NoahRewardVideoAd
                         )
                     }
                 }
@@ -66,7 +68,8 @@ internal class NoahRewardVideoAd(
                         finishLoad {
                             loadCallback?.onLoadFailed(
                                 RewardAdErrorCode.PROVIDER_ERROR,
-                                "Noah reward ad is null or invalid"
+                                "Noah reward ad is null or invalid",
+                                this@NoahRewardVideoAd
                             )
                         }
                         return
@@ -104,6 +107,10 @@ internal class NoahRewardVideoAd(
 
                     override fun onAdShown(ad: RewardedVideoAd?) {
                         showCallback?.onAdShown()
+                    }
+
+                    override fun onAdClicked(ad: RewardedVideoAd?) {
+                        showCallback?.onAdClicked()
                     }
 
                     override fun onAdClosed(ad: RewardedVideoAd?) {

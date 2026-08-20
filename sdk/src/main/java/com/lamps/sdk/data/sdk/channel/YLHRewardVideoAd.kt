@@ -23,7 +23,8 @@ internal class YLHRewardVideoAd(
                 finishLoad {
                     callback.onLoadFailed(
                         RewardAdErrorCode.PROVIDER_ERROR,
-                        "YLH reward ad is invalid"
+                        "YLH reward ad is invalid",
+                        this@YLHRewardVideoAd
                     )
                 }
                 return
@@ -35,6 +36,10 @@ internal class YLHRewardVideoAd(
 
         override fun onADShow() {
             showCallback?.onAdShown()
+        }
+
+        override fun onADClick() {
+            showCallback?.onAdClicked()
         }
 
         override fun onReward(data: MutableMap<String, Any>?) {
@@ -50,7 +55,7 @@ internal class YLHRewardVideoAd(
             mainHandler.removeCallbacks(timeout)
             val code = error?.errorCode ?: RewardAdErrorCode.PROVIDER_ERROR
             val message = error?.errorMsg
-            if (finishLoad { loadCallback?.onLoadFailed(code, message) }) {
+            if (finishLoad { loadCallback?.onLoadFailed(code, message, this@YLHRewardVideoAd) }) {
                 return
             }
             showCallback?.onAdShowFailed(code, message)
@@ -66,7 +71,8 @@ internal class YLHRewardVideoAd(
         finishLoad {
             loadCallback?.onLoadFailed(
                 RewardAdErrorCode.LOAD_TIMEOUT,
-                "YLH reward ad load timed out"
+                "YLH reward ad load timed out",
+                this@YLHRewardVideoAd
             )
         }
     }

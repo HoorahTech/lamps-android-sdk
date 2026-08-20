@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import com.lamps.sdk.config.LampsConfig
 import com.lamps.sdk.data.init.AppInitDataLoader
+import com.lamps.sdk.data.monitor.MonitorReporter
 import com.lamps.sdk.data.sdk.channel.SdkInitCallback
 import com.lamps.sdk.data.sdk.init.SdkInitDispatcher
 import com.lamps.sdk.data.sdk.reward.RewardAdErrorCode
@@ -101,7 +102,11 @@ internal object SdkRuntime {
 
     fun isReady(): Boolean = runtime.get() == InitState.Ready
 
-    fun loadReward(activity: Activity, callback: RewardAdLoadCallback) {
+    fun loadReward(
+        activity: Activity,
+        callback: RewardAdLoadCallback,
+        forwardSource: String = ""
+    ) {
         if (!isReady()) {
             callback.onAdLoadFailed(
                 RewardAdErrorCode.SDK_NOT_READY,
@@ -124,7 +129,7 @@ internal object SdkRuntime {
             )
             return
         }
-        SdkRewardDispatcher.loadReward(activity, config, callback)
+        SdkRewardDispatcher.loadReward(activity, config, callback, forwardSource)
     }
 
     fun showReward(activity: Activity, ad: LampsRewardAd, callback: RewardAdShowCallback) {

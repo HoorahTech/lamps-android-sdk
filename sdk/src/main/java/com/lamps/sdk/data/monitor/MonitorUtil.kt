@@ -1,0 +1,112 @@
+package com.lamps.sdk.data.monitor
+
+import android.net.Uri
+import android.os.Build
+import com.lamps.sdk.BuildConfig
+import com.lamps.sdk.config.LampsConfig
+import com.lamps.sdk.data.init.MonitorLinksResponse
+import com.lamps.sdk.data.monitor.MonitorConstant.ANDROID_ID
+import com.lamps.sdk.data.monitor.MonitorConstant.APP_ID
+import com.lamps.sdk.data.monitor.MonitorConstant.IMEI
+import com.lamps.sdk.data.monitor.MonitorConstant.IP
+import com.lamps.sdk.data.monitor.MonitorConstant.MAC
+import com.lamps.sdk.data.monitor.MonitorConstant.NETWORK
+import com.lamps.sdk.data.monitor.MonitorConstant.OAID
+import com.lamps.sdk.data.monitor.MonitorConstant.OS
+import com.lamps.sdk.data.monitor.MonitorConstant.PHONE_BRAND
+import com.lamps.sdk.data.monitor.MonitorConstant.SDK_VERSION
+import com.lamps.sdk.data.monitor.MonitorConstant.SH
+import com.lamps.sdk.data.monitor.MonitorConstant.SW
+import com.lamps.sdk.data.monitor.MonitorConstant.TS
+import com.lamps.sdk.data.monitor.MonitorConstant.UA
+import com.lamps.sdk.utils.DeviceUtils
+import com.lamps.sdk.utils.HttpUtils
+import com.lamps.sdk.utils.ThreadUtils
+import java.net.URLEncoder
+import java.security.MessageDigest
+
+object MonitorUtil {
+    private val SIGN_KEYS = listOf(
+        "adpid",
+        "app_version",
+        "cid",
+        "forward_source",
+        "price",
+        "puid",
+        "request_id"
+    )
+
+
+    fun report(
+        urls: List<String>?,
+        values: Map<String, String>,
+    ) {
+        if (urls.isNullOrEmpty()) return
+        ThreadUtils.runOnWork {
+            urls.forEach { template ->
+                val url = replaceMacros(template, values)
+                HttpUtils.get(url, headers = mapOf("Accept" to "*/*"))
+            }
+        }
+    }
+
+
+
+    private fun replaceMacros(url: String, values: Map<String, String>): String {
+        var result = url
+        values.forEach { (macro, value) ->
+            if (result.contains(macro)) {
+                result = result.replace(macro, encode(value))
+            }
+        }
+        return result
+    }
+
+    /**
+     * 从 URL query 取 7 个参数（缺失跳过）→ 按 key 字母升序拼接 → 尾部拼 signKey → MD5 小写 32 位。
+     */
+    private fun computeSign(url: String): String? {
+        val rewardSignKey = LampsConfig.current?.appInitData?.rewardSignKey
+        if (rewardSignKey.isNullOrEmpty()) {
+            return null
+        }
+        return runCatching {
+            val uri = Uri.parse(url)
+            val payload = SIGN_KEYS.mapNotNull { key ->
+                uri.getQueryParameter(key)?.takeIf { it.isNotEmpty() }?.let { "$key=$it" }
+            }.joinToString("&") + rewardSignKey
+            md5LowerHex(payload)
+        }.getOrNull()
+    }
+
+    private fun md5LowerHex(input: String): String {
+        val bytes = MessageDigest.getInstance("MD5").digest(input.toByteArray(Charsets.UTF_8))
+        return bytes.joinToString("") { "%02x".format(it) }
+    }
+
+    private fun encode(value: String): String {
+        return URLEncoder.encode(value, "UTF-8").replace("+", "%20")
+    }
+
+    fun buildDefaultValues(): Map<String, String> {
+        val config = LampsConfig.current
+        val context = config?.applicationContext
+        val metrics = context?.resources?.displayMetrics
+        return mapOf(
+            TS to (System.currentTimeMillis() / 1000L).toString(),
+            UA to DeviceUtils.userAgent(context),
+            IP to config?.appInitData?.clientIp.orEmpty(),
+            MAC to "",
+            SW to (metrics?.widthPixels ?: 0).toString(),
+            SH to (metrics?.heightPixels ?: 0).toString(),
+            IMEI to "",
+            OS to "Android",
+            ANDROID_ID to context?.let(DeviceUtils::androidId).orEmpty(),
+            OAID to config?.resolveOaid().orEmpty(),
+            APP_ID to config?.appId.orEmpty(),
+            SDK_VERSION to BuildConfig.SDK_VERSION,
+            PHONE_BRAND to Build.BRAND.orEmpty(),
+            NETWORK to DeviceUtils.networkType(context)
+        )
+    }
+}

@@ -8,10 +8,8 @@ interface RewardAdLoadCallback {
 
 interface RewardAdShowCallback {
     fun onAdShown() = Unit
-
     fun onAdRewarded() = Unit
-
     fun onAdClosed() = Unit
-
+    fun onAdClicked() = Unit
     fun onAdShowFailed(code: Int, message: String?)
 }

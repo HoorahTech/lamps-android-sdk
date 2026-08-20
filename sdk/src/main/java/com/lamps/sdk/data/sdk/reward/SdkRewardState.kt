@@ -5,6 +5,7 @@ internal enum class SdkRewardState {
     LOADING,
     LOAD_SUCCESS,
     LOAD_FAILED,
+    BID_FAILED,
     SELECTED,
     SHOWING,
     SHOWN,

@@ -11,4 +11,5 @@ object RewardAdErrorCode {
     const val LOAD_TIMEOUT = 2008
     const val ALL_SDK_LOAD_FAILED = 2009
     const val AD_NOT_LOADED = 2010
+    const val BID_FAILED = 2011
 }

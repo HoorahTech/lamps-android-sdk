@@ -14,7 +14,9 @@ import com.lamps.sdk.data.sdk.reward.SdkRewardState
  */
 class LampsRewardAd internal constructor(
     internal val provider: ISdkProvider,
-    internal val slot: RewardSlotResponse
+    internal val slot: RewardSlotResponse,
+    internal val requestId: String,
+    internal val forwardSource: String
 ) {
     @Volatile
     internal var state: SdkRewardState = SdkRewardState.PENDING
@@ -100,12 +102,26 @@ class LampsRewardAd internal constructor(
     }
 
     @Synchronized
-    internal fun markLoadFailed(code: Int, message: String?): Boolean {
+    internal fun markLoadFailed(
+        code: Int,
+        message: String?,
+        ad: RewardVideoAd? = null
+    ): Boolean {
         if (state != SdkRewardState.LOADING) return false
+        if (ad != null) adData = ad
         state = SdkRewardState.LOAD_FAILED
         errorCode = code
         errorMessage = message
         loadEndTimeMillis = System.currentTimeMillis()
+        return true
+    }
+
+    @Synchronized
+    internal fun markBidFailed(code: Int, message: String?): Boolean {
+        if (state != SdkRewardState.LOAD_SUCCESS) return false
+        state = SdkRewardState.BID_FAILED
+        errorCode = code
+        errorMessage = message
         return true
     }
 

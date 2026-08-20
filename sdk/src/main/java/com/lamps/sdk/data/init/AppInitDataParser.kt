@@ -21,7 +21,8 @@ internal object AppInitDataParser {
                 token = data.optString("token"),
                 clientIp = data.optString("clientIp"),
                 rewardAdSlots = parseSlots(data.optJSONArray("rewardAdSlots")),
-                monitorLinks = parseMonitorLinks(data.optJSONObject("monitorLinks"))
+                monitorLinks = parseMonitorLinks(data.optJSONObject("monitorLinks")),
+                rewardSignKey = data.optString("rewardSignKey")
             )
             Result.success(appInitData)
         } catch (t: Throwable) {
@@ -48,12 +49,15 @@ internal object AppInitDataParser {
     }
 
     private fun parseMonitorLinks(obj: JSONObject?): MonitorLinksResponse {
+        val rem = stringList(obj?.optJSONArray("rem")).ifEmpty {
+            stringList(obj?.optJSONArray("dm"))
+        }
         return MonitorLinksResponse(
             rm = stringList(obj?.optJSONArray("rm")),
             pm = stringList(obj?.optJSONArray("pm")),
             cm = stringList(obj?.optJSONArray("cm")),
-            dm = stringList(obj?.optJSONArray("dm")),
-            wm = stringList(obj?.optJSONArray("wm"))
+            wm = stringList(obj?.optJSONArray("wm")),
+            dm = rem
         )
     }
 
