@@ -6,7 +6,6 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import com.lamps.sdk.LampsSdk
-import com.lamps.sdk.LampsSdkTools
 import com.lamps.sdk.reward.LampsRewardAd
 import com.lamps.sdk.reward.RewardAdLoadCallback
 import com.lamps.sdk.reward.RewardAdShowCallback
@@ -30,9 +29,7 @@ class MainActivity : Activity() {
                 )
             )
         }
-        findViewById<Button>(R.id.openSdkToolsButton).setOnClickListener {
-            LampsSdkTools.startActivity(this)
-        }
+        SdkToolsBinder.bind(this, findViewById(R.id.openSdkToolsButton))
         showRewardButton.setOnClickListener { loadAndShowReward() }
     }
 

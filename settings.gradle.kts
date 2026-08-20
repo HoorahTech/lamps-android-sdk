@@ -25,4 +25,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "lamps-android-sdk"
 include(":sdk")
+include(":sdk-tools")
 include(":demo")

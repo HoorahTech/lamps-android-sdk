@@ -1,20 +1,86 @@
 package com.lamps.sdk.utils
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.net.wifi.WifiManager
+import android.os.Build
 import android.provider.Settings
+import android.telephony.TelephonyManager
 import android.webkit.WebSettings
+import com.lamps.sdk.config.LampsConfig
+import java.net.NetworkInterface
+import java.util.concurrent.ConcurrentHashMap
 
 internal object DeviceUtils {
+    private const val PREFS_NAME = "lamps_sdk"
+    private const val KEY_ANDROID_ID = "android_id"
+    private const val KEY_USER_AGENT = "user_agent"
+    private const val KEY_OAID = "oaid"
+    private const val KEY_APP_ID = "app_id"
+    private const val KEY_PHONE_BRAND = "phone_brand"
+    private const val KEY_IMEI = "imei"
+    private const val INVALID_MAC = "02:00:00:00:00:00"
+
+    private val memory = ConcurrentHashMap<String, String>()
+
+    @Volatile
+    private var memoryMac: String? = null
 
     fun androidId(context: Context): String {
-        return try {
-            Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID).orEmpty()
-        } catch (_: Throwable) {
-            ""
+        return cached(context, KEY_ANDROID_ID) {
+            try {
+                Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID).orEmpty()
+            } catch (_: Throwable) {
+                ""
+            }
         }
+    }
+
+    fun userAgent(context: Context?): String {
+        return cached(context, KEY_USER_AGENT) {
+            try {
+                if (context != null) {
+                    WebSettings.getDefaultUserAgent(context)
+                } else {
+                    System.getProperty("http.agent").orEmpty()
+                }
+            } catch (_: Throwable) {
+                System.getProperty("http.agent").orEmpty()
+            }
+        }
+    }
+
+    fun oaid(context: Context?): String {
+        return cached(context, KEY_OAID) {
+            LampsConfig.current?.resolveOaid().orEmpty()
+        }
+    }
+
+    fun appId(context: Context?): String {
+        return cached(context, KEY_APP_ID) {
+            LampsConfig.current?.appId.orEmpty()
+        }
+    }
+
+    fun phoneBrand(context: Context?): String {
+        return cached(context, KEY_PHONE_BRAND) {
+            Build.BRAND.orEmpty()
+        }
+    }
+
+    fun imei(context: Context?): String {
+        return cached(context, KEY_IMEI) { fetchImei(context) }
+    }
+
+    fun mac(context: Context?): String {
+        memoryMac?.let { return it }
+        val value = fetchMac(context)
+        memoryMac = value
+        return value
     }
 
     fun appVersion(context: Context): String {
@@ -22,18 +88,6 @@ internal object DeviceUtils {
             context.packageManager.getPackageInfo(context.packageName, 0).versionName.orEmpty()
         } catch (_: PackageManager.NameNotFoundException) {
             ""
-        }
-    }
-
-    fun userAgent(context: Context?): String {
-        return try {
-            if (context != null) {
-                WebSettings.getDefaultUserAgent(context)
-            } else {
-                System.getProperty("http.agent").orEmpty()
-            }
-        } catch (_: Throwable) {
-            System.getProperty("http.agent").orEmpty()
         }
     }
 
@@ -53,5 +107,94 @@ internal object DeviceUtils {
         } catch (_: Throwable) {
             ""
         }
+    }
+
+    @SuppressLint("HardwareIds", "MissingPermission")
+    private fun fetchImei(context: Context?): String {
+        if (context == null || Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) return ""
+        if (!hasPermission(context, Manifest.permission.READ_PHONE_STATE)) return ""
+        return try {
+            val telephony = context.getSystemService(Context.TELEPHONY_SERVICE) as? TelephonyManager
+                ?: return ""
+            val value = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                telephony.imei
+            } else {
+                @Suppress("DEPRECATION")
+                telephony.deviceId
+            }
+            value.orEmpty()
+        } catch (_: Throwable) {
+            ""
+        }
+    }
+
+    /**
+     * 对齐虎扑广告 MAC 策略：
+     * Android 10 及以下读网卡 MAC；Android 11 及以上有定位权限时读路由 BSSID，否则占位。
+     */
+    @SuppressLint("HardwareIds", "MissingPermission")
+    private fun fetchMac(context: Context?): String {
+        if (context == null) return INVALID_MAC
+        return try {
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.Q) {
+                if (hasPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)) {
+                    routerMac(context) ?: INVALID_MAC
+                } else {
+                    INVALID_MAC
+                }
+            } else {
+                wifiInterfaceMac() ?: INVALID_MAC
+            }
+        } catch (_: Throwable) {
+            INVALID_MAC
+        }
+    }
+
+    private fun wifiInterfaceMac(): String? {
+        return NetworkInterface.getNetworkInterfaces()?.toList().orEmpty()
+            .firstNotNullOfOrNull { nif ->
+                val name = nif.name.orEmpty()
+                if (!name.startsWith("wlan") && name != "eth0") return@firstNotNullOfOrNull null
+                formatMac(nif.hardwareAddress)
+            }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun routerMac(context: Context): String? {
+        val wifi = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager
+            ?: return null
+        return formatMacAddress(wifi.connectionInfo?.bssid)
+    }
+
+    private fun formatMac(bytes: ByteArray?): String? {
+        if (bytes == null || bytes.isEmpty()) return null
+        return formatMacAddress(bytes.joinToString(":") { "%02x".format(it) })
+    }
+
+    private fun formatMacAddress(mac: String?): String? {
+        val value = mac?.trim().orEmpty()
+        if (value.isEmpty() || value == INVALID_MAC || value == "00:00:00:00:00:00") return null
+        return value
+    }
+
+    private fun hasPermission(context: Context, permission: String): Boolean {
+        return context.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun cached(context: Context?, key: String, fetch: () -> String): String {
+        memory[key]?.let { return it }
+        val prefs = context?.applicationContext
+            ?.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val stored = prefs?.getString(key, null)
+        if (!stored.isNullOrEmpty()) {
+            memory[key] = stored
+            return stored
+        }
+        val value = fetch()
+        if (value.isNotEmpty()) {
+            memory[key] = value
+            prefs?.edit()?.putString(key, value)?.apply()
+        }
+        return value
     }
 }

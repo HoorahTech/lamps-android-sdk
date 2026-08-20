@@ -6,7 +6,12 @@ internal class AppInitResponse(
     val rewardAdSlots: List<RewardSlotResponse>,
     val monitorLinks: MonitorLinksResponse,
     val rewardSignKey: String
-)
+) {
+    override fun toString(): String {
+        return "AppInitResponse(token=$token, clientIp=$clientIp, " +
+            "rewardAdSlots=$rewardAdSlots, monitorLinks=$monitorLinks)"
+    }
+}
 
 internal class RewardSlotResponse(
     val slotId: String,
@@ -35,4 +40,6 @@ internal data class AppInitRequest(
 internal data class AppInitDataSnapshot(
     val data: AppInitResponse,
     val raw: String
-)
+) {
+    override fun toString(): String = "AppInitDataSnapshot(data=$data)"
+}

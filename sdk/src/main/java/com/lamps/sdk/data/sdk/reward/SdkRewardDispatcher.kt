@@ -4,6 +4,7 @@ import android.app.Activity
 import com.lamps.sdk.config.LampsConfig
 import com.lamps.sdk.data.init.RewardSlotResponse
 import com.lamps.sdk.data.monitor.MonitorReporter
+import com.lamps.sdk.data.sdk.channel.NoahSdkRewardBiddingReporter
 import com.lamps.sdk.data.sdk.channel.RewardAdSdkLoadCallback
 import com.lamps.sdk.data.sdk.channel.RewardVideoAd
 import com.lamps.sdk.data.sdk.provider.ISdkProvider
@@ -222,6 +223,7 @@ internal object SdkRewardDispatcher {
                 )
                 return@runOnMain
             }
+            NoahSdkRewardBiddingReporter.reportRewardBidding(rewardDataList.toList(), winner)
             MonitorReporter.reportWm(winner)
             winner.markSelected()
             rewardDataList.forEach { candidate ->

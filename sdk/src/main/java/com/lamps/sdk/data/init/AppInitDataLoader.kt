@@ -1,5 +1,6 @@
 package com.lamps.sdk.data.init
 
+import com.lamps.sdk.BuildConfig
 import com.lamps.sdk.config.LampsConfig
 import com.lamps.sdk.core.SdkInitMetrics
 import com.lamps.sdk.utils.DeviceUtils
@@ -66,7 +67,7 @@ internal object AppInitDataLoader {
         val request = AppInitRequest(
             androidId = DeviceUtils.androidId(context),
             appId = config.appId,
-            version = DeviceUtils.appVersion(context),
+            version = BuildConfig.SDK_VERSION,
             oaid = config.resolveOaid(),
             os = "Android"
         )

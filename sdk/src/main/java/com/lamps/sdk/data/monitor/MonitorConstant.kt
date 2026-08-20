@@ -33,4 +33,9 @@ internal object MonitorConstant {
     const val REM_SIGN = "__REM_SIGN__"
     const val ACTION = "__ACTION__"
     const val ACTION_REWARD_SUCCESS = "30" // 激励视频任务完成
+
+    const val IS_SUCCESS = "__IS_SUCCESS__"
+    const val IS_SUCCESS_YES = "1" // 有填充
+    const val IS_SUCCESS_NO = "0" // 无填充
+    const val CODE = "__CODE__" // 无填充时的错误码
 }

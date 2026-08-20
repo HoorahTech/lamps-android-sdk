@@ -1,7 +1,6 @@
 package com.lamps.sdk.data.monitor
 
 import android.net.Uri
-import android.os.Build
 import com.lamps.sdk.BuildConfig
 import com.lamps.sdk.config.LampsConfig
 import com.lamps.sdk.data.monitor.MonitorConstant.ANDROID_ID
@@ -38,6 +37,7 @@ object MonitorUtil {
 
 
     fun report(
+        event: String,
         urls: List<String>?,
         values: Map<String, String>,
         needSign: Boolean = false
@@ -46,7 +46,15 @@ object MonitorUtil {
         ThreadUtils.runOnWork {
             urls.forEach { template ->
                 val url = replaceMacros(template, values, needSign)
-                HttpUtils.get(url, headers = mapOf("Accept" to "*/*"))
+                val recordId = MonitorReportRecorder.begin(event, url)
+                HttpUtils.get(url, headers = mapOf("Accept" to "*/*")).fold(
+                    onSuccess = { response ->
+                        MonitorReportRecorder.complete(recordId, response.code, null)
+                    },
+                    onFailure = { error ->
+                        MonitorReportRecorder.complete(recordId, null, error.message)
+                    }
+                )
             }
         }
     }
@@ -102,16 +110,16 @@ object MonitorUtil {
             TS to (System.currentTimeMillis() / 1000L).toString(),
             UA to DeviceUtils.userAgent(context),
             IP to config?.appInitData?.clientIp.orEmpty(),
-            MAC to "",
+            MAC to DeviceUtils.mac(context),
             SW to (metrics?.widthPixels ?: 0).toString(),
             SH to (metrics?.heightPixels ?: 0).toString(),
-            IMEI to "",
+            IMEI to DeviceUtils.imei(context),
             OS to "Android",
             ANDROID_ID to context?.let(DeviceUtils::androidId).orEmpty(),
-            OAID to config?.resolveOaid().orEmpty(),
-            APP_ID to config?.appId.orEmpty(),
+            OAID to DeviceUtils.oaid(context),
+            APP_ID to DeviceUtils.appId(context),
             SDK_VERSION to BuildConfig.SDK_VERSION,
-            PHONE_BRAND to Build.BRAND.orEmpty(),
+            PHONE_BRAND to DeviceUtils.phoneBrand(context),
             NETWORK to DeviceUtils.networkType(context)
         )
     }

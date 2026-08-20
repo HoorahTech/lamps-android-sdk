@@ -56,4 +56,5 @@ android {
 
 dependencies {
     implementation(project(":sdk"))
+    debugImplementation(project(":sdk-tools"))
 }

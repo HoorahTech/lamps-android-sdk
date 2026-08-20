@@ -3,7 +3,11 @@ package com.lamps.sdk.data.monitor
 import com.lamps.sdk.config.LampsConfig
 import com.lamps.sdk.data.monitor.MonitorConstant.ACTION
 import com.lamps.sdk.data.monitor.MonitorConstant.ACTION_REWARD_SUCCESS
+import com.lamps.sdk.data.monitor.MonitorConstant.CODE
 import com.lamps.sdk.data.monitor.MonitorConstant.FORWARD_SOURCE
+import com.lamps.sdk.data.monitor.MonitorConstant.IS_SUCCESS
+import com.lamps.sdk.data.monitor.MonitorConstant.IS_SUCCESS_NO
+import com.lamps.sdk.data.monitor.MonitorConstant.IS_SUCCESS_YES
 import com.lamps.sdk.data.monitor.MonitorConstant.PRICE
 import com.lamps.sdk.data.monitor.MonitorConstant.REQUEST_ID
 import com.lamps.sdk.data.monitor.MonitorConstant.SLOT_ID
@@ -14,37 +18,52 @@ internal object MonitorReporter {
     fun reportRmSuccess(rewardData: LampsRewardAd) {
         val config = LampsConfig.current ?: return
         val rmList = config.appInitData?.monitorLinks?.rm
-        MonitorUtil.report(rmList, reportValues(rewardData))
+        MonitorUtil.report(
+            "RM",
+            rmList,
+            reportValues(rewardData) + mapOf(
+                IS_SUCCESS to IS_SUCCESS_YES,
+                CODE to ""
+            )
+        )
     }
 
     fun reportRmFail(rewardData: LampsRewardAd) {
         val config = LampsConfig.current ?: return
         val rmList = config.appInitData?.monitorLinks?.rm
-        MonitorUtil.report(rmList, reportValues(rewardData))
+        MonitorUtil.report(
+            "RM",
+            rmList,
+            reportValues(rewardData) + mapOf(
+                IS_SUCCESS to IS_SUCCESS_NO,
+                CODE to rewardData.errorCode?.toString().orEmpty()
+            )
+        )
     }
 
     fun reportWm(rewardData: LampsRewardAd) {
         val config = LampsConfig.current ?: return
         val wmList = config.appInitData?.monitorLinks?.wm
-        MonitorUtil.report(wmList, reportValues(rewardData))
+        MonitorUtil.report("WM", wmList, reportValues(rewardData))
     }
 
     fun reportPm(rewardData: LampsRewardAd) {
         val config = LampsConfig.current ?: return
         val pmList = config.appInitData?.monitorLinks?.pm
-        MonitorUtil.report(pmList, reportValues(rewardData), needSign = true)
+        MonitorUtil.report("PM", pmList, reportValues(rewardData), needSign = true)
     }
 
     fun reportCm(rewardData: LampsRewardAd) {
         val config = LampsConfig.current ?: return
         val cmList = config.appInitData?.monitorLinks?.cm
-        MonitorUtil.report(cmList, reportValues(rewardData))
+        MonitorUtil.report("CM", cmList, reportValues(rewardData))
     }
 
     fun reportDm(rewardData: LampsRewardAd) {
         val config = LampsConfig.current ?: return
         val dmList = config.appInitData?.monitorLinks?.dm
         MonitorUtil.report(
+            "DM",
             dmList,
             reportValues(rewardData) + (ACTION to ACTION_REWARD_SUCCESS),
             needSign = true

@@ -5,7 +5,9 @@ import android.os.Handler
 import android.os.Looper
 import com.lamps.sdk.data.sdk.reward.RewardAdErrorCode
 import com.lamps.sdk.reward.RewardAdShowCallback
+import com.lamps.sdk.utils.SdkLog
 import com.noah.api.AdError
+import com.noah.api.BiddingLossReason
 import com.noah.api.RequestInfo
 import com.noah.api.RewardedVideoAd
 import java.util.concurrent.atomic.AtomicBoolean
@@ -37,6 +39,20 @@ internal class NoahRewardVideoAd(
 
     override fun getPrice(): Double {
         return rewardAd?.price?.takeIf { it > 0.0 } ?: 0.0
+    }
+
+    internal fun hasLoadedAd(): Boolean = rewardAd != null
+
+    internal fun sendWinNotification(price: Int) {
+        val ad = rewardAd ?: return
+        runCatching { ad.sendWinNotification(price) }
+            .onFailure { SdkLog.w("noah sendWinNotification failed", it) }
+    }
+
+    internal fun sendLossNotification(price: Int) {
+        val ad = rewardAd ?: return
+        runCatching { ad.sendLossNotification(price, BiddingLossReason.LOW_PRICE) }
+            .onFailure { SdkLog.w("noah sendLossNotification failed", it) }
     }
 
     override fun loadAD(callback: RewardAdSdkLoadCallback) {

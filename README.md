@@ -119,3 +119,23 @@ SDK 会从服务端下发顺序中选择第一个已安装 Provider 可处理的
 ```bash
 ./gradlew :sdk:assembleDebug :demo:assembleDebug
 ```
+
+## 发布
+
+对齐 HPWebview：发到虎扑 Nexus 的 `hupu-android` 仓库。版本号改 `gradle.properties` 里的 `LAMPS_VERSION`。
+
+```bash
+./gradlew :sdk:publish :sdk-tools:publish
+```
+
+| 模块 | 坐标 | 仓库 |
+| --- | --- | --- |
+| `:sdk` | `com.lamps:sdk:0.1.0` | `https://nexus.hupu.io/repository/hupu-android/` |
+| `:sdk-tools` | `com.lamps:sdk-tools:0.1.0` | 同上 |
+
+宿主从 `https://nexus.hupu.io/repository/hupu-android-public/` 拉取：
+
+```kotlin
+implementation("com.lamps:sdk:0.1.0")
+debugImplementation("com.lamps:sdk-tools:0.1.0")
+```

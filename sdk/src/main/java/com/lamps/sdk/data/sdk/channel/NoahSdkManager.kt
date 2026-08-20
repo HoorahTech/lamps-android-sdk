@@ -33,7 +33,7 @@ object NoahSdkManager {
                 .build()
             val globalConfig = GlobalConfig.newBuilder()
                 .setDebug(LampsConfig.current?.debug?:false)
-                .setAdTest(false)
+                .setAdTest(LampsConfig.current?.debug?:false)
                 .setEnablePersonalRecommend(false)
                 .build()
             NoahSdk.initAsync(
