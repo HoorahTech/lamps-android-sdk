@@ -5,7 +5,10 @@ import android.os.Handler
 import android.os.Looper
 import com.lamps.sdk.data.sdk.reward.RewardAdErrorCode
 import com.lamps.sdk.reward.RewardAdShowCallback
+import com.lamps.sdk.utils.SdkLog
 import com.qq.e.ads.rewardvideo.RewardVideoAD
+import com.qq.e.comm.constants.BiddingLossReason
+import com.qq.e.comm.pi.IBidding
 import com.qq.e.comm.util.AdError
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -15,6 +18,7 @@ internal class YLHRewardVideoAd(
 ) : RewardVideoAd() {
     private val mainHandler = Handler(Looper.getMainLooper())
     private val loadFinished = AtomicBoolean(false)
+    private val loaded = AtomicBoolean(false)
     private val listener = object : YLHRewardVideoADListenerAdapter() {
         override fun onADLoad() {
             val callback = loadCallback ?: return
@@ -30,6 +34,7 @@ internal class YLHRewardVideoAd(
                 return
             }
             finishLoad {
+                loaded.set(true)
                 callback.onLoadSuccess(this@YLHRewardVideoAd)
             }
         }
@@ -88,9 +93,36 @@ internal class YLHRewardVideoAd(
         return rewardAd.ecpm.takeIf { it > 0 }?.toDouble() ?: 0.0
     }
 
+    internal fun hasLoadedAd(): Boolean = loaded.get() && rewardAd.isValid && !rewardAd.hasShown()
+
+    internal fun sendWinNotification(expectCostPrice: Int, highestLossPrice: Int) {
+        runCatching {
+            rewardAd.sendWinNotification(
+                hashMapOf<String, Any>(
+                    IBidding.EXPECT_COST_PRICE to expectCostPrice,
+                    IBidding.HIGHEST_LOSS_PRICE to highestLossPrice
+                )
+            )
+            rewardAd.setBidECPM(expectCostPrice)
+        }.onFailure { SdkLog.w("ylh sendWinNotification failed", it) }
+    }
+
+    internal fun sendLossNotification(winPrice: Int, adnId: String) {
+        runCatching {
+            rewardAd.sendLossNotification(
+                hashMapOf<String, Any>(
+                    IBidding.WIN_PRICE to winPrice,
+                    IBidding.LOSS_REASON to BiddingLossReason.LOW_PRICE,
+                    IBidding.ADN_ID to adnId
+                )
+            )
+        }.onFailure { SdkLog.w("ylh sendLossNotification failed", it) }
+    }
+
     override fun loadAD(callback: RewardAdSdkLoadCallback) {
         loadCallback = callback
         showCallback = null
+        loaded.set(false)
         loadFinished.set(false)
         mainHandler.postDelayed(timeout, LOAD_TIMEOUT_MS)
         rewardAd.loadAD()
