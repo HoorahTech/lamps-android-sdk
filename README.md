@@ -97,7 +97,7 @@ H5 使用 postMessage 协议调用：
 await bridge.invoke("hra.ad.showRewardedVideo", {})
 ```
 
-SDK 会从服务端下发顺序中选择第一个已安装 Provider 可处理的 slot，并通过 `hoorah.ad.rewardedVideoStatus` 事件回传 `onLoadSuccess`、`onShowSuccess`、`onRewardArrived`、`onClose`、`onLoadError` 或 `onShowError`。
+SDK 会从服务端下发顺序中选择第一个已安装 Provider 可处理的 slot，并通过 `hoorah.ad.rewardedVideoStatus` 事件回传 `onLoadSuccess`、`onShowSuccess`、`onRewardArrived`、`onClose`、`onLoadError` 或 `onShowError`。激励视频 Bridge 字段见 [RewardAdAbility](docs/bridge/RewardAdAbility.md)。
 
 ## 错误码
 

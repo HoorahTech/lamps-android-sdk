@@ -35,9 +35,11 @@ private class RewardAdAbility : LampsAbility {
         callback: LampsNativeCallback
     ) {
         if (!flowInProgress.compareAndSet(false, true)) {
-            callback.callback(
-                errorResult(RewardAdErrorCode.FLOW_IN_PROGRESS, "reward ad flow is in progress"),
-                callbackId
+            sendError(
+                webView,
+                RewardAdErrorCode.FLOW_IN_PROGRESS,
+                "reward ad flow is in progress",
+                endFlow = false
             )
             return
         }
@@ -57,28 +59,16 @@ private class RewardAdAbility : LampsAbility {
             else -> null
         }
         if (failure != null) {
-            flowInProgress.set(false)
-            callback.callback(errorResult(failure.first, failure.second), callbackId)
+            sendError(webView, failure.first, failure.second)
             return
         }
 
         val validCandidates = config!!.appInitData!!.rewardAdSlots
             .filter { it.slotId.isNotBlank() && it.appId.isNotBlank() }
         if (validCandidates.isEmpty()) {
-            flowInProgress.set(false)
-            callback.callback(
-                errorResult(RewardAdErrorCode.INVALID_SLOT, "slotId or appId is empty"),
-                callbackId
-            )
+            sendError(webView, RewardAdErrorCode.INVALID_SLOT, "slotId or appId is empty")
             return
         }
-        callback.callback(
-            JSONObject()
-                .put("code", 0)
-                .put("message", "accepted")
-                .put("data", JSONObject().put("accepted", true)),
-            callbackId
-        )
 
         runCatching {
             val forwardSource = params.optString("forward_source")
@@ -113,13 +103,7 @@ private class RewardAdAbility : LampsAbility {
             }
 
             override fun onAdLoadFailed(code: Int, message: String?) {
-                flowInProgress.set(false)
-                sendEvent(
-                    webView,
-                    "onLoadError",
-                    code,
-                    message ?: "reward ad load failed"
-                )
+                sendError(webView, code, message ?: "reward ad load failed")
             }
         }
     }
@@ -143,20 +127,27 @@ private class RewardAdAbility : LampsAbility {
             }
 
             override fun onAdShowFailed(code: Int, message: String?) {
-                flowInProgress.set(false)
-                sendEvent(
+                sendError(
                     webView,
-                    "onShowError",
                     code,
-                    message ?: "reward ad show failed"
+                    message ?: "reward ad show failed",
+                    callbackName = "onShowError"
                 )
             }
         }
     }
 
-    private fun sendError(webView: LampsWebView, code: Int, message: String) {
-        flowInProgress.set(false)
-        sendEvent(webView, "onLoadError", code, message)
+    private fun sendError(
+        webView: LampsWebView,
+        code: Int,
+        message: String,
+        callbackName: String = "onLoadError",
+        endFlow: Boolean = true
+    ) {
+        if (endFlow) {
+            flowInProgress.set(false)
+        }
+        sendEvent(webView, callbackName, code, message)
     }
 
     private fun sendEvent(
@@ -180,13 +171,6 @@ private class RewardAdAbility : LampsAbility {
             payload.put("rewardStatus", rewardStatus)
         }
         webView.send(EVENT_REWARDED_VIDEO_STATUS, payload)
-    }
-
-    private fun errorResult(code: Int, message: String): JSONObject {
-        return JSONObject()
-            .put("code", code)
-            .put("message", message)
-            .put("data", JSONObject())
     }
 
     private companion object {
