@@ -5,11 +5,12 @@ plugins {
 }
 
 android {
-    namespace = "com.lamps.sdk.tools"
+    namespace = "com.lamps.sdk.noah"
     compileSdk = 34
 
     defaultConfig {
         minSdk = 24
+        consumerProguardFiles("consumer-rules.pro")
     }
 
     compileOptions {
@@ -34,16 +35,12 @@ publishing {
             afterEvaluate {
                 from(components["release"])
             }
-            artifactId = "sdk-tools"
+            artifactId = "noah"
         }
     }
 }
 
 dependencies {
-    implementation(project(":core"))
-    implementation(project(":pangle"))
-    implementation(project(":ylh"))
-    implementation(project(":noah"))
-    implementation("com.pangle.cn:ads-sdk-tools:7.6.4.2-hupu")
-    implementation("com.qq.e.union:tools:2.4")
+    api(project(":core"))
+    implementation("com.noah:noah:15.1.4002")
 }

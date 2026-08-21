@@ -55,6 +55,9 @@ android {
 }
 
 dependencies {
-    implementation(project(":sdk"))
+    implementation(project(":core"))
+    implementation(project(":pangle"))
+    implementation(project(":ylh"))
+    implementation(project(":noah"))
     debugImplementation(project(":sdk-tools"))
 }

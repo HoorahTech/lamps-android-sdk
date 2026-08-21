@@ -5,11 +5,27 @@ plugins {
 }
 
 android {
-    namespace = "com.lamps.sdk.tools"
+    namespace = "com.lamps.sdk"
     compileSdk = 34
 
     defaultConfig {
         minSdk = 24
+        consumerProguardFiles("consumer-rules.pro")
+        buildConfigField("String", "SDK_VERSION", "\"${rootProject.property("LAMPS_VERSION")}\"")
+    }
+
+    buildFeatures {
+        buildConfig = true
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
     }
 
     compileOptions {
@@ -34,16 +50,10 @@ publishing {
             afterEvaluate {
                 from(components["release"])
             }
-            artifactId = "sdk-tools"
+            artifactId = "core"
         }
     }
 }
 
 dependencies {
-    implementation(project(":core"))
-    implementation(project(":pangle"))
-    implementation(project(":ylh"))
-    implementation(project(":noah"))
-    implementation("com.pangle.cn:ads-sdk-tools:7.6.4.2-hupu")
-    implementation("com.qq.e.union:tools:2.4")
 }
