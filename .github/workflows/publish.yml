@@ -19,14 +19,33 @@ jobs:
           distribution: temurin
           java-version: 17
       - uses: android-actions/setup-android@v3
+      - name: Install CI Maven deps
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release download ci-maven-deps --pattern 'noah-*' --dir /tmp/ci-maven-deps
+          dest="$HOME/.m2/repository/com/noah/noah/15.1.4002"
+          mkdir -p "$dest"
+          cp /tmp/ci-maven-deps/noah-15.1.4002.aar "$dest/"
+          cp /tmp/ci-maven-deps/noah-15.1.4002.pom "$dest/"
       - name: Publish libraries to GitHub Packages
         env:
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: >
-          ./gradlew --no-daemon
-          :core:publish
-          :pangle:publish
-          :ylh:publish
-          :noah:publish
-          :sdk-tools:publish
+        run: |
+          set -o pipefail
+          failed=0
+          for m in core pangle ylh noah sdk-tools; do
+            echo "::group::publish ${m}"
+            log_file="/tmp/publish-${m}.log"
+            if ./gradlew --no-daemon ":${m}:publish" 2>&1 | tee "$log_file"; then
+              echo "published ${m}"
+            elif grep -q "status code 409" "$log_file"; then
+              echo "${m} already published, skip"
+            else
+              echo "publish ${m} failed"
+              failed=1
+            fi
+            echo "::endgroup::"
+          done
+          exit "$failed"
