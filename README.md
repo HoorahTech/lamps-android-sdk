@@ -26,7 +26,7 @@ import com.lamps.sdk.core.InitCallback
 
 val config = LampsConfig.Builder()
     .appId("your_app_id")
-    .setOaidProvider { mediaOaid } // 必传；start 时读取，空则失败
+    .setOaidProvider { mediaOaid } // 可选；未设置或为空不阻断 start
     .setDebug(false) // 只控制日志
     .setCustomData(mapOf("k" to "v")) // 可选，本期配置接口不携带
     .build()
@@ -38,7 +38,7 @@ LampsSdk.startAsync(object : InitCallback {
 })
 ```
 
-已拿到 OAID 时，在 Provider 里返回即可。
+已拿到 OAID 时，在 Provider 里返回即可。未设置 Provider 或返回空串时，初始化请求和监测宏里的 OAID 为空，SDK 仍可进入 Ready。
 
 `startAsync` 成功前不要使用后续能力。可用 `LampsSdk.isSdkReady()` 查询状态。
 
@@ -105,7 +105,7 @@ SDK 会从服务端下发顺序中选择第一个已安装 Provider 可处理的
 | --- | --- |
 | 1001 | 未先调用 `init` |
 | 1002 | `appId` 为空 |
-| 1003 | OAID 为空 |
+| 1003 | 已废弃（OAID 为空不再导致启动失败） |
 | 1004 | Context 非法 |
 | 1005 | 初始化数据请求失败（无可用缓存时） |
 | 1006 | 启动进行中 |

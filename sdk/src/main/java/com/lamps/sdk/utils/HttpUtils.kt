@@ -14,10 +14,9 @@ internal data class HttpResponse(
 }
 
 /**
- * 公共网络请求。path 可以是相对路径（拼到 [BASE_URL]）或完整 http(s) 地址。
+ * 公共网络请求。path 可以是相对路径（拼到当前配置域名）或完整 http(s) 地址。
  */
 internal object HttpUtils {
-    const val BASE_URL = "https://api-dev.hoorahgo.com"
 
     fun get(
         path: String,
@@ -82,7 +81,7 @@ internal object HttpUtils {
         val base = if (path.startsWith("http://") || path.startsWith("https://")) {
             path
         } else {
-            BASE_URL.trimEnd('/') + "/" + path.trimStart('/')
+            LampsApiHost.baseUrl().trimEnd('/') + "/" + path.trimStart('/')
         }
         val queryString = query
             .filterValues { !it.isNullOrBlank() }

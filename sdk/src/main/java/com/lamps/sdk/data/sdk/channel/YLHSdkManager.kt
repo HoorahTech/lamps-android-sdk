@@ -12,14 +12,14 @@ object YLHSdkManager {
     @Volatile
     private var initialized = false
 
-    fun isInitialized(): Boolean = initialized || GlobalSetting.getChannel() != null
+    fun isInitialized(): Boolean = initialized
 
     fun initSdk(
         application: Application,
         appId: String,
         callback: SdkInitCallback
     ) {
-        if (initialized || LampsConfig.current?.initYlhSdk == false || GlobalSetting.getChannel() != null) {
+        if (initialized || LampsConfig.current?.initYlhSdk == false) {
             initialized = true
             callback.success()
             return

@@ -154,36 +154,36 @@ internal object SdkRewardDispatcher {
 
         ThreadUtils.runOnMain {
             dataList.forEach { rewardData ->
-                if (!rewardData.markLoading()) return@forEach
-                rewardData.provider.loadReward(
-                    activity,
-                    rewardData.slot,
-                    object : RewardAdSdkLoadCallback {
-                        override fun onLoadSuccess(ad: RewardVideoAd) {
-                            if (!rewardData.markLoadSuccess(ad)) return
-
-                            MonitorReporter.reportRmSuccess(rewardData)
-
-                            completeLoad(
-                                remaining,
-                                finished,
-                                callback
-                            )
-                        }
-
-                        override fun onLoadFailed(code: Int, message: String?, ad: RewardVideoAd?) {
-                            if (!rewardData.markLoadFailed(code, message, ad)) return
-
-                            MonitorReporter.reportRmFail(rewardData)
-
-                            completeLoad(
-                                remaining,
-                                finished,
-                                callback
-                            )
-                        }
+                val loadCallback = object : RewardAdSdkLoadCallback {
+                    override fun onLoadSuccess(ad: RewardVideoAd) {
+                        if (!rewardData.markLoadSuccess(ad)) return
+                        MonitorReporter.reportRmSuccess(rewardData)
+                        completeLoad(remaining, finished, callback)
                     }
-                )
+
+                    override fun onLoadFailed(code: Int, message: String?, ad: RewardVideoAd?) {
+                        if (!rewardData.markLoadFailed(code, message, ad)) return
+                        MonitorReporter.reportRmFail(rewardData)
+                        completeLoad(remaining, finished, callback)
+                    }
+                }
+                if (!rewardData.markLoading()) {
+                    completeLoad(remaining, finished, callback)
+                    return@forEach
+                }
+                runCatching {
+                    rewardData.provider.loadReward(
+                        activity,
+                        rewardData.slot,
+                        loadCallback
+                    )
+                }.onFailure { error ->
+                    loadCallback.onLoadFailed(
+                        RewardAdErrorCode.PROVIDER_ERROR,
+                        error.message ?: "reward ad load failed",
+                        null
+                    )
+                }
             }
         }
     }

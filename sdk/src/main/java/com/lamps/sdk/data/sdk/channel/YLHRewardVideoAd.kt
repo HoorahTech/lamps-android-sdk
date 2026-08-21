@@ -84,6 +84,7 @@ internal class YLHRewardVideoAd(
     private var showCallback: RewardAdShowCallback? = null
 
     override fun getPrice(): Double {
+        // 优量汇官方：getECPM() 单位是分；-1 表示无权限或后台异常。
         return rewardAd.ecpm.takeIf { it > 0 }?.toDouble() ?: 0.0
     }
 
@@ -122,6 +123,6 @@ internal class YLHRewardVideoAd(
     }
 
     private companion object {
-        const val LOAD_TIMEOUT_MS = 15_000L
+        const val LOAD_TIMEOUT_MS = 1_500L
     }
 }

@@ -7,7 +7,7 @@ import com.lamps.sdk.data.init.AppInitResponse
 /**
  * SDK 初始化配置。
  *
- * [appId] 必填；OAID 通过 [Builder.setOaidProvider] 必传，在 start 时读取。
+ * [appId] 必填；OAID 通过 [Builder.setOaidProvider] 可选，在 start 时读取，空值不阻断启动。
  * [Builder.setDebug] 只控制日志，不影响接口地址。
  * [Builder.setLampsInitPangleSdk]、[Builder.setLampsInitYlhSdk]、[Builder.setLampsInitNoahSdk]
  * 控制是否由 Lamps 内部初始化对应渠道；默认 true。传 false 时跳过内部初始化并视为该渠道已成功。
@@ -29,7 +29,7 @@ class LampsConfig private constructor(
     internal var appInitData: AppInitResponse? = null
 
     fun resolveOaid(): String {
-        return oaidProvider?.getOaid()?.trim().orEmpty()
+        return runCatching { oaidProvider?.getOaid()?.trim().orEmpty() }.getOrDefault("")
     }
 
     class Builder {

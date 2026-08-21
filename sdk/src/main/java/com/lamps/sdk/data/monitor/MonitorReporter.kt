@@ -13,61 +13,80 @@ import com.lamps.sdk.data.monitor.MonitorConstant.REQUEST_ID
 import com.lamps.sdk.data.monitor.MonitorConstant.SLOT_ID
 import com.lamps.sdk.data.monitor.MonitorConstant.UNION_NAME
 import com.lamps.sdk.reward.LampsRewardAd
+import com.lamps.sdk.utils.SdkLog
 
 internal object MonitorReporter {
     fun reportRmSuccess(rewardData: LampsRewardAd) {
-        val config = LampsConfig.current ?: return
-        val rmList = config.appInitData?.monitorLinks?.rm
-        MonitorUtil.report(
-            "RM",
-            rmList,
-            reportValues(rewardData) + mapOf(
-                IS_SUCCESS to IS_SUCCESS_YES,
-                CODE to ""
+        safeReport {
+            val config = LampsConfig.current ?: return
+            val rmList = config.appInitData?.monitorLinks?.rm
+            MonitorUtil.report(
+                "RM",
+                rmList,
+                reportValues(rewardData) + mapOf(
+                    IS_SUCCESS to IS_SUCCESS_YES,
+                    CODE to ""
+                )
             )
-        )
+        }
     }
 
     fun reportRmFail(rewardData: LampsRewardAd) {
-        val config = LampsConfig.current ?: return
-        val rmList = config.appInitData?.monitorLinks?.rm
-        MonitorUtil.report(
-            "RM",
-            rmList,
-            reportValues(rewardData) + mapOf(
-                IS_SUCCESS to IS_SUCCESS_NO,
-                CODE to rewardData.errorCode?.toString().orEmpty()
+        safeReport {
+            val config = LampsConfig.current ?: return
+            val rmList = config.appInitData?.monitorLinks?.rm
+            MonitorUtil.report(
+                "RM",
+                rmList,
+                reportValues(rewardData) + mapOf(
+                    IS_SUCCESS to IS_SUCCESS_NO,
+                    CODE to rewardData.errorCode?.toString().orEmpty()
+                )
             )
-        )
+        }
     }
 
     fun reportWm(rewardData: LampsRewardAd) {
-        val config = LampsConfig.current ?: return
-        val wmList = config.appInitData?.monitorLinks?.wm
-        MonitorUtil.report("WM", wmList, reportValues(rewardData))
+        safeReport {
+            val config = LampsConfig.current ?: return
+            val wmList = config.appInitData?.monitorLinks?.wm
+            MonitorUtil.report("WM", wmList, reportValues(rewardData))
+        }
     }
 
     fun reportPm(rewardData: LampsRewardAd) {
-        val config = LampsConfig.current ?: return
-        val pmList = config.appInitData?.monitorLinks?.pm
-        MonitorUtil.report("PM", pmList, reportValues(rewardData), needSign = true)
+        safeReport {
+            val config = LampsConfig.current ?: return
+            val pmList = config.appInitData?.monitorLinks?.pm
+            MonitorUtil.report("PM", pmList, reportValues(rewardData), needSign = true)
+        }
     }
 
     fun reportCm(rewardData: LampsRewardAd) {
-        val config = LampsConfig.current ?: return
-        val cmList = config.appInitData?.monitorLinks?.cm
-        MonitorUtil.report("CM", cmList, reportValues(rewardData))
+        safeReport {
+            val config = LampsConfig.current ?: return
+            val cmList = config.appInitData?.monitorLinks?.cm
+            MonitorUtil.report("CM", cmList, reportValues(rewardData))
+        }
     }
 
     fun reportDm(rewardData: LampsRewardAd) {
-        val config = LampsConfig.current ?: return
-        val dmList = config.appInitData?.monitorLinks?.dm
-        MonitorUtil.report(
-            "DM",
-            dmList,
-            reportValues(rewardData) + (ACTION to ACTION_REWARD_SUCCESS),
-            needSign = true
-        )
+        safeReport {
+            val config = LampsConfig.current ?: return
+            val dmList = config.appInitData?.monitorLinks?.dm
+            MonitorUtil.report(
+                "DM",
+                dmList,
+                reportValues(rewardData) + (ACTION to ACTION_REWARD_SUCCESS),
+                needSign = true
+            )
+        }
+    }
+
+    private inline fun safeReport(block: () -> Unit) {
+        runCatching(block).onFailure { error ->
+            SdkLog.w("monitor report failed: ${error.message}", error)
+        }
     }
 
     private fun reportValues(ad: LampsRewardAd): Map<String, String> {

@@ -13,6 +13,7 @@ import com.lamps.sdk.data.sdk.reward.SdkRewardDispatcher
 import com.lamps.sdk.data.monitor.MonitorReportRecorder
 import com.lamps.sdk.data.monitor.MonitorUtil
 import com.lamps.sdk.utils.DeviceUtils
+import com.lamps.sdk.utils.LampsApiHost
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -38,6 +39,18 @@ object LampsSdkDebug {
     private val EXPANDED_TITLES = setOf("SDK 状态", "SDK初始化入参")
 
     @JvmStatic
+    fun apiEnvLabel(context: Context? = null): String = LampsApiHost.current(context).label
+
+    @JvmStatic
+    fun apiBaseUrl(context: Context? = null): String = LampsApiHost.baseUrl(context)
+
+    @JvmStatic
+    fun toggleApiEnv(context: Context): String {
+        val env = LampsApiHost.toggle(context)
+        return "${env.label} ${env.baseUrl}"
+    }
+
+    @JvmStatic
     fun buildInfo(context: Context): String {
         return buildSections(context).joinToString("\n\n") { section ->
             buildString {
@@ -60,6 +73,8 @@ object LampsSdkDebug {
         return listOf(
             section("SDK 状态") {
                 line("sdkVersion", BuildConfig.SDK_VERSION)
+                line("apiEnv", LampsApiHost.current(app).label)
+                line("apiBaseUrl", LampsApiHost.baseUrl(app))
                 line("configInitialized", config != null)
                 line("sdkReady", LampsSdk.isSdkReady())
                 line("appInitDataLoaded", initData != null)
@@ -216,7 +231,7 @@ object LampsSdkDebug {
                         if (!record.error.isNullOrEmpty()) {
                             line("error", record.error)
                         }
-                        line("url", record.url)
+                        line("url", MonitorUtil.redactUrl(record.url))
                     }.trimEnd()
                 )
             }

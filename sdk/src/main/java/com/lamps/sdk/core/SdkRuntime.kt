@@ -12,6 +12,7 @@ import com.lamps.sdk.data.sdk.reward.SdkRewardDispatcher
 import com.lamps.sdk.reward.LampsRewardAd
 import com.lamps.sdk.reward.RewardAdLoadCallback
 import com.lamps.sdk.reward.RewardAdShowCallback
+import com.lamps.sdk.utils.LampsApiHost
 import com.lamps.sdk.utils.SdkLog
 import com.lamps.sdk.utils.ThreadUtils
 import java.util.concurrent.CopyOnWriteArrayList
@@ -30,14 +31,11 @@ internal object SdkRuntime {
             SdkLog.e("init failed: appId is empty")
             return false
         }
-        if (config.oaidProvider == null) {
-            SdkLog.e("init failed: oaidProvider is required")
-            return false
-        }
 
         if (runtime.compareAndSet(InitState.Uninitialized, InitState.Initialized)) {
             SdkLog.e("init success")
             LampsConfig.init(context, config)
+            LampsApiHost.restore(context.applicationContext)
             return true
         } else {
             SdkLog.e("init failed: sdk has initialized_v2:${runtime.get()}")
@@ -160,15 +158,11 @@ internal object SdkRuntime {
             return
         }
         SdkInitMetrics.start(METRIC_OAID, "读取 OAID")
-        val oaid = config.resolveOaid()
+        val oaid = runCatching { config.resolveOaid() }.getOrDefault("")
         SdkInitMetrics.end(
             METRIC_OAID,
-            if (oaid.isEmpty()) SdkInitMetrics.RESULT_FAILED else SdkInitMetrics.RESULT_SUCCESS
+            if (oaid.isEmpty()) SdkInitMetrics.RESULT_SKIPPED else SdkInitMetrics.RESULT_SUCCESS
         )
-        if (oaid.isEmpty()) {
-            notifyFail(LampsErrorCode.OAID_EMPTY, "oaid is required")
-            return
-        }
         val loadResult = AppInitDataLoader.load(config)
         if (!loadResult.hasData) {
             notifyFail(LampsErrorCode.APP_INIT_DATA_REQUEST_FAILED, "appInitData request failed")

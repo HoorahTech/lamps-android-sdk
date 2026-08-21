@@ -27,8 +27,8 @@ class LampsRewardAd internal constructor(
         private set
 
     /**
-     * 当前广告用于竞价的价格。
-     * 优先取平台 SDK 实时价格，拿不到或无效时回落到接口下发的 `price`。
+     * 当前广告用于竞价的价格，单位：分。
+     * 优先取平台 SDK 实时 eCPM，拿不到或无效时回落到接口下发的 `price`（同样按分）。
      */
     val price: Double
         get() {

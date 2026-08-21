@@ -2,6 +2,7 @@ package com.lamps.sdk.data.monitor
 
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicLong
+import com.lamps.sdk.config.LampsConfig
 
 internal data class MonitorReportRecord(
     val id: Long,
@@ -15,18 +16,23 @@ internal data class MonitorReportRecord(
 
 internal object MonitorReportRecorder {
     private const val MAX_RECORDS = 100
+    private const val INVALID_ID = -1L
     private val nextId = AtomicLong(1)
     private val records = CopyOnWriteArrayList<MonitorReportRecord>()
 
-    fun snapshots(): List<MonitorReportRecord> = records.toList()
+    fun snapshots(): List<MonitorReportRecord> {
+        if (!isDebug()) return emptyList()
+        return records.toList()
+    }
 
     fun begin(event: String, url: String): Long {
+        if (!isDebug()) return INVALID_ID
         val id = nextId.getAndIncrement()
         records.add(
             MonitorReportRecord(
                 id = id,
                 event = event,
-                url = url,
+                url = MonitorUtil.redactUrl(url),
                 startTimeMillis = System.currentTimeMillis()
             )
         )
@@ -35,6 +41,7 @@ internal object MonitorReportRecorder {
     }
 
     fun complete(id: Long, responseCode: Int?, error: String?) {
+        if (id == INVALID_ID || !isDebug()) return
         val index = records.indexOfFirst { it.id == id }
         if (index < 0) return
         records[index] = records[index].copy(
@@ -43,6 +50,8 @@ internal object MonitorReportRecorder {
             finished = true
         )
     }
+
+    private fun isDebug(): Boolean = LampsConfig.current?.debug == true
 
     private fun trim() {
         val overflow = records.size - MAX_RECORDS

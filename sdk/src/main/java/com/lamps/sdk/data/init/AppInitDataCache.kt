@@ -15,4 +15,8 @@ internal object AppInitDataCache {
     fun write(raw: String) {
         prefs?.edit()?.putString(KEY_APP_INIT_DATA, raw)?.commit()
     }
+
+    fun clear() {
+        prefs?.edit()?.remove(KEY_APP_INIT_DATA)?.commit()
+    }
 }

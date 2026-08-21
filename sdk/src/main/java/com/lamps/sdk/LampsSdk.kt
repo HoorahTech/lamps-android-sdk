@@ -21,7 +21,7 @@ object LampsSdk {
      * 仅校验并缓存配置，不发起网络请求。
      * 重复调用以第一次为准。
      *
-     * @return true 表示配置已接受；false 表示 appId / oaidProvider 缺失或 Context 非法
+     * @return true 表示配置已接受；false 表示 appId 缺失或 SDK 已初始化
      */
     @JvmStatic
     fun init(context: Context, config: LampsConfig): Boolean {
@@ -29,8 +29,8 @@ object LampsSdk {
     }
 
     /**
-     * 读取 OAID 并启动 SDK。成功前不要请求广告能力。
-     * OAID 为空时回调 [LampsErrorCode.OAID_EMPTY]。
+     * 读取 OAID（如有）并启动 SDK。成功前不要请求广告能力。
+     * 未设置 OAID 回调、或读取结果为空时继续启动，不回调失败。
      */
     @JvmStatic
     fun startAsync(callback: InitCallback) {

@@ -39,16 +39,21 @@ internal class TTRewardVideoAd(
 
     override fun getPrice(): Double {
         val extra = rewardAd?.mediaExtraInfo ?: return 0.0
-        return sequenceOf("price", "ecpm", "eCPM", "cpm")
-            .mapNotNull { key ->
-                when (val value = extra[key]) {
-                    is Number -> value.toDouble()
-                    is String -> value.toDoubleOrNull()
-                    else -> null
-                }
-            }
-            .firstOrNull { it > 0.0 }
+        // CSJ 客户端竞价读 price；GroMore 读 ecpm。官方竞价口径均为分。
+        // 不读 cpm / 商品 effective_price，避免和竞价 eCPM 混单位。
+        return readFen(extra, "price")
+            ?: readFen(extra, "ecpm")
+            ?: readFen(extra, "eCPM")
             ?: 0.0
+    }
+
+    private fun readFen(extra: Map<String, Any>, key: String): Double? {
+        val raw = when (val value = extra[key]) {
+            is Number -> value.toDouble()
+            is String -> value.toDoubleOrNull()
+            else -> null
+        } ?: return null
+        return raw.takeIf { it > 0.0 }
     }
 
     override fun loadAD(callback: RewardAdSdkLoadCallback) {
@@ -152,6 +157,6 @@ internal class TTRewardVideoAd(
     }
 
     private companion object {
-        const val LOAD_TIMEOUT_MS = 15_000L
+        const val LOAD_TIMEOUT_MS = 1_500L
     }
 }

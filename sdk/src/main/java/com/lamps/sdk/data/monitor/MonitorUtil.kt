@@ -20,6 +20,7 @@ import com.lamps.sdk.data.monitor.MonitorConstant.TS
 import com.lamps.sdk.data.monitor.MonitorConstant.UA
 import com.lamps.sdk.utils.DeviceUtils
 import com.lamps.sdk.utils.HttpUtils
+import com.lamps.sdk.utils.SdkLog
 import com.lamps.sdk.utils.ThreadUtils
 import java.net.URLEncoder
 import java.security.MessageDigest
@@ -35,6 +36,13 @@ object MonitorUtil {
         "request_id"
     )
 
+    private val PUBLIC_MACRO_QUERY_KEYS = listOf(
+        TS, UA, IP, MAC, SW, SH, IMEI, OS, ANDROID_ID, OAID, APP_ID, SDK_VERSION, PHONE_BRAND, NETWORK
+    ).flatMap { macro ->
+        val inner = macro.trim('_').lowercase()
+        listOf(macro.lowercase(), inner)
+    }.toSet() + setOf("android_id", "app_id")
+
 
     fun report(
         event: String,
@@ -49,9 +57,18 @@ object MonitorUtil {
                 val recordId = MonitorReportRecorder.begin(event, url)
                 HttpUtils.get(url, headers = mapOf("Accept" to "*/*")).fold(
                     onSuccess = { response ->
-                        MonitorReportRecorder.complete(recordId, response.code, null)
+                        val error = if (response.isSuccessful) {
+                            null
+                        } else {
+                            "http ${response.code}"
+                        }
+                        if (error != null) {
+                            SdkLog.w("monitor $event failed: $error")
+                        }
+                        MonitorReportRecorder.complete(recordId, response.code, error)
                     },
                     onFailure = { error ->
+                        SdkLog.w("monitor $event failed: ${error.message}", error)
                         MonitorReportRecorder.complete(recordId, null, error.message)
                     }
                 )
@@ -122,5 +139,27 @@ object MonitorUtil {
             PHONE_BRAND to DeviceUtils.phoneBrand(context),
             NETWORK to DeviceUtils.networkType(context)
         )
+    }
+
+    internal fun redactUrl(url: String): String {
+        return runCatching {
+            val uri = Uri.parse(url)
+            val names = uri.queryParameterNames
+            if (names.isEmpty()) return@runCatching url
+            val builder = uri.buildUpon().clearQuery()
+            names.forEach { key ->
+                val value = if (isPublicMacroQueryKey(key)) {
+                    "***"
+                } else {
+                    uri.getQueryParameter(key).orEmpty()
+                }
+                builder.appendQueryParameter(key, value)
+            }
+            builder.build().toString()
+        }.getOrDefault(url)
+    }
+
+    private fun isPublicMacroQueryKey(key: String): Boolean {
+        return key.lowercase() in PUBLIC_MACRO_QUERY_KEYS
     }
 }

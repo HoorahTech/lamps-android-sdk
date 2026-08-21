@@ -38,6 +38,7 @@ internal class NoahRewardVideoAd(
     private var showCallback: RewardAdShowCallback? = null
 
     override fun getPrice(): Double {
+        // 汇川公开文档未写单位；heroes 现网把 RewardedVideoAd.price 当「分」参与比价和 sendWinNotification。
         return rewardAd?.price?.takeIf { it > 0.0 } ?: 0.0
     }
 
@@ -157,6 +158,6 @@ internal class NoahRewardVideoAd(
     }
 
     private companion object {
-        const val LOAD_TIMEOUT_MS = 15_000L
+        const val LOAD_TIMEOUT_MS = 1_500L
     }
 }

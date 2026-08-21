@@ -36,6 +36,7 @@ internal object NoahSdkRewardBiddingReporter {
 
     private fun Double?.toNoahBidPrice(): Int {
         if (this == null || this <= 0.0) return 0
+        // LampsRewardAd.price 已统一为分，汇川 win/loss 回传同样用分。
         return roundToInt()
     }
 }

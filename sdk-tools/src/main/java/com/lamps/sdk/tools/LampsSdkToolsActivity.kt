@@ -22,6 +22,7 @@ import com.lamps.sdk.debug.LampsSdkDebugSection
 
 class LampsSdkToolsActivity : Activity() {
     private lateinit var sectionsContainer: LinearLayout
+    private lateinit var apiEnvButton: Button
     private val expandedState = mutableMapOf<String, Boolean>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,6 +33,7 @@ class LampsSdkToolsActivity : Activity() {
 
     override fun onResume() {
         super.onResume()
+        refreshApiEnvButton()
         if (::sectionsContainer.isInitialized) renderInfo()
     }
 
@@ -126,6 +128,16 @@ class LampsSdkToolsActivity : Activity() {
         return LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(16), dp(8), dp(16), dp(8))
+            apiEnvButton = createChannelToolButton(apiEnvButtonText()) {
+                val next = LampsSdkDebug.toggleApiEnv(this@LampsSdkToolsActivity)
+                refreshApiEnvButton()
+                Toast.makeText(
+                    this@LampsSdkToolsActivity,
+                    "已切换到 $next，已清配置缓存。重启进程后再 start 才会拉新环境配置。",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+            addView(apiEnvButton)
             addView(createChannelToolButton("穿山甲调试工具") {
                 ChannelSdkTools.startPangle(this@LampsSdkToolsActivity)
             })
@@ -136,6 +148,16 @@ class LampsSdkToolsActivity : Activity() {
                 ChannelSdkTools.startNoah(this@LampsSdkToolsActivity)
             })
         }
+    }
+
+    private fun refreshApiEnvButton() {
+        if (::apiEnvButton.isInitialized) {
+            apiEnvButton.text = apiEnvButtonText()
+        }
+    }
+
+    private fun apiEnvButtonText(): String {
+        return "配置环境: ${LampsSdkDebug.apiEnvLabel(this)}  ${LampsSdkDebug.apiBaseUrl(this)}\n点击切换 dev / 线上"
     }
 
     private fun createChannelToolButton(title: String, onClick: () -> Unit): Button {
