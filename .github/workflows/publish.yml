@@ -1,0 +1,30 @@
+name: Publish AAR
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Publish libraries to GitHub Packages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >
+          ./gradlew --no-daemon
+          :core:publish
+          :pangle:publish
+          :ylh:publish
+          :noah:publish
+          :sdk-tools:publish

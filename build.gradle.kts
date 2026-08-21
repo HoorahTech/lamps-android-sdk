@@ -1,4 +1,5 @@
 import org.gradle.api.publish.PublishingExtension
+import org.gradle.api.publish.maven.MavenPublication
 
 plugins {
     id("com.android.library") version "8.5.2" apply false
@@ -14,18 +15,26 @@ subprojects {
         extensions.configure<PublishingExtension> {
             repositories {
                 maven {
-                    name = "HupuAndroid"
-                    val isSnapshot = version.toString().contains("-SNAPSHOT")
-                    url = uri(
-                        if (isSnapshot) {
-                            "https://nexus.hupu.io/repository/hupu-android-snapshot/"
-                        } else {
-                            "https://nexus.hupu.io/repository/hupu-android/"
-                        }
-                    )
+                    name = "GitHubPackages"
+                    url = uri("https://maven.pkg.github.com/HoorahTech/lamps-android-sdk")
                     credentials {
-                        username = "kr"
-                        password = "FgbI27KC3Jwc"
+                        username = (findProperty("gpr.user") as String?)
+                            ?: System.getenv("GITHUB_ACTOR")
+                            ?: ""
+                        password = (findProperty("gpr.key") as String?)
+                            ?: System.getenv("GITHUB_TOKEN")
+                            ?: System.getenv("GH_TOKEN")
+                            ?: ""
+                    }
+                }
+            }
+            publications.withType<MavenPublication>().configureEach {
+                pom {
+                    url.set("https://github.com/HoorahTech/lamps-android-sdk")
+                    scm {
+                        url.set("https://github.com/HoorahTech/lamps-android-sdk")
+                        connection.set("scm:git:https://github.com/HoorahTech/lamps-android-sdk.git")
+                        developerConnection.set("scm:git:ssh://git@github.com/HoorahTech/lamps-android-sdk.git")
                     }
                 }
             }

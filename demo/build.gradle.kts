@@ -55,9 +55,10 @@ android {
 }
 
 dependencies {
-    implementation(project(":core"))
-    implementation(project(":pangle"))
-    implementation(project(":ylh"))
-    implementation(project(":noah"))
-    debugImplementation(project(":sdk-tools"))
+    val lampsVersion = rootProject.property("LAMPS_VERSION") as String
+    implementation("com.lamps:core:$lampsVersion")
+    implementation("com.lamps:pangle:$lampsVersion")
+    implementation("com.lamps:ylh:$lampsVersion")
+    implementation("com.lamps:noah:$lampsVersion")
+    debugImplementation("com.lamps:sdk-tools:$lampsVersion")
 }

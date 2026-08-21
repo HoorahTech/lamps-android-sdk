@@ -10,7 +10,7 @@
 - `pangle/`：穿山甲。坐标 `com.lamps:pangle`
 - `ylh/`：优量汇。坐标 `com.lamps:ylh`
 - `noah/`：汇川。坐标 `com.lamps:noah`
-- `demo/`：接入示例，可按需注释掉某个联盟 module
+- `demo/`：接入示例，依赖 GitHub Packages 上的远程 AAR
 - `sdk-tools/`：调试页
 
 `pangle` / `ylh` / `noah` 依赖 `core`，进程启动时通过 ContentProvider 向 core 注册。`startAsync` 按远端 `rewardAdSlots` 把初始化、激励 load/show、竞价回传分发给**已引入且匹配 channel 的** module。
@@ -27,14 +27,7 @@ implementation("com.lamps:noah:0.1.0")
 debugImplementation("com.lamps:sdk-tools:0.1.0")
 ```
 
-本地工程：
-
-```kotlin
-implementation(project(":core"))
-implementation(project(":pangle"))
-implementation(project(":ylh"))
-implementation(project(":noah"))
-```
+`demo` 已按上面方式使用远程坐标，不再依赖工程内的 `project(":core")` 等 module。
 
 隐私协议同意后调用，顺序与穿山甲一致：先 `init`，再 `start`。
 
@@ -127,19 +120,58 @@ SDK 会并发加载已引入 Provider 可处理的 slot，并通过 `hoorah.ad.r
 
 ## 发布
 
-对齐 HPWebview：发到虎扑 Nexus 的 `hupu-android` 仓库。版本号改 `gradle.properties` 里的 `LAMPS_VERSION`。
+所有 library（`core` / `pangle` / `ylh` / `noah` / `sdk-tools`）发布到 GitHub Packages。版本号改 `gradle.properties` 的 `LAMPS_VERSION`。同一版本不可覆盖，升版本后再发。
+
+本地：
 
 ```bash
+# PAT 需要 write:packages
+export GITHUB_ACTOR=your-github-username
+export GITHUB_TOKEN=ghp_xxx
 ./gradlew :core:publish :pangle:publish :ylh:publish :noah:publish :sdk-tools:publish
 ```
 
-| 模块 | 坐标 | 仓库 |
-| --- | --- | --- |
-| `:core` | `com.lamps:core:0.1.0` | `https://nexus.hupu.io/repository/hupu-android/` |
-| `:pangle` | `com.lamps:pangle:0.1.0` | 同上 |
-| `:ylh` | `com.lamps:ylh:0.1.0` | 同上 |
-| `:noah` | `com.lamps:noah:0.1.0` | 同上 |
-| `:sdk-tools` | `com.lamps:sdk-tools:0.1.0` | 同上 |
+或在 GitHub Actions 里跑 **Publish AAR**（打 `v*` tag 也会触发）。
 
-宿主从 `https://nexus.hupu.io/repository/hupu-android-public/` 拉取。
+| 模块 | 坐标 |
+| --- | --- |
+| `:core` | `com.lamps:core:0.1.0` |
+| `:pangle` | `com.lamps:pangle:0.1.0` |
+| `:ylh` | `com.lamps:ylh:0.1.0` |
+| `:noah` | `com.lamps:noah:0.1.0` |
+| `:sdk-tools` | `com.lamps:sdk-tools:0.1.0` |
+
+宿主拉取（GitHub Packages 需要登录，即使仓库是 public）：
+
+```kotlin
+dependencyResolutionManagement {
+    repositories {
+        maven {
+            url = uri("https://maven.pkg.github.com/HoorahTech/lamps-android-sdk")
+            credentials {
+                username = providers.gradleProperty("gpr.user").get()
+                password = providers.gradleProperty("gpr.key").get()
+            }
+        }
+        // 穿山甲 / 优量汇 / 汇川等联盟 SDK 仍走各自仓库
+    }
+}
+
+dependencies {
+    implementation("com.lamps:core:0.1.0")
+    implementation("com.lamps:pangle:0.1.0")
+    implementation("com.lamps:ylh:0.1.0")
+    implementation("com.lamps:noah:0.1.0")
+    debugImplementation("com.lamps:sdk-tools:0.1.0")
+}
+```
+
+`~/.gradle/gradle.properties`：
+
+```
+gpr.user=your-github-username
+gpr.key=ghp_xxx
+```
+
+`gpr.key` 至少要有 `read:packages`。
 
