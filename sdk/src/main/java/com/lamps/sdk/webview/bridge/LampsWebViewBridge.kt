@@ -16,6 +16,9 @@ class LampsWebViewBridge internal constructor(
 
     @JavascriptInterface
     fun callNativeAsync(methodName: String, dataJson: String?, callBackSig: String?) {
+        SdkLog.d(
+            "web bridge H5->Native async method=$methodName callbackSig=$callBackSig data=$dataJson"
+        )
         dispatcher.invokeAsync(
             webView,
             methodName,
@@ -27,7 +30,10 @@ class LampsWebViewBridge internal constructor(
 
     @JavascriptInterface
     fun callNativeSync(methodName: String, dataJson: String?): String {
-        return dispatcher.invokeSync(webView, methodName, dataJson)
+        SdkLog.d("web bridge H5->Native sync method=$methodName data=$dataJson")
+        val result = dispatcher.invokeSync(webView, methodName, dataJson)
+        SdkLog.d("web bridge Native->H5 sync method=$methodName result=$result")
+        return result
     }
 
     /**
@@ -58,6 +64,9 @@ class LampsWebViewBridge internal constructor(
             if (messageId.isNotEmpty()) {
                 messageIds[messageId] = true
             }
+            SdkLog.d(
+                "web bridge H5->Native postMessage type=$type id=$messageId method=$methodName data=$dataJson"
+            )
             dispatcher.invokeAsync(
                 webView,
                 methodName,
@@ -85,6 +94,7 @@ class LampsWebViewBridge internal constructor(
             is JSONObject -> params.toString()
             else -> JSONObject.wrap(params)?.toString() ?: "null"
         }
+        SdkLog.d("web bridge Native->H5 event method=$methodName params=$paramsJson")
         callJs(methodName, paramsJson, callback)
     }
 
@@ -102,8 +112,10 @@ class LampsWebViewBridge internal constructor(
                 .put("id", callBackSig)
                 .put("method", "")
                 .put("data", result ?: JSONObject())
+            SdkLog.d("web bridge Native->H5 postMessage response=$response")
             sendNativeMessage(response)
         } else {
+            SdkLog.d("web bridge Native->H5 async callback sig=$callBackSig result=$result")
             callJs(callBackSig, result?.toString().orEmpty())
         }
     }
