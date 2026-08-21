@@ -23,11 +23,18 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release download ci-maven-deps --pattern 'noah-*' --dir /tmp/ci-maven-deps
-          dest="$HOME/.m2/repository/com/noah/noah/15.1.4002"
-          mkdir -p "$dest"
-          cp /tmp/ci-maven-deps/noah-15.1.4002.aar "$dest/"
-          cp /tmp/ci-maven-deps/noah-15.1.4002.pom "$dest/"
+          mkdir -p /tmp/ci-maven-deps
+          gh release download ci-maven-deps --dir /tmp/ci-maven-deps
+          install_m2() {
+            local group_path="$1" artifact="$2" version="$3" file_prefix="$4"
+            local dest="$HOME/.m2/repository/${group_path}/${artifact}/${version}"
+            mkdir -p "$dest"
+            cp "/tmp/ci-maven-deps/${file_prefix}.aar" "$dest/${artifact}-${version}.aar"
+            cp "/tmp/ci-maven-deps/${file_prefix}.pom" "$dest/${artifact}-${version}.pom"
+          }
+          install_m2 com/noah noah 15.1.4002 noah-15.1.4002
+          install_m2 com/pangle/cn ads-sdk-tools 7.6.4.2-hupu ads-sdk-tools-7.6.4.2-hupu
+          install_m2 com/qq/e/union tools 2.4 tools-2.4
       - name: Publish libraries to GitHub Packages
         env:
           GITHUB_ACTOR: ${{ github.actor }}
