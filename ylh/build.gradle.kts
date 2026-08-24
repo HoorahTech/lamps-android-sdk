@@ -22,9 +22,18 @@ android {
         jvmTarget = "1.8"
     }
 
+    buildTypes {
+        release {
+            isMinifyEnabled = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+
     publishing {
         singleVariant("release") {
-            withSourcesJar()
         }
     }
 }
@@ -41,6 +50,6 @@ publishing {
 }
 
 dependencies {
-    api(project(":core"))
+    implementation(project(":core"))
     implementation("com.qq.e.union:union:4.690.1560")
 }

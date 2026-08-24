@@ -10,8 +10,7 @@ import com.lamps.sdk.webview.LampsWebView
  * 游戏中心自定义 View，内部包裹 LampsWebView 自动加载游戏中心 H5 页面。
  *
  * 外部集成方通过 [LampsSdk.getGameCenterView] 获取实例，直接添加到任意布局即可。
- * 生命周期（onResume/onPause/destroy）由自身通过 [onAttachedToWindow]、
- * [onDetachedFromWindow] 和 [onWindowVisibilityChanged] 自动管理。
+ * 外部页面销毁时需要主动调用 [destroy] 释放 WebView 资源。
  */
 class GameCenterView @JvmOverloads constructor(
     context: Context,
@@ -30,10 +29,6 @@ class GameCenterView @JvmOverloads constructor(
         addView(wv, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
     }
 
-    override fun onDetachedFromWindow() {
-        destroy()
-        super.onDetachedFromWindow()
-    }
 
     fun destroy() {
         webView?.let {

@@ -1,1 +1,1 @@
--keep class com.lamps.sdk.pangle.** { *; }
+-keep class com.lamps.sdk.pangle.PangleProvider { *; }

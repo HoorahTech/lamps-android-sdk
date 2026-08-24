@@ -1,1 +1,1 @@
--keep class com.lamps.sdk.noah.** { *; }
+-keep class com.lamps.sdk.noah.NoahProvider { *; }

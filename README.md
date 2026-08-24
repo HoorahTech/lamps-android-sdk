@@ -1,177 +1,136 @@
 # Lamps Android SDK
 
-独立 Android SDK，提供初始化、WebView Bridge 和可插拔激励视频能力。OAID 由媒体传入，SDK 不内置 MSA 证书。
+Lamps Android SDK 为 Android 应用提供统一的初始化、服务端配置、游戏中心页面和广告能力接入。
 
-广告网络按 GroMore 方式拆 module：宿主只依赖需要的联盟。
+稳定接入 API 包括：
 
-## 工程
+- `com.lamps.sdk.LampsSdk`
+- `com.lamps.sdk.config.LampsConfig`
+- `com.lamps.sdk.core.OaidProvider`
+- `com.lamps.sdk.core.InitCallback`
+- `com.lamps.sdk.view.GameCenterView`
 
-- `core/`：初始化、Bridge、激励分发与监测。坐标 `com.lamps:core`
-- `pangle/`：穿山甲。坐标 `com.lamps:pangle`
-- `ylh/`：优量汇。坐标 `com.lamps:ylh`
-- `noah/`：汇川。坐标 `com.lamps:noah`
-- `demo/`：接入示例，依赖 GitHub Packages 上的远程 AAR
-- `sdk-tools/`：调试页
+SDK 的 bridge、网络、缓存、广告渠道适配器和服务端响应模型均属于内部实现，不作为稳定 API 使用。
 
-`pangle` / `ylh` / `noah` 依赖 `core`，进程启动时通过 ContentProvider 向 core 注册。`startAsync` 按远端 `rewardAdSlots` 把初始化、激励 load/show、竞价回传分发给**已引入且匹配 channel 的** module。
+## 环境要求
 
-## 接入
+- Android API 24 及以上
+- Kotlin 1.9+ 或兼容的 Java/Kotlin Android 工程
+- 网络权限：`android.permission.INTERNET`
 
-Gradle 按需勾选联盟（不要的 module 不要写进依赖即可）：
+## 安装
+
+按需引入 core 和广告渠道模块。未使用的渠道不要引入。
 
 ```kotlin
-implementation("com.lamps:core:0.1.0")
-implementation("com.lamps:pangle:0.1.0")
-implementation("com.lamps:ylh:0.1.0")
-implementation("com.lamps:noah:0.1.0")
-debugImplementation("com.lamps:sdk-tools:0.1.0")
+dependencies {
+    implementation("com.lamps:core:<version>")
+    implementation("com.lamps:pangle:<version>") // 可选
+    implementation("com.lamps:ylh:<version>")    // 可选
+    implementation("com.lamps:noah:<version>")   // 可选
+}
 ```
 
-`demo` 已按上面方式使用远程坐标，不再依赖工程内的 `project(":core")` 等 module。
+GitHub Packages 仓库需要配置 `read:packages` 权限：
 
-隐私协议同意后调用，顺序与穿山甲一致：先 `init`，再 `start`。
+```kotlin
+repositories {
+    maven {
+        url = uri("https://maven.pkg.github.com/HoorahTech/lamps-android-sdk")
+        credentials {
+            username = providers.gradleProperty("gpr.user").get()
+            password = providers.gradleProperty("gpr.key").get()
+        }
+    }
+}
+```
+
+## 初始化
+
+应在隐私协议同意后初始化 SDK。调用顺序为 `init`，然后 `startAsync`。
 
 ```kotlin
 import com.lamps.sdk.LampsSdk
 import com.lamps.sdk.config.LampsConfig
 import com.lamps.sdk.core.InitCallback
+import com.lamps.sdk.core.OaidProvider
 
 val config = LampsConfig.Builder()
     .appId("your_app_id")
-    .setOaidProvider { mediaOaid } // 可选；未设置或为空不阻断 start
-    .setDebug(false) // 只控制日志
-    .setCustomData(mapOf("k" to "v")) // 可选，本期配置接口不携带
+    .setOaidProvider(OaidProvider { mediaOaid }) // 可选；返回空值时继续初始化
+    .setDebug(false)
+    .setCustomData(mapOf("source" to "your_app"))
     .build()
 
 LampsSdk.init(application, config)
 LampsSdk.startAsync(object : InitCallback {
-    override fun success() { }
-    override fun fail(code: Int, message: String?) { }
-})
-```
-
-已拿到 OAID 时，在 Provider 里返回即可。未设置 Provider 或返回空串时，初始化请求和监测宏里的 OAID 为空，SDK 仍可进入 Ready。
-
-`startAsync` 成功前不要使用后续能力。可用 `LampsSdk.isSdkReady()` 查询状态。
-
-`startAsync()` 内部会请求 `/v1/lamps/config` 并缓存结果，当前不对外暴露。
-远端配置请求成功后，会根据 `rewardAdSlots` 分发初始化已配置且 **Gradle 已引入** 的穿山甲、优量汇和汇川 SDK；对应平台初始化完成后 Lamps SDK 才进入 Ready。未引入的联盟会被跳过。
-
-## 激励视频
-
-最低支持 Android API 24。首次广告请求时，SDK 根据 `rewardAdSlots` 的 `channelName` 选择已注册 Provider，并使用同一条配置中的 `appId`、`slotId` 加载广告。
-
-Native 接入先 `loadReward`，在成功回调中拿到 `LampsRewardAd` 后再 `show`：
-
-```kotlin
-import com.lamps.sdk.LampsSdk
-import com.lamps.sdk.reward.LampsRewardAd
-import com.lamps.sdk.reward.RewardAdLoadCallback
-import com.lamps.sdk.reward.RewardAdShowCallback
-
-LampsSdk.loadReward(activity, object : RewardAdLoadCallback {
-    override fun onAdLoadSuccess(ad: LampsRewardAd) {
-        ad.show(activity, object : RewardAdShowCallback {
-            override fun onAdShown() = Unit
-            override fun onAdRewarded() = Unit
-            override fun onAdClosed() = Unit
-            override fun onAdShowFailed(code: Int, message: String?) = Unit
-        })
+    override fun success() {
+        // SDK 已完成初始化
     }
 
-    override fun onAdLoadFailed(code: Int, message: String?) = Unit
+    override fun fail(code: Int, message: String?) {
+        // 处理初始化失败
+    }
 })
 ```
 
-`LampsRewardAd` 对外只暴露 `price`、`slotId`、`channelName`、`isValid` 和 `show()`。也可调用 `LampsSdk.showReward(activity, ad, callback)`。
+`setOaidProvider` 由宿主提供 OAID 读取逻辑。SDK 不内置 MSA 证书；未设置 provider 或返回空字符串不会阻断初始化。
 
-如果宿主已经接入某个平台，Gradle 会与对应 module 传递的同名依赖对齐；也可以不引入该 Lamps 联盟 module，改用宿主自己的 SDK。
+`startAsync` 完成前不要使用依赖服务端配置的能力。可使用 `LampsSdk.isSdkReady()` 查询当前状态，使用 `LampsSdk.getSdkVersion()` 获取 SDK 版本。
 
-若应用设置了 `android:allowBackup="false"`，因穿山甲 Manifest 自带 `allowBackup="true"`，宿主 Manifest 需要在 `<application>` 添加 `tools:replace="android:allowBackup"`。
+## 游戏中心
 
-H5 使用 postMessage 协议调用：
+服务端下发有效的游戏中心页面地址后，可获取 `GameCenterView` 并添加到宿主布局。`GameCenterView` 内部的 WebView 实现不属于宿主 API。
 
-```javascript
-await bridge.invoke("hra.ad.showRewardedVideo", {})
+```kotlin
+val gameCenterView = LampsSdk.getGameCenterView(this)
+if (gameCenterView != null) {
+    container.addView(
+        gameCenterView,
+        ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        )
+    )
+}
 ```
 
-SDK 会并发加载已引入 Provider 可处理的 slot，并通过 `hoorah.ad.rewardedVideoStatus` 事件回传 `onLoadSuccess`、`onShowSuccess`、`onRewardArrived`、`onClose`、`onLoadError` 或 `onShowError`。激励视频 Bridge 字段见 [RewardAdAbility](docs/bridge/RewardAdAbility.md)。
+宿主负责在页面永久销毁时释放资源；不要在普通的列表或 ViewPager detach 场景销毁：
 
-## 错误码
+```kotlin
+override fun onDestroyView() {
+    gameCenterView?.destroy()
+    gameCenterView = null
+    super.onDestroyView()
+}
+```
+
+如果在 RecyclerView 中使用，建议在 `onViewRecycled` 中调用 `GameCenterView.destroy()`，并确保销毁后的 View 不再重新绑定。
+
+## 初始化错误码
 
 | code | 含义 |
 | --- | --- |
-| 1001 | 未先调用 `init` |
+| 1001 | 未调用 `init` |
 | 1002 | `appId` 为空 |
-| 1003 | 已废弃（OAID 为空不再导致启动失败） |
-| 1004 | Context 非法 |
-| 1005 | 初始化数据请求失败（无可用缓存时） |
-| 1006 | 启动进行中 |
+| 1004 | Context 不可用 |
+| 1005 | 服务端初始化配置请求失败，且无可用缓存 |
+| 1006 | 初始化正在进行 |
 | 1007 | 穿山甲 SDK 初始化失败 |
 | 1008 | 优量汇 SDK 初始化失败 |
 | 1009 | 汇川 SDK 初始化失败 |
 | 1010 | 第三方 SDK 初始化分发失败 |
 
-## 构建
+## 混淆与发布
 
-```bash
-./gradlew :core:assembleDebug :pangle:assembleDebug :ylh:assembleDebug :noah:assembleDebug :demo:assembleDebug
-```
+正式构建应启用宿主应用的 R8/ProGuard。SDK release AAR 已启用 R8，并通过 consumer rules 保留上述稳定 API、Android Manifest 组件和 H5 bridge 必需成员；SDK 内部实现允许压缩和重命名。
 
-## 发布
+宿主无需复制 SDK 内部 keep 规则，也不要对 `com.lamps.sdk.**` 添加全包 keep，否则会使内部实现重新暴露并降低混淆效果。
 
-所有 library（`core` / `pangle` / `ylh` / `noah` / `sdk-tools`）发布到 GitHub Packages。版本号改 `gradle.properties` 的 `LAMPS_VERSION`。同一版本不可覆盖，升版本后再发。
+## 调试工具
 
-本地：
+`sdk-tools` 仅用于内部调试和 Demo 验证，不属于业务接入 API。正式应用不应依赖或调用其内部类。
 
-```bash
-# PAT 需要 write:packages
-export GITHUB_ACTOR=your-github-username
-export GITHUB_TOKEN=ghp_xxx
-./gradlew :core:publish :pangle:publish :ylh:publish :noah:publish :sdk-tools:publish
-```
+## 版本与支持
 
-或在 GitHub Actions 里跑 **Publish AAR**（打 `v*` tag 也会触发）。
-
-| 模块 | 坐标 |
-| --- | --- |
-| `:core` | `com.lamps:core:0.1.0` |
-| `:pangle` | `com.lamps:pangle:0.1.0` |
-| `:ylh` | `com.lamps:ylh:0.1.0` |
-| `:noah` | `com.lamps:noah:0.1.0` |
-| `:sdk-tools` | `com.lamps:sdk-tools:0.1.0` |
-
-宿主拉取（GitHub Packages 需要登录，即使仓库是 public）：
-
-```kotlin
-dependencyResolutionManagement {
-    repositories {
-        maven {
-            url = uri("https://maven.pkg.github.com/HoorahTech/lamps-android-sdk")
-            credentials {
-                username = providers.gradleProperty("gpr.user").get()
-                password = providers.gradleProperty("gpr.key").get()
-            }
-        }
-        // 穿山甲 / 优量汇 / 汇川等联盟 SDK 仍走各自仓库
-    }
-}
-
-dependencies {
-    implementation("com.lamps:core:0.1.0")
-    implementation("com.lamps:pangle:0.1.0")
-    implementation("com.lamps:ylh:0.1.0")
-    implementation("com.lamps:noah:0.1.0")
-    debugImplementation("com.lamps:sdk-tools:0.1.0")
-}
-```
-
-`~/.gradle/gradle.properties`：
-
-```
-gpr.user=your-github-username
-gpr.key=ghp_xxx
-```
-
-`gpr.key` 至少要有 `read:packages`。
-
+版本号由仓库 `gradle.properties` 中的 `LAMPS_VERSION` 管理。发布到 GitHub Packages 后，同一版本不可覆盖，请递增版本号后重新发布。

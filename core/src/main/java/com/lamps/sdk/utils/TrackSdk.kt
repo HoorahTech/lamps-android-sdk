@@ -6,7 +6,7 @@ import java.net.URLEncoder
  * 最简单的 RigSdk 实现：写死链接，直接上报。
  */
 object TrackSdk {
-    private const val TAG = "RigSdk"
+    private const val TAG = "TrackSdk"
     private const val DEFAULT_RIG_URL = "https://rig.hupu.com/report"
 
     @JvmStatic

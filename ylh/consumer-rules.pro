@@ -1,1 +1,1 @@
--keep class com.lamps.sdk.ylh.** { *; }
+-keep class com.lamps.sdk.ylh.YlhProvider { *; }
