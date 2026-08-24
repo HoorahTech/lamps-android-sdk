@@ -15,10 +15,10 @@ import com.lamps.sdk.reward.LampsRewardAd
 import com.lamps.sdk.reward.RewardAdShowCallback
 
 internal class NoahSdkProvider : ISdkProvider {
-    override val name: String = SdkChannel.HUICHUAN.name
+    override val name: String = SdkChannel.NOAH.name
 
     override fun supports(channel: ChannelInfoResponse): Boolean {
-        return SdkChannel.HUICHUAN.matches(channel.channelName)
+        return SdkChannel.NOAH.matches(channel.channelName)
     }
 
     override fun shouldInitInternally(config: LampsConfig): Boolean = config.initNoahSdk

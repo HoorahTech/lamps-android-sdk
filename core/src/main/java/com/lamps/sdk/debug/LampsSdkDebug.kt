@@ -221,7 +221,7 @@ object LampsSdkDebug {
                         if (!record.error.isNullOrEmpty()) {
                             line("error", record.error)
                         }
-                        line("url", MonitorUtil.redactUrl(record.url))
+                        line("url", record.url)
                     }.trimEnd()
                 )
             }

@@ -61,9 +61,7 @@ internal object DeviceUtils {
     }
 
     fun appId(context: Context?): String {
-        return cached(context, KEY_APP_ID) {
-            LampsConfig.current?.appId.orEmpty()
-        }
+        return LampsConfig.current?.appId.orEmpty()
     }
 
     fun phoneBrand(context: Context?): String {

@@ -32,7 +32,7 @@ internal object MonitorReportRecorder {
             MonitorReportRecord(
                 id = id,
                 event = event,
-                url = MonitorUtil.redactUrl(url),
+                url = url,
                 startTimeMillis = System.currentTimeMillis()
             )
         )

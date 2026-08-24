@@ -30,6 +30,6 @@ class MainActivity : Activity() {
 
     private companion object {
         const val DEMO_URL =
-            "https://www.hoorahgo.com/mg/index.html#/play?demo=nba-career-sim"
+            "https://activity-static.hupu.com/colorbox-activities/activity-project-ai-1787297060404/index.html?t=1787557168381"
     }
 }

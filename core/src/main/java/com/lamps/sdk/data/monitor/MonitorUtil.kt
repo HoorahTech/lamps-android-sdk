@@ -27,22 +27,13 @@ import java.security.MessageDigest
 
 object MonitorUtil {
     private val SIGN_KEYS = listOf(
-        "adpid",
-        "app_version",
-        "cid",
-        "forward_source",
+        "appid",
+        "forwardSource",
         "price",
-        "puid",
-        "request_id"
+        "requestId",
+        "sdkVersion",
+        "slotId",
     )
-
-    private val PUBLIC_MACRO_QUERY_KEYS = listOf(
-        TS, UA, IP, MAC, SW, SH, IMEI, OS, ANDROID_ID, OAID, APP_ID, SDK_VERSION, PHONE_BRAND, NETWORK
-    ).flatMap { macro ->
-        val inner = macro.trim('_').lowercase()
-        listOf(macro.lowercase(), inner)
-    }.toSet() + setOf("android_id", "app_id")
-
 
     fun report(
         event: String,
@@ -139,27 +130,5 @@ object MonitorUtil {
             PHONE_BRAND to DeviceUtils.phoneBrand(context),
             NETWORK to DeviceUtils.networkType(context)
         )
-    }
-
-    internal fun redactUrl(url: String): String {
-        return runCatching {
-            val uri = Uri.parse(url)
-            val names = uri.queryParameterNames
-            if (names.isEmpty()) return@runCatching url
-            val builder = uri.buildUpon().clearQuery()
-            names.forEach { key ->
-                val value = if (isPublicMacroQueryKey(key)) {
-                    "***"
-                } else {
-                    uri.getQueryParameter(key).orEmpty()
-                }
-                builder.appendQueryParameter(key, value)
-            }
-            builder.build().toString()
-        }.getOrDefault(url)
-    }
-
-    private fun isPublicMacroQueryKey(key: String): Boolean {
-        return key.lowercase() in PUBLIC_MACRO_QUERY_KEYS
     }
 }

@@ -54,11 +54,21 @@ android {
     }
 }
 
+val lampsVersion = rootProject.property("LAMPS_VERSION") as String
+val useLocalLamps = rootProject.findProperty("useLocalLamps")?.toString()?.toBoolean() ?: true
+
 dependencies {
-    val lampsVersion = rootProject.property("LAMPS_VERSION") as String
-    implementation("com.lamps:core:$lampsVersion")
-    implementation("com.lamps:pangle:$lampsVersion")
-    implementation("com.lamps:ylh:$lampsVersion")
-    implementation("com.lamps:noah:$lampsVersion")
-    debugImplementation("com.lamps:sdk-tools:$lampsVersion")
+    if (useLocalLamps) {
+        implementation(project(":core"))
+        implementation(project(":pangle"))
+        implementation(project(":ylh"))
+        implementation(project(":noah"))
+        debugImplementation(project(":sdk-tools"))
+    } else {
+        implementation("com.lamps:core:$lampsVersion")
+        implementation("com.lamps:pangle:$lampsVersion")
+        implementation("com.lamps:ylh:$lampsVersion")
+        implementation("com.lamps:noah:$lampsVersion")
+        debugImplementation("com.lamps:sdk-tools:$lampsVersion")
+    }
 }

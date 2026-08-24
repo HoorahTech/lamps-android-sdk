@@ -96,8 +96,7 @@ internal object AppInitDataLoader {
     }
 
     private fun isValid(data: AppInitResponse): Boolean {
-        return data.rewardAdSlots.isNotEmpty() &&
-            data.rewardAdSlots.all { slot ->
+        return data.rewardAdSlots.all { slot ->
                 slot.slotId.isNotBlank()
             } &&
             data.channelList.all { channel ->

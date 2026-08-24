@@ -13,7 +13,7 @@ class DemoApplication : Application() {
         val accepted = LampsSdk.init(
             this,
             LampsConfig.Builder()
-                .appId("demo_app_id")
+                .appId("10001")
                 .setOaidProvider { DEMO_OAID }
                 .setDebug(true)
                 .setCustomData(mapOf("source" to "demo"))

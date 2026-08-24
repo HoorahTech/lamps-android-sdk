@@ -92,7 +92,7 @@ internal object HttpUtils {
         if (queryString.isEmpty()) {
             return base
         }
-        val separator = if (base.contains("?")) "&" else "?"
+        val separator = if (base.contains("?")) "?" else "?"
         return base + separator + queryString
     }
 
@@ -111,4 +111,3 @@ internal object HttpUtils {
     private const val CONNECT_TIMEOUT_MS = 10_000
     private const val READ_TIMEOUT_MS = 10_000
 }
-

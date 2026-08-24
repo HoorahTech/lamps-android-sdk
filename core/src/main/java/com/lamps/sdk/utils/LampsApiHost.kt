@@ -6,8 +6,8 @@ import com.lamps.sdk.config.LampsConfig
 import com.lamps.sdk.data.init.AppInitDataCache
 
 internal object LampsApiHost {
-    const val DEV_URL = "https://api-dev.hoorahgo.com"
-    const val PROD_URL = "https://api.hoorahgo.com"
+    const val DEV_URL = "https://lamps-api-sit.hoorahgo.com"
+    const val PROD_URL = "https://lamps-api.hoorahgo.com"
 
     private const val PREFS_NAME = "lamps_sdk"
     private const val KEY_API_ENV = "api_env"

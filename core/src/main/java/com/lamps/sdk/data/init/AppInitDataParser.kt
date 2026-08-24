@@ -10,7 +10,7 @@ internal object AppInitDataParser {
             val json = JSONObject(body)
             val code = json.optInt("code", -1)
             val message = json.optString("message")
-            if (code != 0) {
+            if (code != 200) {
                 return Result.failure(
                     IllegalStateException(message.ifBlank { "appInitData request failed, code=$code" })
                 )
