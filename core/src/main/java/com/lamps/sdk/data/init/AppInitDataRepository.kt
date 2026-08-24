@@ -29,6 +29,6 @@ internal class HttpAppInitDataRepository  {
     }
 
     private companion object {
-        const val APP_INIT_DATA_PATH = "/v1/lamps/config"
+        const val APP_INIT_DATA_PATH = "/api/v1/advertisement/config"
     }
 }

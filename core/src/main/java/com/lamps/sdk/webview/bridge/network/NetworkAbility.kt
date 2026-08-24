@@ -181,7 +181,7 @@ internal class NetworkAbility : LampsAbility {
     }
 
     private companion object {
-        const val METHOD_COMMON_REQUEST = "hupu.common.request"
+        const val METHOD_COMMON_REQUEST = "lamps.common.request"
         const val CONNECT_TIMEOUT_MS = 20_000
         const val READ_TIMEOUT_MS = 20_000
     }
