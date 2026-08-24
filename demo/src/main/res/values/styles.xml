@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.LampsDemo" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">#007AFF</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorPrimaryVariant">#0051CB</item>
+        <item name="colorSecondary">#FF6B35</item>
+        <item name="colorOnSecondary">#FFFFFF</item>
+    </style>
+</resources>

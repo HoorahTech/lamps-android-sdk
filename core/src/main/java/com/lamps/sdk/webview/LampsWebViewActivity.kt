@@ -14,7 +14,7 @@ import android.webkit.WebView
 import android.widget.LinearLayout
 import android.widget.TextView
 
-class LampsWebViewActivity : Activity() {
+internal class LampsWebViewActivity : Activity() {
     private lateinit var webView: LampsWebView
     private lateinit var titleView: TextView
 

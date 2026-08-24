@@ -4,6 +4,7 @@ import android.content.Context
 import com.lamps.sdk.config.LampsConfig
 import com.lamps.sdk.core.InitCallback
 import com.lamps.sdk.core.SdkRuntime
+import com.lamps.sdk.view.GameCenterView
 
 object LampsSdk {
 
@@ -21,4 +22,14 @@ object LampsSdk {
 
     @JvmStatic
     fun getSdkVersion(): String = BuildConfig.SDK_VERSION
+
+    @JvmStatic
+    fun navigateToGameCenter(context: Context) {
+        SdkRuntime.navigateToGameCenter(context)
+    }
+
+    @JvmStatic
+    fun getGameCenterView(context: Context): GameCenterView? {
+        return SdkRuntime.getGameCenterView(context)
+    }
 }

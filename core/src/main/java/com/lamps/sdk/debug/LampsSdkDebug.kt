@@ -126,7 +126,11 @@ object LampsSdkDebug {
                     }
                 }
             },
-            section("服务端下发的广告位") {
+            section("服务端下发配置") {
+                line("clientIp", initData?.clientIp.orEmpty())
+                line("gameCenterPage", initData?.gameCenterPage.orEmpty())
+
+                appendLine("rewardAdSlots:")
                 if (initData?.rewardAdSlots.orEmpty().isEmpty()) {
                     appendLine("  []")
                 } else {
@@ -155,7 +159,7 @@ object LampsSdkDebug {
                 line("  wm", initData?.monitorLinks?.wm.orEmpty())
                 line("  pm", initData?.monitorLinks?.pm.orEmpty())
                 line("  cm", initData?.monitorLinks?.cm.orEmpty())
-                line("  rem", initData?.monitorLinks?.dm.orEmpty())
+                line("  dm", initData?.monitorLinks?.dm.orEmpty())
             },
             section("激励视频") {
                 val rewardAds = SdkRewardDispatcher.getRewardDataList()

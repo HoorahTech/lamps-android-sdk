@@ -58,6 +58,9 @@ val lampsVersion = rootProject.property("LAMPS_VERSION") as String
 val useLocalLamps = rootProject.findProperty("useLocalLamps")?.toString()?.toBoolean() ?: true
 
 dependencies {
+    implementation("com.google.android.material:material:1.11.0")
+    implementation("androidx.viewpager2:viewpager2:1.0.0")
+
     if (useLocalLamps) {
         implementation(project(":core"))
         implementation(project(":pangle"))

@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Context
 import com.lamps.sdk.config.LampsConfig
 import com.lamps.sdk.data.init.AppInitDataLoader
-import com.lamps.sdk.data.monitor.MonitorReporter
 import com.lamps.sdk.data.sdk.channel.SdkInitCallback
 import com.lamps.sdk.data.sdk.init.SdkInitDispatcher
 import com.lamps.sdk.data.sdk.reward.RewardAdErrorCode
@@ -15,6 +14,8 @@ import com.lamps.sdk.reward.RewardAdShowCallback
 import com.lamps.sdk.utils.LampsApiHost
 import com.lamps.sdk.utils.SdkLog
 import com.lamps.sdk.utils.ThreadUtils
+import com.lamps.sdk.view.GameCenterView
+import com.lamps.sdk.webview.LampsWebViewActivity
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicReference
 
@@ -206,6 +207,27 @@ internal object SdkRuntime {
                 SdkLog.w("callback threw: ${t.message}", t)
             }
         }
+    }
+
+
+    fun navigateToGameCenter(context: Context) {
+        val url = LampsConfig.current?.appInitData?.gameCenterPage
+            ?.takeIf { it.isNotBlank() }
+            ?: return
+        context.startActivity(
+            LampsWebViewActivity.buildIntent(
+                context = context,
+                url = url,
+                title = "游戏中心"
+            )
+        )
+    }
+
+    fun getGameCenterView(context: Context): GameCenterView? {
+        val url = LampsConfig.current?.appInitData?.gameCenterPage
+            ?.takeIf { it.isNotBlank() }
+            ?: return null
+        return GameCenterView(context, url)
     }
 
     private const val METRIC_TOTAL = "lamps.total"

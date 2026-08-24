@@ -1,8 +1,9 @@
 <resources>
     <string name="app_name">Lamps SDK Demo</string>
-    <string name="open_lamps_webview">Open LampsWebView</string>
-    <string name="open_lamps_sdk_tools">Open Lamps SDK Tools</string>
-    <string name="show_reward_video">Show Reward Video</string>
-    <string name="reward_idle">Reward: idle</string>
-
+    <string name="open_lamps_webview">打开 LampsWebView</string>
+    <string name="open_lamps_sdk_tools">打开 SDK 工具</string>
+    <string name="show_reward_video">展示激励视频</string>
+    <string name="reward_idle">激励视频: 空闲</string>
+    <string name="navigate_game_center">跳转游戏中心</string>
+    <string name="get_game_center_fragment">TabLayout 演示</string>
 </resources>
