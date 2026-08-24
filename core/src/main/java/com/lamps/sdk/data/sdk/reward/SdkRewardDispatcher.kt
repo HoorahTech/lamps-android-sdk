@@ -2,6 +2,7 @@ package com.lamps.sdk.data.sdk.reward
 
 import android.app.Activity
 import com.lamps.sdk.config.LampsConfig
+import com.lamps.sdk.data.init.ChannelInfoResponse
 import com.lamps.sdk.data.init.RewardSlotResponse
 import com.lamps.sdk.data.monitor.MonitorReporter
 import com.lamps.sdk.data.sdk.channel.RewardAdSdkLoadCallback
@@ -36,7 +37,15 @@ internal object SdkRewardDispatcher {
             return
         }
         rewardDataList.clear()
-        val slots = config.appInitData?.rewardAdSlots.orEmpty()
+        val appInitData = config.appInitData ?: run {
+            finishLoadValidationFailed(
+                callback,
+                RewardAdErrorCode.SLOT_NOT_FOUND,
+                "appInitData is null"
+            )
+            return
+        }
+        val slots = appInitData.rewardAdSlots
         if (slots.isEmpty()) {
             finishLoadValidationFailed(
                 callback,
@@ -46,12 +55,12 @@ internal object SdkRewardDispatcher {
             return
         }
 
-        val validSlots = slots.filter { it.slotId.isNotBlank() && it.appId.isNotBlank() }
+        val validSlots = slots.filter { it.slotId.isNotBlank() }
         if (validSlots.isEmpty()) {
             finishLoadValidationFailed(
                 callback,
                 RewardAdErrorCode.INVALID_SLOT,
-                "slotId or appId is empty"
+                "slotId is empty"
             )
             return
         }
@@ -59,6 +68,7 @@ internal object SdkRewardDispatcher {
         rewardDataList.addAll(
             createRewardDataList(
                 validSlots,
+                appInitData.channelList,
                 UUID.randomUUID().toString().replace("-", ""),
                 forwardSource
             )
@@ -117,11 +127,14 @@ internal object SdkRewardDispatcher {
 
     private fun createRewardDataList(
         slots: List<RewardSlotResponse>,
+        channelList: List<ChannelInfoResponse>,
         requestId: String,
         forwardSource: String
     ): List<LampsRewardAd> {
         return slots.mapNotNull { slot ->
-            SdkProviderRegistry.all().firstOrNull { it.supports(slot) }?.let { provider ->
+            val channel = channelList.firstOrNull { it.channelName == slot.channelName }
+                ?: return@mapNotNull null
+            SdkProviderRegistry.all().firstOrNull { it.supports(channel) }?.let { provider ->
                 LampsRewardAd(provider, slot, requestId, forwardSource)
             }
         }

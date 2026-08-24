@@ -112,8 +112,8 @@ object LampsSdkDebug {
                 } else {
                     initSdkList.forEachIndexed { index, data ->
                         appendLine("  [${index}] ${data.provider.name}")
-                        line("    channelName", data.slot.channelName)
-                        line("    appId", data.slot.appId)
+                        line("    channelName", data.channel.channelName)
+                        line("    appId", data.appId)
                         line("    state", data.state.name)
                         line("    internalInit", config?.let { data.provider.shouldInitInternally(it) } ?: true)
                         line("    start", data.startTimeMillis?.let(::formatTime) ?: "-")
@@ -126,36 +126,28 @@ object LampsSdkDebug {
                     }
                 }
             },
-            section("Application") {
-                line("class", app.javaClass.name)
-                line("packageName", app.packageName)
-                line("label", app.applicationInfo.loadLabel(app.packageManager).toString())
-                line(
-                    "version",
-                    runCatching {
-                        app.packageManager.getPackageInfo(app.packageName, 0).versionName.orEmpty()
-                    }.getOrDefault("")
-                )
-                appendLine("deviceMacros:")
-                MonitorUtil.buildDefaultValues().forEach { (macro, value) ->
-                    line("  $macro", value)
-                }
-            },
-            section("接口 Init Data") {
-                line("token", initData?.token.orEmpty())
-                line("clientIp", initData?.clientIp.orEmpty())
-                appendLine("rewardAdSlots:")
-                if (initData?.rewardAdSlots.isNullOrEmpty()) {
+            section("服务端下发的广告位") {
+                if (initData?.rewardAdSlots.orEmpty().isEmpty()) {
                     appendLine("  []")
                 } else {
                     initData?.rewardAdSlots?.forEachIndexed { index, slot ->
                         appendLine("  [$index]")
-                        line("    appId", slot.appId)
                         line("    slotId", slot.slotId)
                         line("    type", slot.type.name)
                         line("    price", slot.price)
                         line("    channelName", slot.channelName)
                         line("    channelId", slot.channelId)
+                    }
+                }
+                appendLine("channelList:")
+                if (initData?.channelList.orEmpty().isEmpty()) {
+                    appendLine("  []")
+                } else {
+                    initData?.channelList?.forEachIndexed { index, channel ->
+                        appendLine("  [$index]")
+                        line("    channelName", channel.channelName)
+                        line("    channelId", channel.channelId)
+                        line("    channelAppId", channel.channelAppId)
                     }
                 }
                 appendLine("monitorLinks:")

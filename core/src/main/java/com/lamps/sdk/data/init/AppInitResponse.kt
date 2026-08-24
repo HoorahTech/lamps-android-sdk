@@ -3,14 +3,18 @@ package com.lamps.sdk.data.init
 internal class AppInitResponse(
     val token: String,
     val clientIp: String,
+    val channelList: List<ChannelInfoResponse>,
     val rewardAdSlots: List<RewardSlotResponse>,
-    val monitorLinks: MonitorLinksResponse,
-    val rewardSignKey: String
+    val monitorLinks: MonitorLinksResponse
 ) {
     override fun toString(): String {
         return "AppInitResponse(token=$token, clientIp=$clientIp, " +
-            "rewardAdSlots=$rewardAdSlots, monitorLinks=$monitorLinks)"
+            "channelList=$channelList, rewardAdSlots=$rewardAdSlots, monitorLinks=$monitorLinks)"
     }
+}
+
+internal fun AppInitResponse.getChannelAppId(channelName: String): String? {
+    return channelList.firstOrNull { it.channelName == channelName }?.channelAppId
 }
 
 enum class RewardSlotType {
@@ -24,13 +28,18 @@ enum class RewardSlotType {
     }
 }
 
+class ChannelInfoResponse(
+    val channelName: String,
+    val channelId: String,
+    val channelAppId: String
+)
+
 class RewardSlotResponse(
     val slotId: String,
     val type: RewardSlotType,
     val price: Double,
     val channelName: String,
-    val channelId: String,
-    val appId: String
+    val channelId: String
 )
 
 internal class MonitorLinksResponse(

@@ -40,7 +40,7 @@ internal object YLHSdkRewardBiddingReporter {
                 )
             } else {
                 val lossPrice = winnerPrice.takeIf { it > 0 } ?: item.price.toYlhBidPrice()
-                val adnId = if (SdkChannel.YLH.matches(winner?.channelName.orEmpty())) {
+                val adnId = if (SdkChannel.GDT.matches(winner?.channelName.orEmpty())) {
                     ADN_OTHER_YLH_BIDDING
                 } else {
                     ADN_THIRD_PARTY

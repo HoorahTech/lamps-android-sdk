@@ -5,8 +5,8 @@ import com.lamps.sdk.config.LampsConfig
 
 object SdkLog {
     private const val TAG = "LampsSdk"
-    private val JSON_SECRET = Regex("\"(rewardSignKey)\"\\s*:\\s*\"(?:\\\\.|[^\"\\\\])*\"")
-    private val QUERY_SECRET = Regex("(rewardSignKey)=([^&\\s]*)", RegexOption.IGNORE_CASE)
+    private val JSON_SECRET = Regex("\"(token)\"\\s*:\\s*\"(?:\\\\.|[^\"\\\\])*\"")
+    private val QUERY_SECRET = Regex("(token)=([^&\\s]*)", RegexOption.IGNORE_CASE)
 
     /** 仅 debug 包 / setDebug(true) 时输出。 */
     fun d(message: String) {

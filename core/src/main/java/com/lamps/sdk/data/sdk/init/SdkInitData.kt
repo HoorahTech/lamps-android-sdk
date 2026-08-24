@@ -1,12 +1,15 @@
 package com.lamps.sdk.data.sdk.init
 
-import com.lamps.sdk.data.init.RewardSlotResponse
+import com.lamps.sdk.data.init.ChannelInfoResponse
 import com.lamps.sdk.data.sdk.provider.ISdkProvider
 
 internal class SdkInitData(
     val provider: ISdkProvider,
-    val slot: RewardSlotResponse
+    val channel: ChannelInfoResponse
 ) {
+    val appId: String
+        get() = channel.channelAppId
+
     @Volatile
     var state: SdkInitState = SdkInitState.PENDING
         private set

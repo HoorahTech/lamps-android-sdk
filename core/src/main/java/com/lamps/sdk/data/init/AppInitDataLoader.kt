@@ -96,12 +96,12 @@ internal object AppInitDataLoader {
     }
 
     private fun isValid(data: AppInitResponse): Boolean {
-        return data.token.isNotBlank() &&
-            data.rewardAdSlots.isNotEmpty() &&
+        return data.rewardAdSlots.isNotEmpty() &&
             data.rewardAdSlots.all { slot ->
-                slot.appId.isNotBlank() &&
-                    slot.slotId.isNotBlank() &&
-                    (slot.channelName.isNotBlank() || slot.channelId.isNotBlank())
+                slot.slotId.isNotBlank()
+            } &&
+            data.channelList.all { channel ->
+                channel.channelName.isNotBlank() && channel.channelAppId.isNotBlank()
             }
     }
 

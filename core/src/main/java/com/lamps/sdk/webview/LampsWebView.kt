@@ -13,6 +13,7 @@ import com.lamps.sdk.config.LampsConfig
 import com.lamps.sdk.data.sdk.reward.RewardAdAbilityInstaller
 import com.lamps.sdk.webview.bridge.LampsAbilityInstaller
 import com.lamps.sdk.webview.bridge.LampsWebViewBridge
+import com.lamps.sdk.webview.bridge.CommonAbilityInstaller
 
 open class LampsWebView @JvmOverloads constructor(
     context: Context,
@@ -26,6 +27,7 @@ open class LampsWebView @JvmOverloads constructor(
         initSettings()
         addJavascriptInterface(bridge, BRIDGE_NAME)
         bridge.registerAbilityInstaller(RewardAdAbilityInstaller)
+        bridge.registerAbilityInstaller(CommonAbilityInstaller())
         webViewClient = WebViewClient()
         webChromeClient = WebChromeClient()
     }

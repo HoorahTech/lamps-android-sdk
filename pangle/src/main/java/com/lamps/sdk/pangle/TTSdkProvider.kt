@@ -3,6 +3,7 @@ package com.lamps.sdk.pangle
 import android.app.Activity
 import android.app.Application
 import com.lamps.sdk.config.LampsConfig
+import com.lamps.sdk.data.init.ChannelInfoResponse
 import com.lamps.sdk.data.init.RewardSlotResponse
 import com.lamps.sdk.data.sdk.channel.RewardAdSdkLoadCallback
 import com.lamps.sdk.data.sdk.channel.RewardVideoAd
@@ -13,10 +14,10 @@ import com.lamps.sdk.data.sdk.reward.RewardAdErrorCode
 import com.lamps.sdk.reward.RewardAdShowCallback
 
 internal class TTSdkProvider : ISdkProvider {
-    override val name: String = SdkChannel.PANGLE.channelName
+    override val name: String = SdkChannel.CSJ.name
 
-    override fun supports(slot: RewardSlotResponse): Boolean {
-        return SdkChannel.PANGLE.matches(slot.channelName)
+    override fun supports(channel: ChannelInfoResponse): Boolean {
+        return SdkChannel.CSJ.matches(channel.channelName)
     }
 
     override fun shouldInitInternally(config: LampsConfig): Boolean = config.initPangleSdk
@@ -25,10 +26,10 @@ internal class TTSdkProvider : ISdkProvider {
 
     override fun initSdk(
         application: Application,
-        slot: RewardSlotResponse,
+        channel: ChannelInfoResponse,
         callback: SdkInitCallback
     ) {
-        TTSdkManager.initSdk(application, slot.appId, callback)
+        TTSdkManager.initSdk(application, channel.channelAppId, callback)
     }
 
     override fun loadReward(

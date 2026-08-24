@@ -94,18 +94,18 @@ object MonitorUtil {
     }
 
     /**
-     * 从 URL query 取 7 个参数（缺失跳过）→ 按 key 字母升序拼接 → 尾部拼 signKey → MD5 小写 32 位。
+     * 从 URL query 取 7 个参数（缺失跳过）→ 按 key 字母升序拼接 → 尾部拼 token → MD5 小写 32 位。
      */
     private fun computeSign(url: String): String? {
-        val rewardSignKey = LampsConfig.current?.appInitData?.rewardSignKey
-        if (rewardSignKey.isNullOrEmpty()) {
+        val token = LampsConfig.current?.appInitData?.token
+        if (token.isNullOrEmpty()) {
             return null
         }
         return runCatching {
             val uri = Uri.parse(url)
             val payload = SIGN_KEYS.mapNotNull { key ->
                 uri.getQueryParameter(key)?.takeIf { it.isNotEmpty() }?.let { "$key=$it" }
-            }.joinToString("&") + rewardSignKey
+            }.joinToString("&") + token
             md5LowerHex(payload)
         }.getOrNull()
     }

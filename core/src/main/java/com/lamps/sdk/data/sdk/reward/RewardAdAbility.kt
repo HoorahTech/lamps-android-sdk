@@ -26,6 +26,9 @@ private class RewardAdAbility : LampsAbility {
     private val flowInProgress = AtomicBoolean(false)
 
     @Volatile
+    private var flowStartTime: Long = 0L
+
+    @Volatile
     private var destroyed = false
 
     override fun executeAsync(
@@ -35,13 +38,8 @@ private class RewardAdAbility : LampsAbility {
         callbackId: String?,
         callback: LampsNativeCallback
     ) {
-        if (!flowInProgress.compareAndSet(false, true)) {
-            sendError(
-                webView,
-                RewardAdErrorCode.FLOW_IN_PROGRESS,
-                "reward ad flow is in progress",
-                endFlow = false
-            )
+        if (!tryAcquireFlow()) {
+            sendEvent(webView, "onBusy")
             return
         }
 
@@ -65,9 +63,9 @@ private class RewardAdAbility : LampsAbility {
         }
 
         val validCandidates = config!!.appInitData!!.rewardAdSlots
-            .filter { it.slotId.isNotBlank() && it.appId.isNotBlank() }
+            .filter { it.slotId.isNotBlank() }
         if (validCandidates.isEmpty()) {
-            sendError(webView, RewardAdErrorCode.INVALID_SLOT, "slotId or appId is empty")
+            sendError(webView, RewardAdErrorCode.INVALID_SLOT, "slotId is empty")
             return
         }
 
@@ -86,6 +84,19 @@ private class RewardAdAbility : LampsAbility {
                 error.message ?: "reward ad provider failed"
             )
         }
+    }
+
+    private fun tryAcquireFlow(): Boolean {
+        val now = System.currentTimeMillis()
+        if (flowInProgress.get() && now - flowStartTime <= 8000) {
+            return false
+        }
+        flowInProgress.set(false)
+        if (flowInProgress.compareAndSet(false, true)) {
+            flowStartTime = now
+            return true
+        }
+        return false
     }
 
     override fun destroy() {
@@ -175,8 +186,8 @@ private class RewardAdAbility : LampsAbility {
     }
 
     private companion object {
-        const val METHOD_SHOW_REWARDED_VIDEO = "hra.ad.showRewardedVideo"
-        const val EVENT_REWARDED_VIDEO_STATUS = "hoorah.ad.rewardedVideoStatus"
+        const val METHOD_SHOW_REWARDED_VIDEO = "lamps.ad.showRewardedVideo"
+        const val EVENT_REWARDED_VIDEO_STATUS = "lamps.ad.rewardedVideoStatus"
     }
 }
 

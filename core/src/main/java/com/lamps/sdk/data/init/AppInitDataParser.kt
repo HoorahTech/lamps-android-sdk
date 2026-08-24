@@ -20,9 +20,9 @@ internal object AppInitDataParser {
             val appInitData = AppInitResponse(
                 token = data.optString("token"),
                 clientIp = data.optString("clientIp"),
+                channelList = parseChannelList(data.optJSONArray("channelList")),
                 rewardAdSlots = parseSlots(data.optJSONArray("rewardAdSlots")),
-                monitorLinks = parseMonitorLinks(data.optJSONObject("monitorLinks")),
-                rewardSignKey = data.optString("rewardSignKey")
+                monitorLinks = parseMonitorLinks(data.optJSONObject("monitorLinks"))
             )
             Result.success(appInitData)
         } catch (t: Throwable) {
@@ -41,8 +41,23 @@ internal object AppInitDataParser {
                     type = RewardSlotType.from(item.optString("type")),
                     price = parsePrice(item),
                     channelName = item.optString("channelName"),
+                    channelId = item.optString("channelId")
+                )
+            )
+        }
+        return list
+    }
+
+    private fun parseChannelList(array: JSONArray?): List<ChannelInfoResponse> {
+        if (array == null) return emptyList()
+        val list = ArrayList<ChannelInfoResponse>(array.length())
+        for (i in 0 until array.length()) {
+            val item = array.optJSONObject(i) ?: continue
+            list.add(
+                ChannelInfoResponse(
+                    channelName = item.optString("channelName"),
                     channelId = item.optString("channelId"),
-                    appId = item.optString("appId")
+                    channelAppId = item.optString("channelAppId")
                 )
             )
         }

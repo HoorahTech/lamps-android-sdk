@@ -36,13 +36,11 @@ internal object SdkInitDispatcher {
     }
 
     private fun createInitDataList(config: LampsConfig): List<SdkInitData> {
-        val slots = config.appInitData?.rewardAdSlots
-            .orEmpty()
-            .distinctBy { it.appId }
-
-        return slots.mapNotNull { slot ->
-            SdkProviderRegistry.all().firstOrNull { it.supports(slot) }?.let { provider ->
-                SdkInitData(provider, slot)
+        val appInitData = config.appInitData ?: return emptyList()
+        return appInitData.channelList.mapNotNull { channel ->
+            if (channel.channelAppId.isBlank()) return@mapNotNull null
+            SdkProviderRegistry.all().firstOrNull { it.supports(channel) }?.let { provider ->
+                SdkInitData(provider, channel)
             }
         }.distinctBy { it.provider.javaClass }
     }
@@ -59,7 +57,7 @@ internal object SdkInitDispatcher {
                 if (!initData.markInitializing()) return@forEach
                 initData.provider.initSdk(
                     application,
-                    initData.slot,
+                    initData.channel,
                     createInitCallback(initData, remaining, finished, callback)
                 )
             }

@@ -3,6 +3,7 @@ package com.lamps.sdk.data.sdk.provider
 import android.app.Activity
 import android.app.Application
 import com.lamps.sdk.config.LampsConfig
+import com.lamps.sdk.data.init.ChannelInfoResponse
 import com.lamps.sdk.data.init.RewardSlotResponse
 import com.lamps.sdk.data.sdk.channel.RewardAdSdkLoadCallback
 import com.lamps.sdk.data.sdk.channel.RewardVideoAd
@@ -13,7 +14,7 @@ import com.lamps.sdk.reward.RewardAdShowCallback
 interface ISdkProvider {
     val name: String
 
-    fun supports(slot: RewardSlotResponse): Boolean
+    fun supports(channel: ChannelInfoResponse): Boolean
 
     fun shouldInitInternally(config: LampsConfig): Boolean
 
@@ -21,7 +22,7 @@ interface ISdkProvider {
 
     fun initSdk(
         application: Application,
-        slot: RewardSlotResponse,
+        channel: ChannelInfoResponse,
         callback: SdkInitCallback
     )
 

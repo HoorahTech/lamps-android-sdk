@@ -3,6 +3,7 @@ package com.lamps.sdk.noah
 import android.app.Activity
 import android.app.Application
 import com.lamps.sdk.config.LampsConfig
+import com.lamps.sdk.data.init.ChannelInfoResponse
 import com.lamps.sdk.data.init.RewardSlotResponse
 import com.lamps.sdk.data.sdk.channel.RewardAdSdkLoadCallback
 import com.lamps.sdk.data.sdk.channel.RewardVideoAd
@@ -14,10 +15,10 @@ import com.lamps.sdk.reward.LampsRewardAd
 import com.lamps.sdk.reward.RewardAdShowCallback
 
 internal class NoahSdkProvider : ISdkProvider {
-    override val name: String = SdkChannel.NOAH.channelName
+    override val name: String = SdkChannel.HUICHUAN.name
 
-    override fun supports(slot: RewardSlotResponse): Boolean {
-        return SdkChannel.NOAH.matches(slot.channelName)
+    override fun supports(channel: ChannelInfoResponse): Boolean {
+        return SdkChannel.HUICHUAN.matches(channel.channelName)
     }
 
     override fun shouldInitInternally(config: LampsConfig): Boolean = config.initNoahSdk
@@ -26,12 +27,12 @@ internal class NoahSdkProvider : ISdkProvider {
 
     override fun initSdk(
         application: Application,
-        slot: RewardSlotResponse,
+        channel: ChannelInfoResponse,
         callback: SdkInitCallback
     ) {
         NoahSdkManager.initSdk(
             application,
-            slot.appId,
+            channel.channelAppId,
             callback
         )
     }

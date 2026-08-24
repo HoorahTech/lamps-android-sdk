@@ -3,6 +3,7 @@ package com.lamps.sdk.ylh
 import android.app.Activity
 import android.app.Application
 import com.lamps.sdk.config.LampsConfig
+import com.lamps.sdk.data.init.ChannelInfoResponse
 import com.lamps.sdk.data.init.RewardSlotResponse
 import com.lamps.sdk.data.sdk.channel.RewardAdSdkLoadCallback
 import com.lamps.sdk.data.sdk.channel.RewardVideoAd
@@ -14,10 +15,10 @@ import com.lamps.sdk.reward.LampsRewardAd
 import com.lamps.sdk.reward.RewardAdShowCallback
 
 internal class YLHSdkProvider : ISdkProvider {
-    override val name: String = SdkChannel.YLH.channelName
+    override val name: String = SdkChannel.GDT.name
 
-    override fun supports(slot: RewardSlotResponse): Boolean {
-        return SdkChannel.YLH.matches(slot.channelName)
+    override fun supports(channel: ChannelInfoResponse): Boolean {
+        return SdkChannel.GDT.matches(channel.channelName)
     }
 
     override fun shouldInitInternally(config: LampsConfig): Boolean = config.initYlhSdk
@@ -26,10 +27,10 @@ internal class YLHSdkProvider : ISdkProvider {
 
     override fun initSdk(
         application: Application,
-        slot: RewardSlotResponse,
+        channel: ChannelInfoResponse,
         callback: SdkInitCallback
     ) {
-        YLHSdkManager.initSdk(application, slot.appId, callback)
+        YLHSdkManager.initSdk(application, channel.channelAppId, callback)
     }
 
     override fun loadReward(
