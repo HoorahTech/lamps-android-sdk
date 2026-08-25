@@ -2,7 +2,7 @@ package com.lamps.sdk.noah
 
 import android.app.Activity
 import android.app.Application
-import com.lamps.sdk.config.LampsConfig
+import com.lamps.sdk.config.SdkConfig
 import com.lamps.sdk.data.init.ChannelInfoResponse
 import com.lamps.sdk.data.init.RewardSlotResponse
 import com.lamps.sdk.data.sdk.channel.RewardAdSdkLoadCallback
@@ -21,7 +21,7 @@ internal class NoahSdkProvider : ISdkProvider {
         return SdkChannel.NOAH.matches(channel.channelName)
     }
 
-    override fun shouldInitInternally(config: LampsConfig): Boolean = config.initNoahSdk
+    override fun shouldInitInternally(config: SdkConfig): Boolean = config.initNoahSdk
 
     override fun isInitialized(): Boolean = NoahSdkManager.isInitialized()
 

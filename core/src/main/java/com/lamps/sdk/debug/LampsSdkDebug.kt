@@ -2,9 +2,9 @@ package com.lamps.sdk.debug
 
 import android.content.Context
 import com.lamps.sdk.BuildConfig
-import com.lamps.sdk.LampsSdk
-import com.lamps.sdk.config.LampsConfig
+import com.lamps.sdk.config.SdkConfig
 import com.lamps.sdk.core.SdkInitMetrics
+import com.lamps.sdk.core.SdkRuntime
 import com.lamps.sdk.data.sdk.init.SdkInitDispatcher
 import com.lamps.sdk.data.sdk.provider.SdkProviderRegistry
 import com.lamps.sdk.data.sdk.reward.SdkRewardDispatcher
@@ -66,7 +66,7 @@ object LampsSdkDebug {
     @JvmStatic
     fun buildSections(context: Context): List<LampsSdkDebugSection> {
         val app = context.applicationContext
-        val config = LampsConfig.current
+        val config = SdkConfig.current
         val initData = config?.appInitData
         return listOf(
             section("SDK 状态") {
@@ -74,7 +74,7 @@ object LampsSdkDebug {
                 line("apiEnv", LampsApiHost.current(app).label)
                 line("apiBaseUrl", LampsApiHost.baseUrl(app))
                 line("configInitialized", config != null)
-                line("sdkReady", LampsSdk.isSdkReady())
+                line("sdkReady", SdkRuntime.isReady())
                 line("appInitDataLoaded", initData != null)
                 SdkProviderRegistry.all().forEach { provider ->
                     line("${provider.name}Initialized", provider.isInitialized())

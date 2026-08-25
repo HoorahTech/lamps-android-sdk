@@ -2,7 +2,7 @@ package com.lamps.sdk.data.monitor
 
 import android.os.Build
 import com.lamps.sdk.BuildConfig
-import com.lamps.sdk.config.LampsConfig
+import com.lamps.sdk.config.SdkConfig
 import com.lamps.sdk.utils.DeviceUtils
 
 internal object MonitorConstant {

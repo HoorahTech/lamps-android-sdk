@@ -4,7 +4,6 @@ import android.content.ContentProvider
 import android.content.ContentValues
 import android.database.Cursor
 import android.net.Uri
-import com.lamps.sdk.LampsSdk
 import com.lamps.sdk.data.sdk.provider.ISdkProvider
 import com.lamps.sdk.data.sdk.provider.SdkProviderRegistry
 

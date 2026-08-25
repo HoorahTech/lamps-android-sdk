@@ -1,7 +1,7 @@
 package com.lamps.sdk.utils
 
 import android.util.Log
-import com.lamps.sdk.config.LampsConfig
+import com.lamps.sdk.config.SdkConfig
 
 object SdkLog {
     private const val TAG = "LampsSdk"
@@ -10,7 +10,7 @@ object SdkLog {
 
     /** 仅 debug 包 / setDebug(true) 时输出。 */
     fun d(message: String) {
-        if (LampsConfig.current?.debug == true) {
+        if (SdkConfig.current?.debug == true) {
             Log.d(TAG, redactSecrets(message))
         }
     }

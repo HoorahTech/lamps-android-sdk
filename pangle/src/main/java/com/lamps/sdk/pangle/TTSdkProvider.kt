@@ -2,7 +2,7 @@ package com.lamps.sdk.pangle
 
 import android.app.Activity
 import android.app.Application
-import com.lamps.sdk.config.LampsConfig
+import com.lamps.sdk.config.SdkConfig
 import com.lamps.sdk.data.init.ChannelInfoResponse
 import com.lamps.sdk.data.init.RewardSlotResponse
 import com.lamps.sdk.data.sdk.channel.RewardAdSdkLoadCallback
@@ -20,7 +20,7 @@ internal class TTSdkProvider : ISdkProvider {
         return SdkChannel.CSJ.matches(channel.channelName)
     }
 
-    override fun shouldInitInternally(config: LampsConfig): Boolean = config.initPangleSdk
+    override fun shouldInitInternally(config: SdkConfig): Boolean = config.initPangleSdk
 
     override fun isInitialized(): Boolean = TTSdkManager.isInitialized()
 

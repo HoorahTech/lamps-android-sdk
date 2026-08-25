@@ -2,7 +2,7 @@ package com.lamps.sdk.noah
 
 import android.app.Activity
 import android.app.Application
-import com.lamps.sdk.config.LampsConfig
+import com.lamps.sdk.config.SdkConfig
 import com.lamps.sdk.core.LampsErrorCode
 import com.lamps.sdk.data.sdk.channel.RewardAdSdkLoadCallback
 import com.lamps.sdk.data.sdk.channel.SdkInitCallback
@@ -20,7 +20,7 @@ object NoahSdkManager {
         appId: String,
         callback: SdkInitCallback
     ) {
-        if (LampsConfig.current?.initNoahSdk == false) {
+        if (SdkConfig.current?.initNoahSdk == false) {
             callback.success()
             return
         }
@@ -32,14 +32,14 @@ object NoahSdkManager {
             val sdkConfig = NoahSdkConfig.Builder()
                 .setAppKey(appId)
                 .setOuterSettings(object : NoahSdkConfig.NoahOuterSettings() {
-                    override fun getOAID(): String = LampsConfig.current?.resolveOaid()?:""
+                    override fun getOAID(): String = SdkConfig.current?.resolveOaid()?:""
 
                     override fun getOAID2(): String = ""
                 })
                 .build()
             val globalConfig = GlobalConfig.newBuilder()
-                .setDebug(LampsConfig.current?.debug?:false)
-                .setAdTest(LampsConfig.current?.debug?:false)
+                .setDebug(SdkConfig.current?.debug?:false)
+                .setAdTest(SdkConfig.current?.debug?:false)
                 .setEnablePersonalRecommend(false)
                 .build()
             NoahSdk.initAsync(

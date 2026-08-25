@@ -2,7 +2,7 @@ package com.lamps.sdk.ylh
 
 import android.app.Activity
 import android.app.Application
-import com.lamps.sdk.config.LampsConfig
+import com.lamps.sdk.config.SdkConfig
 import com.lamps.sdk.core.LampsErrorCode
 import com.lamps.sdk.data.sdk.channel.RewardAdSdkLoadCallback
 import com.lamps.sdk.data.sdk.channel.SdkInitCallback
@@ -21,7 +21,7 @@ object YLHSdkManager {
         appId: String,
         callback: SdkInitCallback
     ) {
-        if (initialized || LampsConfig.current?.initYlhSdk == false) {
+        if (initialized || SdkConfig.current?.initYlhSdk == false) {
             initialized = true
             callback.success()
             return

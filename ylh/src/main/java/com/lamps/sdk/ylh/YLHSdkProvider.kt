@@ -2,7 +2,7 @@ package com.lamps.sdk.ylh
 
 import android.app.Activity
 import android.app.Application
-import com.lamps.sdk.config.LampsConfig
+import com.lamps.sdk.config.SdkConfig
 import com.lamps.sdk.data.init.ChannelInfoResponse
 import com.lamps.sdk.data.init.RewardSlotResponse
 import com.lamps.sdk.data.sdk.channel.RewardAdSdkLoadCallback
@@ -21,7 +21,7 @@ internal class YLHSdkProvider : ISdkProvider {
         return SdkChannel.GDT.matches(channel.channelName)
     }
 
-    override fun shouldInitInternally(config: LampsConfig): Boolean = config.initYlhSdk
+    override fun shouldInitInternally(config: SdkConfig): Boolean = config.initYlhSdk
 
     override fun isInitialized(): Boolean = YLHSdkManager.isInitialized()
 

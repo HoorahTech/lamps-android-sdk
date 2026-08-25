@@ -62,16 +62,16 @@ dependencies {
     implementation("androidx.viewpager2:viewpager2:1.0.0")
 
     if (useLocalLamps) {
-        implementation(project(":core"))
+        implementation(project(":sdk"))
         implementation(project(":pangle"))
         implementation(project(":ylh"))
         implementation(project(":noah"))
         debugImplementation(project(":sdk-tools"))
     } else {
-        implementation("com.lamps:core:$lampsVersion")
         implementation("com.lamps:pangle:$lampsVersion")
         implementation("com.lamps:ylh:$lampsVersion")
         implementation("com.lamps:noah:$lampsVersion")
+        implementation("com.lamps:sdk:$lampsVersion")
         debugImplementation("com.lamps:sdk-tools:$lampsVersion")
     }
 }

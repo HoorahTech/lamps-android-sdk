@@ -2,7 +2,7 @@ package com.lamps.sdk.core
 
 import android.app.Activity
 import android.content.Context
-import com.lamps.sdk.config.LampsConfig
+import com.lamps.sdk.config.SdkConfig
 import com.lamps.sdk.data.init.AppInitDataLoader
 import com.lamps.sdk.data.sdk.channel.SdkInitCallback
 import com.lamps.sdk.data.sdk.init.SdkInitDispatcher
@@ -14,16 +14,15 @@ import com.lamps.sdk.reward.RewardAdShowCallback
 import com.lamps.sdk.utils.LampsApiHost
 import com.lamps.sdk.utils.SdkLog
 import com.lamps.sdk.utils.ThreadUtils
-import com.lamps.sdk.view.GameCenterView
 import com.lamps.sdk.webview.LampsWebViewActivity
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicReference
 
-internal object SdkRuntime {
+object SdkRuntime {
     private val runtime = AtomicReference<InitState>(InitState.Uninitialized)
-    private val callbacks = CopyOnWriteArrayList<InitCallback>()
+    private val callbacks = CopyOnWriteArrayList<CoreInitCallback>()
 
-    fun init(context: Context, config: LampsConfig): Boolean {
+    fun init(context: Context, config: SdkConfig): Boolean {
         if (runtime.get() != InitState.Uninitialized) {
             SdkLog.e("init failed: sdk has initialized:${runtime.get()}")
             return false
@@ -35,7 +34,7 @@ internal object SdkRuntime {
 
         if (runtime.compareAndSet(InitState.Uninitialized, InitState.Initialized)) {
             SdkLog.e("init success")
-            LampsConfig.init(context, config)
+            SdkConfig.init(context, config)
             LampsApiHost.restore(context.applicationContext)
             return true
         } else {
@@ -45,7 +44,7 @@ internal object SdkRuntime {
     }
 
 
-    fun startAsync(callback: InitCallback) {
+    fun startAsync(callback: CoreInitCallback) {
         callbacks.add(callback)
         when (val state = runtime.get()) {
             InitState.Starting -> {
@@ -80,7 +79,7 @@ internal object SdkRuntime {
      * 对齐汇川 [com.noah.api.NoahSdk.checkInit]：
      * 已成功则立刻回调；进行中/尚未 start 则挂起等待结果；失败则立刻带回上次错误。
      */
-    fun checkInit(callback: InitCallback) {
+    fun checkInit(callback: CoreInitCallback) {
         when (val state = runtime.get()) {
             InitState.Ready -> {
                 callback.success()
@@ -120,7 +119,7 @@ internal object SdkRuntime {
             )
             return
         }
-        val config = LampsConfig.current
+        val config = SdkConfig.current
         if (config == null) {
             callback.onAdLoadFailed(
                 RewardAdErrorCode.SDK_NOT_READY,
@@ -153,7 +152,7 @@ internal object SdkRuntime {
         SdkInitMetrics.reset()
         SdkInitMetrics.start(METRIC_TOTAL, "Lamps SDK 总初始化")
         runtime.set(InitState.Starting)
-        val config = LampsConfig.current
+        val config = SdkConfig.current
         if (config == null) {
             notifyFail(LampsErrorCode.NOT_INITIALIZED, "call init() before start()")
             return
@@ -211,7 +210,7 @@ internal object SdkRuntime {
 
 
     fun navigateToGameCenter(context: Context) {
-        val url = LampsConfig.current?.appInitData?.gameCenterPage
+        val url = SdkConfig.current?.appInitData?.gameCenterPage
             ?.takeIf { it.isNotBlank() }
             ?: return
         context.startActivity(
@@ -223,11 +222,11 @@ internal object SdkRuntime {
         )
     }
 
-    fun getGameCenterView(context: Context): GameCenterView? {
-        val url = LampsConfig.current?.appInitData?.gameCenterPage
+    fun getGameCenterUrl(): String? {
+        val url = SdkConfig.current?.appInitData?.gameCenterPage
             ?.takeIf { it.isNotBlank() }
             ?: return null
-        return GameCenterView(context, url)
+        return url
     }
 
     private const val METRIC_TOTAL = "lamps.total"

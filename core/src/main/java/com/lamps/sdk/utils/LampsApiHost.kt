@@ -2,7 +2,7 @@ package com.lamps.sdk.utils
 
 import android.content.Context
 import com.lamps.sdk.BuildConfig
-import com.lamps.sdk.config.LampsConfig
+import com.lamps.sdk.config.SdkConfig
 import com.lamps.sdk.data.init.AppInitDataCache
 
 internal object LampsApiHost {
@@ -31,7 +31,7 @@ internal object LampsApiHost {
         }
     }
 
-    fun current(context: Context? = LampsConfig.current?.applicationContext): Env {
+    fun current(context: Context? = SdkConfig.current?.applicationContext): Env {
         currentEnv?.let { return it }
         if (context != null) {
             restore(context)

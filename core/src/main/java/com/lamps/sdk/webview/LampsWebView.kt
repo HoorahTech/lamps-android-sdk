@@ -9,7 +9,7 @@ import android.webkit.WebChromeClient
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import com.lamps.sdk.config.LampsConfig
+import com.lamps.sdk.config.SdkConfig
 import com.lamps.sdk.data.sdk.reward.RewardAdAbilityInstaller
 import com.lamps.sdk.webview.bridge.LampsAbilityInstaller
 import com.lamps.sdk.webview.bridge.LampsWebViewBridge
@@ -60,7 +60,7 @@ open class LampsWebView @JvmOverloads constructor(
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun initSettings() {
-        setWebContentsDebuggingEnabled(LampsConfig.current?.debug == true)
+        setWebContentsDebuggingEnabled(SdkConfig.current?.debug == true)
         settings.apply {
             javaScriptEnabled = true
             domStorageEnabled = true

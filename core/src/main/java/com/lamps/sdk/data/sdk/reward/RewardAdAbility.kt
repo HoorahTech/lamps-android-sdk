@@ -3,8 +3,7 @@ package com.lamps.sdk.data.sdk.reward
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
-import com.lamps.sdk.LampsSdk
-import com.lamps.sdk.config.LampsConfig
+import com.lamps.sdk.config.SdkConfig
 import com.lamps.sdk.core.SdkRuntime
 import com.lamps.sdk.reward.LampsRewardAd
 import com.lamps.sdk.reward.RewardAdLoadCallback
@@ -44,9 +43,9 @@ private class RewardAdAbility : LampsAbility {
         }
 
         val activity = webView.context.findActivity()
-        val config = LampsConfig.current
+        val config = SdkConfig.current
         val failure = when {
-            !LampsSdk.isSdkReady() || config == null ->
+            !SdkRuntime.isReady() || config == null ->
                 RewardAdErrorCode.SDK_NOT_READY to "LampsSdk is not ready"
 
             activity == null ->

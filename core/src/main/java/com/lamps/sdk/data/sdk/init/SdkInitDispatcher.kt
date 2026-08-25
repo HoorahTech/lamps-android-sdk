@@ -1,7 +1,7 @@
 package com.lamps.sdk.data.sdk.init
 
 import android.app.Application
-import com.lamps.sdk.config.LampsConfig
+import com.lamps.sdk.config.SdkConfig
 import com.lamps.sdk.core.LampsErrorCode
 import com.lamps.sdk.core.SdkInitMetrics
 import com.lamps.sdk.data.sdk.channel.SdkInitCallback
@@ -16,7 +16,7 @@ internal object SdkInitDispatcher {
 
     fun getInitDataList(): List<SdkInitData> = initDataList.toList()
 
-    fun initSdk(config: LampsConfig, callback: SdkInitCallback) {
+    fun initSdk(config: SdkConfig, callback: SdkInitCallback) {
         val application = config.applicationContext as? Application
         if (application == null) {
             callback.fail(LampsErrorCode.INVALID_CONTEXT, "application context is invalid")
@@ -35,7 +35,7 @@ internal object SdkInitDispatcher {
         }
     }
 
-    private fun createInitDataList(config: LampsConfig): List<SdkInitData> {
+    private fun createInitDataList(config: SdkConfig): List<SdkInitData> {
         val appInitData = config.appInitData ?: return emptyList()
         return appInitData.channelList.mapNotNull { channel ->
             if (channel.channelAppId.isBlank()) return@mapNotNull null

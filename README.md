@@ -20,14 +20,15 @@ SDK 的 bridge、网络、缓存、广告渠道适配器和服务端响应模型
 
 ## 安装
 
-按需引入 core 和广告渠道模块。未使用的渠道不要引入。
+引入 sdk 和需要的广告渠道模块。未使用的渠道不要引入。
 
 ```kotlin
 dependencies {
-    implementation("com.lamps:core:<version>")
+    implementation("com.lamps:sdk:<version>")
     implementation("com.lamps:pangle:<version>") // 可选
     implementation("com.lamps:ylh:<version>")    // 可选
     implementation("com.lamps:noah:<version>")   // 可选
+    debugImplementation("com.lamps:sdk-tools:<version>") // 仅调试
 }
 ```
 

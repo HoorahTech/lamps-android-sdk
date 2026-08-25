@@ -10,11 +10,16 @@ object LampsSdk {
 
     @JvmStatic
     fun init(context: Context, config: LampsConfig): Boolean {
-        return SdkRuntime.init(context, config)
+        return SdkRuntime.init(context, config.toSdkConfig())
     }
+
     @JvmStatic
     fun startAsync(callback: InitCallback) {
-        SdkRuntime.startAsync(callback)
+        SdkRuntime.startAsync(object : com.lamps.sdk.core.CoreInitCallback {
+            override fun success() = callback.success()
+
+            override fun fail(code: Int, message: String?) = callback.fail(code, message)
+        })
     }
 
     @JvmStatic
@@ -30,6 +35,6 @@ object LampsSdk {
 
     @JvmStatic
     fun getGameCenterView(context: Context): GameCenterView? {
-        return SdkRuntime.getGameCenterView(context)
+        return SdkRuntime.getGameCenterUrl()?.let { GameCenterView(context, it) }
     }
 }

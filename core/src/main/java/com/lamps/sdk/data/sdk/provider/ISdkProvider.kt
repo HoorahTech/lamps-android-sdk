@@ -2,7 +2,7 @@ package com.lamps.sdk.data.sdk.provider
 
 import android.app.Activity
 import android.app.Application
-import com.lamps.sdk.config.LampsConfig
+import com.lamps.sdk.config.SdkConfig
 import com.lamps.sdk.data.init.ChannelInfoResponse
 import com.lamps.sdk.data.init.RewardSlotResponse
 import com.lamps.sdk.data.sdk.channel.RewardAdSdkLoadCallback
@@ -16,7 +16,7 @@ interface ISdkProvider {
 
     fun supports(channel: ChannelInfoResponse): Boolean
 
-    fun shouldInitInternally(config: LampsConfig): Boolean
+    fun shouldInitInternally(config: SdkConfig): Boolean
 
     fun isInitialized(): Boolean = false
 

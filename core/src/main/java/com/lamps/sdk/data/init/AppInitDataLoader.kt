@@ -1,7 +1,7 @@
 package com.lamps.sdk.data.init
 
 import com.lamps.sdk.BuildConfig
-import com.lamps.sdk.config.LampsConfig
+import com.lamps.sdk.config.SdkConfig
 import com.lamps.sdk.core.SdkInitMetrics
 import com.lamps.sdk.utils.DeviceUtils
 import com.lamps.sdk.utils.SdkLog
@@ -9,7 +9,7 @@ import com.lamps.sdk.utils.ThreadUtils
 
 internal object AppInitDataLoader {
 
-    fun load(config: LampsConfig): AppInitLoadResult {
+    fun load(config: SdkConfig): AppInitLoadResult {
         SdkInitMetrics.start(METRIC_LOAD, "初始化数据加载")
         val cacheSucceeded = applyCache(config)
         if (cacheSucceeded) {
@@ -28,7 +28,7 @@ internal object AppInitDataLoader {
         return result
     }
 
-    private fun applyCache(config: LampsConfig): Boolean {
+    private fun applyCache(config: SdkConfig): Boolean {
         SdkInitMetrics.start(METRIC_CACHE, "读取初始化数据缓存")
         val raw = AppInitDataCache.read()
         if (raw.isNullOrBlank()) {
@@ -57,7 +57,7 @@ internal object AppInitDataLoader {
         )
     }
 
-    private fun applyRemote(config: LampsConfig, updateCurrent: Boolean): Boolean {
+    private fun applyRemote(config: SdkConfig, updateCurrent: Boolean): Boolean {
         SdkInitMetrics.start(METRIC_REMOTE, "请求远端初始化数据")
         val context = config.applicationContext
         if (context == null) {

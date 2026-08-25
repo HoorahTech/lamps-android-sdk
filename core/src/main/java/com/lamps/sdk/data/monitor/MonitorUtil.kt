@@ -2,7 +2,7 @@ package com.lamps.sdk.data.monitor
 
 import android.net.Uri
 import com.lamps.sdk.BuildConfig
-import com.lamps.sdk.config.LampsConfig
+import com.lamps.sdk.config.SdkConfig
 import com.lamps.sdk.data.monitor.MonitorConstant.ANDROID_ID
 import com.lamps.sdk.data.monitor.MonitorConstant.APP_ID
 import com.lamps.sdk.data.monitor.MonitorConstant.IMEI
@@ -88,7 +88,7 @@ object MonitorUtil {
      * 从 URL query 取 7 个参数（缺失跳过）→ 按 key 字母升序拼接 → 尾部拼 token → MD5 小写 32 位。
      */
     private fun computeSign(url: String): String? {
-        val token = LampsConfig.current?.appInitData?.token
+        val token = SdkConfig.current?.appInitData?.token
         if (token.isNullOrEmpty()) {
             return null
         }
@@ -111,7 +111,7 @@ object MonitorUtil {
     }
 
     fun buildDefaultValues(): Map<String, String> {
-        val config = LampsConfig.current
+        val config = SdkConfig.current
         val context = config?.applicationContext
         val metrics = context?.resources?.displayMetrics
         return mapOf(

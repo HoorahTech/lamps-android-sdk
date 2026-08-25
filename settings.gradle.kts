@@ -41,6 +41,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "lamps-android-sdk"
 include(":core")
+include(":sdk")
 include(":pangle")
 include(":ylh")
 include(":noah")

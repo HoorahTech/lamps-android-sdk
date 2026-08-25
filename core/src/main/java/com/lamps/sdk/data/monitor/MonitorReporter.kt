@@ -1,6 +1,6 @@
 package com.lamps.sdk.data.monitor
 
-import com.lamps.sdk.config.LampsConfig
+import com.lamps.sdk.config.SdkConfig
 import com.lamps.sdk.data.monitor.MonitorConstant.ACTION
 import com.lamps.sdk.data.monitor.MonitorConstant.ACTION_REWARD_SUCCESS
 import com.lamps.sdk.data.monitor.MonitorConstant.CODE
@@ -18,7 +18,7 @@ import com.lamps.sdk.utils.SdkLog
 internal object MonitorReporter {
     fun reportRmSuccess(rewardData: LampsRewardAd) {
         safeReport {
-            val config = LampsConfig.current ?: return
+            val config = SdkConfig.current ?: return
             val rmList = config.appInitData?.monitorLinks?.rm
             MonitorUtil.report(
                 "RM",
@@ -33,7 +33,7 @@ internal object MonitorReporter {
 
     fun reportRmFail(rewardData: LampsRewardAd) {
         safeReport {
-            val config = LampsConfig.current ?: return
+            val config = SdkConfig.current ?: return
             val rmList = config.appInitData?.monitorLinks?.rm
             MonitorUtil.report(
                 "RM",
@@ -48,7 +48,7 @@ internal object MonitorReporter {
 
     fun reportWm(rewardData: LampsRewardAd) {
         safeReport {
-            val config = LampsConfig.current ?: return
+            val config = SdkConfig.current ?: return
             val wmList = config.appInitData?.monitorLinks?.wm
             MonitorUtil.report("WM", wmList, reportValues(rewardData))
         }
@@ -56,7 +56,7 @@ internal object MonitorReporter {
 
     fun reportPm(rewardData: LampsRewardAd) {
         safeReport {
-            val config = LampsConfig.current ?: return
+            val config = SdkConfig.current ?: return
             val pmList = config.appInitData?.monitorLinks?.pm
             MonitorUtil.report("PM", pmList, reportValues(rewardData), needSign = true)
         }
@@ -64,7 +64,7 @@ internal object MonitorReporter {
 
     fun reportCm(rewardData: LampsRewardAd) {
         safeReport {
-            val config = LampsConfig.current ?: return
+            val config = SdkConfig.current ?: return
             val cmList = config.appInitData?.monitorLinks?.cm
             MonitorUtil.report("CM", cmList, reportValues(rewardData))
         }
@@ -72,7 +72,7 @@ internal object MonitorReporter {
 
     fun reportDm(rewardData: LampsRewardAd) {
         safeReport {
-            val config = LampsConfig.current ?: return
+            val config = SdkConfig.current ?: return
             val dmList = config.appInitData?.monitorLinks?.dm
             MonitorUtil.report(
                 "DM",

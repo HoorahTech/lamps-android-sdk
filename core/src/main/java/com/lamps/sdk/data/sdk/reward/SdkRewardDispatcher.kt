@@ -1,7 +1,7 @@
 package com.lamps.sdk.data.sdk.reward
 
 import android.app.Activity
-import com.lamps.sdk.config.LampsConfig
+import com.lamps.sdk.config.SdkConfig
 import com.lamps.sdk.data.init.ChannelInfoResponse
 import com.lamps.sdk.data.init.RewardSlotResponse
 import com.lamps.sdk.data.monitor.MonitorReporter
@@ -25,7 +25,7 @@ internal object SdkRewardDispatcher {
 
     fun loadReward(
         activity: Activity,
-        config: LampsConfig,
+        config: SdkConfig,
         callback: RewardAdLoadCallback,
         forwardSource: String = ""
     ) {

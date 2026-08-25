@@ -42,7 +42,7 @@ jobs:
         run: |
           set -o pipefail
           failed=0
-          for m in core pangle ylh noah sdk-tools; do
+          for m in core sdk pangle ylh noah sdk-tools; do
             echo "::group::publish ${m}"
             log_file="/tmp/publish-${m}.log"
             if ./gradlew --no-daemon ":${m}:publish" 2>&1 | tee "$log_file"; then

@@ -2,7 +2,7 @@ package com.lamps.sdk.data.monitor
 
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicLong
-import com.lamps.sdk.config.LampsConfig
+import com.lamps.sdk.config.SdkConfig
 
 internal data class MonitorReportRecord(
     val id: Long,
@@ -51,7 +51,7 @@ internal object MonitorReportRecorder {
         )
     }
 
-    private fun isDebug(): Boolean = LampsConfig.current?.debug == true
+    private fun isDebug(): Boolean = SdkConfig.current?.debug == true
 
     private fun trim() {
         val overflow = records.size - MAX_RECORDS

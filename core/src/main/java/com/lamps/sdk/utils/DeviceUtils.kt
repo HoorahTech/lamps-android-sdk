@@ -11,7 +11,7 @@ import android.os.Build
 import android.provider.Settings
 import android.telephony.TelephonyManager
 import android.webkit.WebSettings
-import com.lamps.sdk.config.LampsConfig
+import com.lamps.sdk.config.SdkConfig
 import java.net.NetworkInterface
 import java.util.concurrent.ConcurrentHashMap
 
@@ -56,12 +56,12 @@ internal object DeviceUtils {
 
     fun oaid(context: Context?): String {
         return cached(context, KEY_OAID) {
-            LampsConfig.current?.resolveOaid().orEmpty()
+            SdkConfig.current?.resolveOaid().orEmpty()
         }
     }
 
     fun appId(context: Context?): String {
-        return LampsConfig.current?.appId.orEmpty()
+        return SdkConfig.current?.appId.orEmpty()
     }
 
     fun phoneBrand(context: Context?): String {

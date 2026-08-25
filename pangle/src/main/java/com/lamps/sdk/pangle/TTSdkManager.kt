@@ -6,7 +6,7 @@ import com.bytedance.sdk.openadsdk.TTAdConfig
 import com.bytedance.sdk.openadsdk.TTAdConstant
 import com.bytedance.sdk.openadsdk.TTAdSdk
 import com.bytedance.sdk.openadsdk.TTCustomController
-import com.lamps.sdk.config.LampsConfig
+import com.lamps.sdk.config.SdkConfig
 import com.lamps.sdk.core.LampsErrorCode
 import com.lamps.sdk.data.sdk.channel.RewardAdSdkLoadCallback
 import com.lamps.sdk.data.sdk.channel.SdkInitCallback
@@ -20,7 +20,7 @@ object TTSdkManager {
         appId: String,
         callback: SdkInitCallback
     ) {
-        if (LampsConfig.current?.initPangleSdk == false) {
+        if (SdkConfig.current?.initPangleSdk == false) {
             callback.success()
             return
         }
@@ -38,7 +38,7 @@ object TTSdkManager {
                 .paid(true)
                 .titleBarTheme(TTAdConstant.TITLE_BAR_THEME_LIGHT)
                 .allowShowNotify(true)
-                .debug(LampsConfig.current?.debug?:false)
+                .debug(SdkConfig.current?.debug?:false)
                 .supportMultiProcess(false)
                 .customController(object : TTCustomController() {
                     override fun isCanUseLocation(): Boolean = false
