@@ -13,7 +13,6 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        mavenLocal()
         google()
         mavenCentral()
         maven("https://maven.aliyun.com/repository/google")
@@ -25,14 +24,10 @@ dependencyResolutionManagement {
             name = "GitHubPackages"
             url = uri("https://maven.pkg.github.com/HoorahTech/lamps-android-sdk")
             credentials {
-                username = providers.gradleProperty("gpr.user")
-                    .orElse(providers.environmentVariable("GITHUB_ACTOR"))
-                    .orElse(providers.provider { "" })
-                    .get()
-                password = providers.gradleProperty("gpr.key")
-                    .orElse(providers.environmentVariable("GITHUB_TOKEN"))
+                username = providers.environmentVariable("GITHUB_ACTOR").orElse("").get()
+                password = providers.environmentVariable("GITHUB_TOKEN")
                     .orElse(providers.environmentVariable("GH_TOKEN"))
-                    .orElse(providers.provider { "" })
+                    .orElse("")
                     .get()
             }
         }

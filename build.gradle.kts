@@ -18,11 +18,8 @@ subprojects {
                     name = "GitHubPackages"
                     url = uri("https://maven.pkg.github.com/HoorahTech/lamps-android-sdk")
                     credentials {
-                        username = (findProperty("gpr.user") as String?)
-                            ?: System.getenv("GITHUB_ACTOR")
-                            ?: ""
-                        password = (findProperty("gpr.key") as String?)
-                            ?: System.getenv("GITHUB_TOKEN")
+                        username = System.getenv("GITHUB_ACTOR") ?: ""
+                        password = System.getenv("GITHUB_TOKEN")
                             ?: System.getenv("GH_TOKEN")
                             ?: ""
                     }

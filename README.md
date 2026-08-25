@@ -23,16 +23,12 @@ dependencies {
 }
 ```
 
-GitHub Packages 仓库需要配置 `read:packages` 权限：
+GitHub Packages 仓库需要配置 `read:packages` 权限。AAR 发布统一通过 GitHub Actions 完成，不在本地执行发布。
 
 ```kotlin
 repositories {
     maven {
         url = uri("https://maven.pkg.github.com/HoorahTech/lamps-android-sdk")
-        credentials {
-            username = providers.gradleProperty("gpr.user").get()
-            password = providers.gradleProperty("gpr.key").get()
-        }
     }
 }
 ```
