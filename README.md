@@ -1,16 +1,7 @@
 # Lamps Android SDK
 
-Lamps Android SDK 为 Android 应用提供统一的初始化、服务端配置、游戏中心页面和广告能力接入。
+Lamps Android SDK 为 Android 应用提供统一的初始化、游戏中心页面、广告能力接入。
 
-稳定接入 API 包括：
-
-- `com.lamps.sdk.LampsSdk`
-- `com.lamps.sdk.config.LampsConfig`
-- `com.lamps.sdk.core.OaidProvider`
-- `com.lamps.sdk.core.InitCallback`
-- `com.lamps.sdk.view.GameCenterView`
-
-SDK 的 bridge、网络、缓存、广告渠道适配器和服务端响应模型均属于内部实现，不作为稳定 API 使用。
 
 ## 环境要求
 
@@ -24,7 +15,7 @@ SDK 的 bridge、网络、缓存、广告渠道适配器和服务端响应模型
 
 ```kotlin
 dependencies {
-    implementation("com.lamps:sdk:<version>")
+    implementation("com.lamps:sdk:<version>")    // 必选
     implementation("com.lamps:pangle:<version>") // 可选
     implementation("com.lamps:ylh:<version>")    // 可选
     implementation("com.lamps:noah:<version>")   // 可选
@@ -75,13 +66,13 @@ LampsSdk.startAsync(object : InitCallback {
 })
 ```
 
-`setOaidProvider` 由宿主提供 OAID 读取逻辑。SDK 不内置 MSA 证书；未设置 provider 或返回空字符串不会阻断初始化。
+`setOaidProvider` 由宿主提供 OAID 读取逻辑。未设置 provider 或返回空字符串不会阻断初始化。
 
-`startAsync` 完成前不要使用依赖服务端配置的能力。可使用 `LampsSdk.isSdkReady()` 查询当前状态，使用 `LampsSdk.getSdkVersion()` 获取 SDK 版本。
+`startAsync` 完成前不要使用LampsSdk能力。可使用 `LampsSdk.isSdkReady()` 查询当前状态，使用 `LampsSdk.getSdkVersion()` 获取 SDK 版本。
 
 ## 游戏中心
 
-服务端下发有效的游戏中心页面地址后，可获取 `GameCenterView` 并添加到宿主布局。`GameCenterView` 内部的 WebView 实现不属于宿主 API。
+可获取 `GameCenterView` 并添加到宿主布局。实现方式如下：
 
 ```kotlin
 val gameCenterView = LampsSdk.getGameCenterView(this)
@@ -124,14 +115,8 @@ override fun onDestroyView() {
 
 ## 混淆与发布
 
-正式构建应启用宿主应用的 R8/ProGuard。SDK release AAR 已启用 R8，并通过 consumer rules 保留上述稳定 API、Android Manifest 组件和 H5 bridge 必需成员；SDK 内部实现允许压缩和重命名。
-
-宿主无需复制 SDK 内部 keep 规则，也不要对 `com.lamps.sdk.**` 添加全包 keep，否则会使内部实现重新暴露并降低混淆效果。
+SDK内部已经实现并管理好混淆规则，接入方无需关心
 
 ## 调试工具
 
 `sdk-tools` 仅用于内部调试和 Demo 验证，不属于业务接入 API。正式应用不应依赖或调用其内部类。
-
-## 版本与支持
-
-版本号由仓库 `gradle.properties` 中的 `LAMPS_VERSION` 管理。发布到 GitHub Packages 后，同一版本不可覆盖，请递增版本号后重新发布。
