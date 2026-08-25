@@ -2,12 +2,10 @@ package com.lamps.sdk.utils
 
 import java.net.URLEncoder
 
-/**
- * 最简单的 RigSdk 实现：写死链接，直接上报。
- */
+/** Sends tracking data to the endpoint selected by the SDK API environment. */
 object TrackSdk {
     private const val TAG = "TrackSdk"
-    private const val DEFAULT_RIG_URL = "https://rig.hupu.com/report"
+    private const val REPORT_PATH = "/api/v1/event/report"
 
     @JvmStatic
     fun sendData(type: String, data: HashMap<String, Any>) {
@@ -26,7 +24,7 @@ object TrackSdk {
         val query = params.entries.joinToString("&") { (key, value) ->
             "${URLEncoder.encode(key, "UTF-8")}=${URLEncoder.encode(value, "UTF-8")}"
         }
-        val url = "$DEFAULT_RIG_URL?$query"
+        val url = "${LampsApiHost.baseUrl().trimEnd('/')}$REPORT_PATH?$query"
         SdkLog.d("$TAG report: $url")
         HttpUtils.get(url).fold(
             onSuccess = { response ->

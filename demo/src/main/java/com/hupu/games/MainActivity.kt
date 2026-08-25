@@ -21,10 +21,4 @@ class MainActivity : Activity() {
             startActivity(Intent(this, DemoTabActivity::class.java))
         }
     }
-
-
-    private companion object {
-        const val DEMO_URL =
-            "https://activity-static.hupu.com/colorbox-activities/activity-project-ai-1787297060404/index.html?t=1787557168381"
-    }
 }

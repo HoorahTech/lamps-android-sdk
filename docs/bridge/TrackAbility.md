@@ -24,7 +24,14 @@ RIG 性能/事件上报，用于 WebView 端向 Native 上报性能数据、事�
 
 ### 上报参数
 
-`RigSdk.sendData` 在服务端发起 HTTP GET 请求，请求 URL 为 `https://rig.hupu.com/report`，拼接以下参数：
+`RigSdk.sendData` 在服务端发起 HTTP GET 请求。
+
+请求地址根据 SDK 当前 API 环境选择：
+
+- 测试环境：`https://lamps-api-sit.hoorahgo.com/api/v1/event/report`
+- 线上环境：`https://lamps-api.hoorahgo.com/api/v1/event/report`
+
+请求地址后拼接以下参数：
 
 | 参数 | 类型 | 说明 |
 |---|---|---|

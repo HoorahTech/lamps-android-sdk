@@ -13,6 +13,11 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
+        // CI seeds proprietary third-party AARs into ~/.m2 before building.
+        // Keep local publishing disabled for normal developer builds.
+        if (System.getenv("CI_MAVEN_DEPS") == "true") {
+            mavenLocal()
+        }
         google()
         mavenCentral()
         maven("https://maven.aliyun.com/repository/google")

@@ -39,6 +39,7 @@ jobs:
         env:
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CI_MAVEN_DEPS: true
         run: |
           set -o pipefail
           failed=0
