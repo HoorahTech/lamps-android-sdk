@@ -15,23 +15,25 @@ subprojects {
         extensions.configure<PublishingExtension> {
             repositories {
                 maven {
-                    name = "GitHubPackages"
-                    url = uri("https://maven.pkg.github.com/HoorahTech/lamps-android-sdk")
+                    name = "HupuNexus"
+                    url = uri("https://nexus.hupu.io/repository/hupu-android-public/")
                     credentials {
-                        username = System.getenv("GITHUB_ACTOR") ?: ""
-                        password = System.getenv("GITHUB_TOKEN")
-                            ?: System.getenv("GH_TOKEN")
-                            ?: ""
+                        username = providers.gradleProperty("hupuNexusUsername")
+                            .orElse(providers.environmentVariable("HUPU_NEXUS_USERNAME"))
+                            .orNull ?: ""
+                        password = providers.gradleProperty("hupuNexusPassword")
+                            .orElse(providers.environmentVariable("HUPU_NEXUS_PASSWORD"))
+                            .orNull ?: ""
                     }
                 }
             }
             publications.withType<MavenPublication>().configureEach {
                 pom {
-                    url.set("https://github.com/HoorahTech/lamps-android-sdk")
+                    url.set("http://gitlab.hupu.com/HPBase/lamps-android-sdk.git")
                     scm {
-                        url.set("https://github.com/HoorahTech/lamps-android-sdk")
-                        connection.set("scm:git:https://github.com/HoorahTech/lamps-android-sdk.git")
-                        developerConnection.set("scm:git:ssh://git@github.com/HoorahTech/lamps-android-sdk.git")
+                        url.set("http://gitlab.hupu.com/HPBase/lamps-android-sdk.git")
+                        connection.set("scm:git:http://gitlab.hupu.com/HPBase/lamps-android-sdk.git")
+                        developerConnection.set("scm:git:http://gitlab.hupu.com/HPBase/lamps-android-sdk.git")
                     }
                 }
             }

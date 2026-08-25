@@ -1,0 +1,14 @@
+stages:
+  - publish
+
+publish:
+  stage: publish
+  image: ghcr.io/cirruslabs/android-sdk:34
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v.*/'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+  script:
+    - chmod +x ./gradlew
+    - test -n "$HUPU_NEXUS_USERNAME"
+    - test -n "$HUPU_NEXUS_PASSWORD"
+    - ./gradlew --no-daemon :core:publish :sdk:publish :pangle:publish :ylh:publish :noah:publish :sdk-tools:publish

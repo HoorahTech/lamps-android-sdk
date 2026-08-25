@@ -23,15 +23,15 @@ dependencies {
 }
 ```
 
-GitHub Packages 仓库需要配置 `read:packages` 权限。AAR 发布统一通过 GitHub Actions 完成，不在本地执行发布。
+AAR、POM 和 sources JAR 发布到虎扑 Nexus：
 
 ```kotlin
 repositories {
-    maven {
-        url = uri("https://maven.pkg.github.com/HoorahTech/lamps-android-sdk")
-    }
+    maven("https://nexus.hupu.io/repository/hupu-android-public/")
 }
 ```
+
+发布凭据只配置在 CI 环境变量 `HUPU_NEXUS_USERNAME` / `HUPU_NEXUS_PASSWORD`，不写入项目文件。项目源码仓库为 `http://gitlab.hupu.com/HPBase/lamps-android-sdk.git`。
 
 ## 初始化
 

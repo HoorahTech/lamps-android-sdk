@@ -25,17 +25,6 @@ dependencyResolutionManagement {
         maven("https://maven.aliyun.com/repository/public")
         maven("https://nexus.hupu.io/repository/hupu-android-public/")
         maven("https://artifact.bytedance.com/repository/pangle")
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/HoorahTech/lamps-android-sdk")
-            credentials {
-                username = providers.environmentVariable("GITHUB_ACTOR").orElse("").get()
-                password = providers.environmentVariable("GITHUB_TOKEN")
-                    .orElse(providers.environmentVariable("GH_TOKEN"))
-                    .orElse("")
-                    .get()
-            }
-        }
     }
 }
 
