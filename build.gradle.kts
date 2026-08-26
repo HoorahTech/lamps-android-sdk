@@ -50,3 +50,43 @@ subprojects {
         }
     }
 }
+
+val releaseLibraryModules = listOf("core", "sdk", "pangle", "ylh", "noah", "sdk-tools")
+val releaseVersion = rootProject.property("LAMPS_VERSION").toString()
+val sdkLibDir = rootProject.layout.projectDirectory.dir("sdk_lib").asFile
+
+val collectReleaseAars = tasks.register("collectReleaseAars") {
+    group = "publishing"
+    description = "Collect all release AARs into sdk_lib with versioned names."
+    dependsOn(releaseLibraryModules.map { ":$it:assembleRelease" })
+
+    doLast {
+        delete(sdkLibDir)
+        sdkLibDir.mkdirs()
+        releaseLibraryModules.forEach { moduleName ->
+            val aar = rootProject.file("$moduleName/build/outputs/aar/$moduleName-release.aar")
+            check(aar.isFile) { "Release AAR not found: ${aar.absolutePath}" }
+            aar.copyTo(
+                rootProject.file("sdk_lib/lamps-$moduleName-$releaseVersion.aar"),
+                overwrite = true
+            )
+        }
+        logger.lifecycle("Collected ${releaseLibraryModules.size} AARs in ${sdkLibDir.absolutePath}")
+    }
+}
+
+val publishTasks = releaseLibraryModules.map { ":$it:publish" }
+collectReleaseAars.configure { mustRunAfter(publishTasks) }
+
+val publishAll = tasks.register("publishAll") {
+    group = "publishing"
+    description = "Publish all release libraries to Hupu Nexus and collect versioned AARs."
+    dependsOn(publishTasks)
+    dependsOn(collectReleaseAars)
+}
+
+tasks.register("push") {
+    group = "publishing"
+    description = "Publish all SDK libraries and collect their AARs in sdk_lib."
+    dependsOn(publishAll)
+}

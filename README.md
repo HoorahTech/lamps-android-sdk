@@ -33,6 +33,14 @@ repositories {
 
 发布凭据只配置在 CI 环境变量 `HUPU_NEXUS_USERNAME` / `HUPU_NEXUS_PASSWORD`，不写入项目文件。项目源码仓库为 `http://gitlab.hupu.com/HPBase/lamps-android-sdk.git`。
 
+本地需要同时发布全部模块并准备交付给第三方的 AAR 时，执行：
+
+```bash
+./gradlew push
+```
+
+该任务会将所有 release AAR 发布到 Nexus，并复制到根目录 `sdk_lib/`，文件名格式为 `lamps-artifactId-version.aar`，例如 `lamps-sdk-0.0.5.aar`。只构建并收集本地 AAR（不上传 Nexus）可执行 `./gradlew collectReleaseAars`。
+
 ## 初始化
 
 应在隐私协议同意后初始化 SDK。调用顺序为 `init`，然后 `startAsync`。
