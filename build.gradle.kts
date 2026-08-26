@@ -7,19 +7,43 @@ val localProperties = Properties().apply {
     rootProject.file("local.properties").takeIf { it.isFile }?.inputStream()?.use(::load)
 }
 
+fun configuredSecret(vararg keys: String): String? = keys.asSequence()
+    .mapNotNull { key ->
+        providers.gradleProperty(key).orNull
+            ?: System.getenv(key)
+            ?: localProperties.getProperty(key)
+    }
+    .map(String::trim)
+    .firstOrNull(String::isNotEmpty)
+
 // Central Portal reads org.gradle.project.* properties. Promote local values before
 // the publishing plugin configures its repository credentials.
 listOf(
+    "hupuNexusUsername",
+    "hupuNexusPassword",
+    "hupu.nexus.username",
+    "hupu.nexus.password",
     "mavenCentralUsername",
     "mavenCentralPassword",
     "signingInMemoryKey",
     "signingInMemoryKeyPassword"
 ).forEach { key ->
     localProperties.getProperty(key)?.takeIf { it.isNotBlank() }?.let { value ->
-        // Register secrets as Gradle project properties so providers.gradleProperty
-        // used by the publishing plugin can resolve them during configuration.
-        gradle.beforeProject { extensions.extraProperties.set(key, value) }
+        // The publishing plugin reads providers.gradleProperty(), so promote local
+        // secrets through Gradle's actual project-property map.
+        val projectProperties = gradle.startParameter.projectProperties.toMutableMap()
+        projectProperties[key] = value
+        gradle.startParameter.projectProperties = projectProperties
     }
+}
+
+val publishTarget = providers.gradleProperty("LAMPS_PUBLISH_TARGET")
+    .orElse("maven")
+    .get()
+    .trim()
+    .lowercase()
+require(publishTarget == "maven" || publishTarget == "mavencentral") {
+    "LAMPS_PUBLISH_TARGET must be 'maven' or 'mavenCentral', but was '$publishTarget'"
 }
 
 plugins {
@@ -36,6 +60,22 @@ subprojects {
     pluginManager.withPlugin("maven-publish") {
         extensions.configure<PublishingExtension> {
             repositories {
+                maven {
+                    name = "HupuMaven"
+                    url = uri("https://nexus.hupu.io/repository/hupu-android/")
+                    credentials {
+                        username = configuredSecret(
+                            "hupuNexusUsername",
+                            "hupu.nexus.username",
+                            "HUPU_NEXUS_USERNAME"
+                        ).orEmpty()
+                        password = configuredSecret(
+                            "hupuNexusPassword",
+                            "hupu.nexus.password",
+                            "HUPU_NEXUS_PASSWORD"
+                        ).orEmpty()
+                    }
+                }
             }
             publications.withType<MavenPublication>().configureEach {
                 pom {
@@ -76,19 +116,23 @@ subprojects {
     }
 }
 
-val releaseLibraryModules = listOf("core", "sdk", "pangle", "ylh", "noah", "sdk-tools")
+val releaseLibraryModules = listOf(
+    "core", "sdk", "pangle", "ylh", "noah", "sdk-tools",
+    "pangle-ads-sdk-pro", "pangle-ads-sdk-tools"
+)
+val deliverableLibraryModules = listOf("core", "sdk", "pangle", "ylh", "noah", "sdk-tools")
 val releaseVersion = rootProject.property("LAMPS_VERSION").toString()
 val sdkLibDir = rootProject.layout.projectDirectory.dir("sdk_lib").asFile
 
 val collectReleaseAars = tasks.register("collectReleaseAars") {
     group = "publishing"
     description = "Collect all release AARs into sdk_lib with versioned names."
-    dependsOn(releaseLibraryModules.map { ":$it:assembleRelease" })
+    dependsOn(deliverableLibraryModules.map { ":$it:assembleRelease" })
 
     doLast {
         delete(sdkLibDir)
         sdkLibDir.mkdirs()
-        releaseLibraryModules.forEach { moduleName ->
+        deliverableLibraryModules.forEach { moduleName ->
             val aar = rootProject.file("$moduleName/build/outputs/aar/$moduleName-release.aar")
             check(aar.isFile) { "Release AAR not found: ${aar.absolutePath}" }
             aar.copyTo(
@@ -96,11 +140,15 @@ val collectReleaseAars = tasks.register("collectReleaseAars") {
                 overwrite = true
             )
         }
-        logger.lifecycle("Collected ${releaseLibraryModules.size} AARs in ${sdkLibDir.absolutePath}")
+        logger.lifecycle("Collected ${deliverableLibraryModules.size} AARs in ${sdkLibDir.absolutePath}")
     }
 }
 
-val publishTasks = releaseLibraryModules.map { ":$it:publishToMavenCentral" }
+val publishTasks = if (publishTarget == "maven") {
+    releaseLibraryModules.map { ":$it:publishAllPublicationsToHupuMavenRepository" }
+} else {
+    releaseLibraryModules.map { ":$it:publishToMavenCentral" }
+}
 collectReleaseAars.configure { mustRunAfter(publishTasks) }
 
 val publishAll = tasks.register("publishAll") {

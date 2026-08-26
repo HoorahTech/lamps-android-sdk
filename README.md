@@ -31,7 +31,7 @@ repositories {
 }
 ```
 
-Central Portal 凭据和 GPG 签名配置只放在本机 `local.properties`（该文件已被 Git 忽略）、`~/.gradle/gradle.properties` 或 CI Secret，不写入版本库。发布任务配置为上传后自动 release；若 Portal 风控要求人工审核，需在 Central Portal 的 Deployments 页面手动点击 Publish。项目源码仓库为 `http://gitlab.hupu.com/HPBase/lamps-android-sdk.git`。
+发布目标由根目录 `gradle.properties` 的 `LAMPS_PUBLISH_TARGET` 决定，默认是 `maven`，发布到可写的 `https://nexus.hupu.io/repository/hupu-android/`；改为 `mavenCentral` 才会发布到 Maven Central。每次执行真实发布前，发布人必须确认当前目标和版本。Nexus 凭据使用 `hupuNexusUsername` / `hupuNexusPassword`，也可通过 `HUPU_NEXUS_USERNAME` / `HUPU_NEXUS_PASSWORD` 注入；Central 发布时必须将 `mavenCentralUsername` / `mavenCentralPassword` 作为 Gradle project properties 传入，或配置在 `~/.gradle/gradle.properties`，GPG 签名继续使用对应的 `signingInMemory*` 参数。所有凭据只放在本机配置或 CI Secret，不写入版本库。项目源码仓库为 `http://gitlab.hupu.com/HPBase/lamps-android-sdk.git`。
 
 本地需要同时发布全部模块并准备交付给第三方的 AAR 时，执行：
 
@@ -39,7 +39,17 @@ Central Portal 凭据和 GPG 签名配置只放在本机 `local.properties`（�
 ./gradlew push
 ```
 
-该任务会将所有 release AAR 发布到 Maven Central，并复制到根目录 `sdk_lib/`，文件名格式为 `lamps-artifactId-version.aar`，例如 `lamps-sdk-0.0.5.aar`。只构建并收集本地 AAR（不上传 Maven Central）可执行 `./gradlew collectReleaseAars`。
+发布前先检查并确认目标：
+
+```bash
+grep '^LAMPS_PUBLISH_TARGET=' gradle.properties
+```
+
+也可以临时覆盖目标，例如 `./gradlew push -PLAMPS_PUBLISH_TARGET=mavenCentral -PmavenCentralUsername=<token-user> -PmavenCentralPassword=<token-password>`。未明确确认目标前，不执行真实上传。
+
+该任务会将所有 release AAR 发布到所选仓库，并复制到根目录 `sdk_lib/`，文件名格式为 `lamps-artifactId-version.aar`，例如 `lamps-sdk-0.0.5.aar`。只构建并收集本地 AAR（不上传仓库）可执行 `./gradlew collectReleaseAars`。
+
+Pangle 的定制二进制也会随 `publishAll` 发布到 Maven Central，坐标保持其 SDK 版本并使用 `pangle-` 前缀：`io.github.hoorahtech:pangle-ads-sdk-pro:7.6.1.2` 和 `io.github.hoorahtech:pangle-ads-sdk-tools:7.6.4.2`（Maven 版本不带 `-hupu`）。对应 release AAR 文件名为 `pangle-ads-sdk-pro-release.aar` 和 `pangle-ads-sdk-tools-release.aar`。因此 `pangle`、`sdk-tools` 的新版本不再依赖公司 Nexus 中的 `com.pangle.cn` 坐标。
 
 ## 初始化
 

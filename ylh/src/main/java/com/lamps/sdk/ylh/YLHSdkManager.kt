@@ -11,18 +11,21 @@ import com.qq.e.comm.managers.GDTAdSdk
 import com.qq.e.comm.managers.setting.GlobalSetting
 
 object YLHSdkManager {
-    @Volatile
-    private var initialized = false
 
-    fun isInitialized(): Boolean = initialized
+    fun isInitialized(): Boolean = !GlobalSetting.getExtraUserData()
+        .isNullOrEmpty() || GlobalSetting.getChannel() != null || GlobalSetting.getSettings()
+        .length() > 0
 
     fun initSdk(
         application: Application,
         appId: String,
         callback: SdkInitCallback
     ) {
-        if (initialized || SdkConfig.current?.initYlhSdk == false) {
-            initialized = true
+        if (SdkConfig.current?.initYlhSdk == false) {
+            callback.success()
+            return
+        }
+        if (isInitialized()) {
             callback.success()
             return
         }
@@ -40,7 +43,6 @@ object YLHSdkManager {
             )
             GDTAdSdk.init(application, appId)
         }.onSuccess {
-            initialized = true
             callback.success()
         }.onFailure { error ->
             callback.fail(
