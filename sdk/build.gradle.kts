@@ -29,7 +29,9 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = true
+            // Library dependencies (core) must not be bundled and obfuscated into this AAR.
+            // Let the consuming application perform the final shrink/obfuscation.
+            isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -38,9 +40,7 @@ android {
     }
 
     publishing {
-        singleVariant("release") {
-            withSourcesJar()
-        }
+        singleVariant("release")
     }
 }
 

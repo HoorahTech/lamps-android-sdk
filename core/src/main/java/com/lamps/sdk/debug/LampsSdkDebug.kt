@@ -71,8 +71,6 @@ object LampsSdkDebug {
         return listOf(
             section("SDK 状态") {
                 line("sdkVersion", BuildConfig.SDK_VERSION)
-                line("apiEnv", LampsApiHost.current(app).label)
-                line("apiBaseUrl", LampsApiHost.baseUrl(app))
                 line("configInitialized", config != null)
                 line("sdkReady", SdkRuntime.isReady())
                 line("appInitDataLoaded", initData != null)
@@ -127,6 +125,8 @@ object LampsSdkDebug {
                 }
             },
             section("服务端下发配置") {
+                line("apiEnv", initData?.apiEnv.orEmpty().ifBlank { "-" })
+                line("apiBaseUrl", initData?.apiBaseUrl.orEmpty().ifBlank { "-" })
                 line("clientIp", initData?.clientIp.orEmpty())
                 line("gameCenterPage", initData?.gameCenterPage.orEmpty())
 

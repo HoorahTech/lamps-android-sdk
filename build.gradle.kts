@@ -1,5 +1,13 @@
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
+import java.util.Properties
+
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.isFile) {
+        file.inputStream().use(::load)
+    }
+}
 
 plugins {
     id("com.android.library") version "8.5.2" apply false
@@ -16,13 +24,15 @@ subprojects {
             repositories {
                 maven {
                     name = "HupuNexus"
-                    url = uri("https://nexus.hupu.io/repository/hupu-android-public/")
+                    url = uri("https://nexus.hupu.io/repository/hupu-android/")
                     credentials {
                         username = providers.gradleProperty("hupuNexusUsername")
                             .orElse(providers.environmentVariable("HUPU_NEXUS_USERNAME"))
+                            .orElse(localProperties.getProperty("hupu.nexus.username"))
                             .orNull ?: ""
                         password = providers.gradleProperty("hupuNexusPassword")
                             .orElse(providers.environmentVariable("HUPU_NEXUS_PASSWORD"))
+                            .orElse(localProperties.getProperty("hupu.nexus.password"))
                             .orNull ?: ""
                     }
                 }

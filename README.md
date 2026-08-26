@@ -23,7 +23,7 @@ dependencies {
 }
 ```
 
-AAR、POM 和 sources JAR 发布到虎扑 Nexus：
+AAR 和 POM 发布到虎扑 Nexus：
 
 ```kotlin
 repositories {

@@ -24,7 +24,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = true
+            // This tool depends on all channel modules; do not embed their classes in the AAR.
+            isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -33,9 +34,7 @@ android {
     }
 
     publishing {
-        singleVariant("release") {
-            withSourcesJar()
-        }
+        singleVariant("release")
     }
 }
 

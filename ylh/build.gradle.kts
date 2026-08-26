@@ -24,7 +24,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = true
+            // Keep core and the ad SDK as external dependencies for the consuming app.
+            isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -33,9 +34,7 @@ android {
     }
 
     publishing {
-        singleVariant("release") {
-            withSourcesJar()
-        }
+        singleVariant("release")
     }
 }
 
