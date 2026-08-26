@@ -13,7 +13,9 @@ import com.lamps.sdk.data.sdk.channel.SdkInitCallback
 import com.lamps.sdk.reward.RewardAdShowCallback
 
 object TTSdkManager {
-    fun isInitialized(): Boolean = TTAdSdk.isInitSuccess()
+    fun isInitialized(): Boolean = runCatching {
+        TTAdSdk.isInitSuccess()
+    }.getOrDefault(false)
 
     fun initSdk(
         application: Application,
@@ -29,6 +31,9 @@ object TTSdkManager {
             return
         }
         runCatching {
+            check(isPangleSdkAvailable()) {
+                "Pangle vendor SDK is missing; add io.github.hoorahtech:pangle-ads-sdk-pro:7.6.1.2"
+            }
             val appName = application.applicationInfo
                 .loadLabel(application.packageManager)
                 .toString()
@@ -70,6 +75,11 @@ object TTSdkManager {
             )
         }
     }
+
+    private fun isPangleSdkAvailable(): Boolean = runCatching {
+        Class.forName("com.bytedance.sdk.openadsdk.TTAdSdk")
+        true
+    }.getOrDefault(false)
 
     internal fun loadReward(
         activity: Activity,

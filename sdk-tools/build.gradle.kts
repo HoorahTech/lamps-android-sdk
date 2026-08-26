@@ -49,7 +49,6 @@ dependencies {
     implementation(project(":pangle"))
     implementation(project(":ylh"))
     implementation(project(":noah"))
-    implementation(project(":pangle-ads-sdk-tools"))
-    compileOnly(files("../pangle-ads-sdk-tools/libs/ads-sdk-tools-7.6.4.2-hupu.aar"))
+    implementation("io.github.hoorahtech:pangle-ads-sdk-tools:7.6.4.2")
     implementation("com.qq.e.union:tools:2.4")
 }

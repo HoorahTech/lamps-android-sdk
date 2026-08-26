@@ -7,6 +7,7 @@ import com.lamps.sdk.core.SdkInitMetrics
 import com.lamps.sdk.data.sdk.channel.SdkInitCallback
 import com.lamps.sdk.data.sdk.provider.SdkProviderRegistry
 import com.lamps.sdk.utils.ThreadUtils
+import com.lamps.sdk.utils.SdkLog
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
@@ -26,10 +27,16 @@ internal object SdkInitDispatcher {
         initDataList.clear()
         initDataList.addAll(createInitDataList(config))
 
+        SdkLog.d(
+            "third-party init dispatch: providers=${SdkProviderRegistry.all().map { it.name }}, " +
+                "selected=${initDataList.map { it.provider.name }}"
+        )
+
         SdkInitMetrics.start(METRIC_DISPATCH, "第三方 SDK 初始化分发")
         if (initDataList.isNotEmpty()) {
             dispatchInitData(application, initDataList, callback)
         } else {
+            SdkLog.d("third-party init skipped: no matching channel providers")
             SdkInitMetrics.end(METRIC_DISPATCH, SdkInitMetrics.RESULT_SKIPPED)
             callback.success()
         }
@@ -55,6 +62,11 @@ internal object SdkInitDispatcher {
         ThreadUtils.runOnMain {
             dataList.forEach { initData ->
                 if (!initData.markInitializing()) return@forEach
+                SdkLog.d(
+                    "provider init start: ${initData.provider.name}, " +
+                        "internal=${SdkConfig.current?.let(initData.provider::shouldInitInternally) ?: true}, " +
+                        "appId=${initData.appId}"
+                )
                 initData.provider.initSdk(
                     application,
                     initData.channel,
@@ -73,6 +85,10 @@ internal object SdkInitDispatcher {
         return object : SdkInitCallback {
             override fun success() {
                 if (!initData.markSuccess()) return
+                SdkLog.d(
+                    "provider init success: ${initData.provider.name}, " +
+                        "duration=${initData.durationMillis ?: 0}ms"
+                )
                 if (
                     remaining.decrementAndGet() == 0 &&
                     finished.compareAndSet(false, true)
@@ -84,6 +100,10 @@ internal object SdkInitDispatcher {
 
             override fun fail(code: Int, message: String?) {
                 if (!initData.markFailed(code, message)) return
+                SdkLog.e(
+                    "provider init failed: ${initData.provider.name}, " +
+                        "code=$code, message=${message.orEmpty()}"
+                )
                 finishWithFailure(finished, callback, code, message)
             }
         }

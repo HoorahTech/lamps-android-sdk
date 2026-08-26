@@ -46,6 +46,5 @@ mavenPublishing {
 
 dependencies {
     implementation(project(":core"))
-    implementation(project(":pangle-ads-sdk-pro"))
-    compileOnly(files("../pangle-ads-sdk-pro/libs/ads-sdk-pro-7.6.1.2.aar"))
+    implementation("io.github.hoorahtech:pangle-ads-sdk-pro:7.6.1.2")
 }

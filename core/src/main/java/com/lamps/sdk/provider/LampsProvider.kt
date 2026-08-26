@@ -6,6 +6,7 @@ import android.database.Cursor
 import android.net.Uri
 import com.lamps.sdk.data.sdk.provider.ISdkProvider
 import com.lamps.sdk.data.sdk.provider.SdkProviderRegistry
+import com.lamps.sdk.utils.SdkLog
 
 /**
  * 广告网络 module 用 ContentProvider 在进程启动时向 core 注册自身。
@@ -15,7 +16,9 @@ abstract class LampsProvider : ContentProvider() {
     protected abstract fun createProvider(): ISdkProvider
 
     override fun onCreate(): Boolean {
-        SdkProviderRegistry.register(createProvider())
+        val provider = createProvider()
+        SdkProviderRegistry.register(provider)
+        SdkLog.i("provider registered: ${provider.name} (${provider.javaClass.name})")
         return false
     }
 

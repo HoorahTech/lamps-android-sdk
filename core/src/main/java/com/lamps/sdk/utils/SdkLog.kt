@@ -15,6 +15,11 @@ object SdkLog {
         }
     }
 
+    /** Used for provider registration, which can happen before LampsSdk.init(). */
+    fun i(message: String) {
+        Log.i(TAG, redactSecrets(message))
+    }
+
     /** 与 debug 开关无关。 */
     fun w(message: String, throwable: Throwable? = null) {
         val safe = redactSecrets(message)

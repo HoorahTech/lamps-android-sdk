@@ -18,22 +18,7 @@ android {
 }
 
 dependencies {
-    compileOnly(files("libs/ads-sdk-tools-7.6.4.2-hupu.aar"))
-    implementation("androidx.core:core-ktx:1.7.0")
-    implementation("androidx.appcompat:appcompat:1.4.1")
-    implementation("com.google.android.material:material:1.3.0")
-    implementation("androidx.activity:activity:1.4.0")
-    implementation("androidx.activity:activity-ktx:1.4.0")
-    implementation("androidx.fragment:fragment-ktx:1.4.1")
-    implementation("androidx.constraintlayout:constraintlayout:2.1.2")
-    implementation("androidx.recyclerview:recyclerview:1.2.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.0")
-    implementation("io.github.didi:drouter-api:2.1.3")
-    implementation("androidx.databinding:viewbinding:7.0.4")
-    implementation("androidx.databinding:databinding-common:7.0.4")
-    implementation("androidx.databinding:databinding-runtime:7.0.4")
-    implementation("androidx.databinding:databinding-adapters:7.0.4")
-    implementation("androidx.databinding:databinding-ktx:7.0.4")
+    compileOnly(files("libs/ads-sdk-tools-7.6.4.2.aar"))
 }
 
 mavenPublishing {
@@ -46,7 +31,7 @@ mavenPublishing {
 tasks.configureEach {
     if (name == "bundleReleaseAar") {
         doLast {
-            val source = project.file("libs/ads-sdk-tools-7.6.4.2-hupu.aar")
+            val source = project.file("libs/ads-sdk-tools-7.6.4.2.aar")
             val target = layout.buildDirectory.file("outputs/aar/pangle-ads-sdk-tools-release.aar").get().asFile
             source.copyTo(target, overwrite = true)
         }
