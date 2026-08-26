@@ -46,5 +46,5 @@ mavenPublishing {
 
 dependencies {
     implementation(project(":core"))
-    implementation("com.noah:noah:15.1.4002")
+    implementation("io.github.hoorahtech:noah-vendor:15.1.4002")
 }

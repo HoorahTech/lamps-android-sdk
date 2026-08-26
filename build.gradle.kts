@@ -16,7 +16,9 @@ listOf(
     "signingInMemoryKeyPassword"
 ).forEach { key ->
     localProperties.getProperty(key)?.takeIf { it.isNotBlank() }?.let { value ->
-        System.setProperty("org.gradle.project.$key", value)
+        // Register secrets as Gradle project properties so providers.gradleProperty
+        // used by the publishing plugin can resolve them during configuration.
+        gradle.beforeProject { extensions.extraProperties.set(key, value) }
     }
 }
 

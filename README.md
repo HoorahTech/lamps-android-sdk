@@ -18,7 +18,7 @@ dependencies {
     implementation("io.github.hoorahtech:sdk:<version>")    // 必选
     implementation("io.github.hoorahtech:pangle:<version>") // 可选
     implementation("io.github.hoorahtech:ylh:<version>")    // 可选
-    implementation("io.github.hoorahtech:noah:<version>")   // 可选
+    implementation("io.github.hoorahtech:noah:<version>")   // 可选，已内置 Noah SDK
     debugImplementation("io.github.hoorahtech:sdk-tools:<version>") // 仅调试
 }
 ```
