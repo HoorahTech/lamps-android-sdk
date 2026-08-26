@@ -9,6 +9,7 @@ publish:
     - if: '$CI_PIPELINE_SOURCE == "web"'
   script:
     - chmod +x ./gradlew
-    - test -n "$HUPU_NEXUS_USERNAME"
-    - test -n "$HUPU_NEXUS_PASSWORD"
-    - ./gradlew --no-daemon :core:publish :sdk:publish :pangle:publish :ylh:publish :noah:publish :sdk-tools:publish
+    - test -n "$MAVEN_CENTRAL_USERNAME"
+    - test -n "$MAVEN_CENTRAL_PASSWORD"
+    - test -n "$GPG_PRIVATE_KEY"
+    - ./gradlew --no-daemon :core:publishToMavenCentral :sdk:publishToMavenCentral :pangle:publishToMavenCentral :ylh:publishToMavenCentral :noah:publishToMavenCentral :sdk-tools:publishToMavenCentral

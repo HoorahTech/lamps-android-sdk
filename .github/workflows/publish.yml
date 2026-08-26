@@ -1,4 +1,4 @@
-name: Publish AAR to Hupu Nexus
+name: Publish AAR to Maven Central
 
 on:
   workflow_dispatch:
@@ -18,17 +18,19 @@ jobs:
           distribution: temurin
           java-version: 17
       - uses: android-actions/setup-android@v3
-      - name: Publish libraries to Hupu Nexus
+      - name: Publish libraries to Maven Central
         env:
-          HUPU_NEXUS_USERNAME: ${{ secrets.HUPU_NEXUS_USERNAME }}
-          HUPU_NEXUS_PASSWORD: ${{ secrets.HUPU_NEXUS_PASSWORD }}
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_PRIVATE_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.GPG_PRIVATE_KEY_PASSWORD }}
         run: |
           set -o pipefail
           failed=0
           for m in core sdk pangle ylh noah sdk-tools; do
             echo "::group::publish ${m}"
             log_file="/tmp/publish-${m}.log"
-            if ./gradlew --no-daemon ":${m}:publish" 2>&1 | tee "$log_file"; then
+            if ./gradlew --no-daemon ":${m}:publishToMavenCentral" 2>&1 | tee "$log_file"; then
               echo "published ${m}"
             elif grep -q "status code 409" "$log_file"; then
               echo "${m} already published, skip"

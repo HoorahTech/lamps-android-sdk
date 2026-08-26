@@ -68,10 +68,10 @@ dependencies {
         implementation(project(":noah"))
         debugImplementation(project(":sdk-tools"))
     } else {
-        implementation("com.lamps:pangle:$lampsVersion")
-        implementation("com.lamps:ylh:$lampsVersion")
-        implementation("com.lamps:noah:$lampsVersion")
-        implementation("com.lamps:sdk:$lampsVersion")
-        debugImplementation("com.lamps:sdk-tools:$lampsVersion")
+        implementation("io.github.hoorahtech:pangle:$lampsVersion")
+        implementation("io.github.hoorahtech:ylh:$lampsVersion")
+        implementation("io.github.hoorahtech:noah:$lampsVersion")
+        implementation("io.github.hoorahtech:sdk:$lampsVersion")
+        debugImplementation("io.github.hoorahtech:sdk-tools:$lampsVersion")
     }
 }

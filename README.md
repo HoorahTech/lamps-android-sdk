@@ -15,23 +15,23 @@ Lamps Android SDK 为 Android 应用提供统一的初始化、游戏中心页�
 
 ```kotlin
 dependencies {
-    implementation("com.lamps:sdk:<version>")    // 必选
-    implementation("com.lamps:pangle:<version>") // 可选
-    implementation("com.lamps:ylh:<version>")    // 可选
-    implementation("com.lamps:noah:<version>")   // 可选
-    debugImplementation("com.lamps:sdk-tools:<version>") // 仅调试
+    implementation("io.github.hoorahtech:sdk:<version>")    // 必选
+    implementation("io.github.hoorahtech:pangle:<version>") // 可选
+    implementation("io.github.hoorahtech:ylh:<version>")    // 可选
+    implementation("io.github.hoorahtech:noah:<version>")   // 可选
+    debugImplementation("io.github.hoorahtech:sdk-tools:<version>") // 仅调试
 }
 ```
 
-AAR 和 POM 发布到虎扑 Nexus：
+AAR、POM、sources/Javadoc 和签名文件发布到 Maven Central：
 
 ```kotlin
 repositories {
-    maven("https://nexus.hupu.io/repository/hupu-android-public/")
+    mavenCentral()
 }
 ```
 
-发布凭据只配置在 CI 环境变量 `HUPU_NEXUS_USERNAME` / `HUPU_NEXUS_PASSWORD`，不写入项目文件。项目源码仓库为 `http://gitlab.hupu.com/HPBase/lamps-android-sdk.git`。
+Central Portal 凭据和 GPG 签名配置只放在本机 `local.properties`（该文件已被 Git 忽略）、`~/.gradle/gradle.properties` 或 CI Secret，不写入版本库。发布任务配置为上传后自动 release；若 Portal 风控要求人工审核，需在 Central Portal 的 Deployments 页面手动点击 Publish。项目源码仓库为 `http://gitlab.hupu.com/HPBase/lamps-android-sdk.git`。
 
 本地需要同时发布全部模块并准备交付给第三方的 AAR 时，执行：
 
@@ -39,7 +39,7 @@ repositories {
 ./gradlew push
 ```
 
-该任务会将所有 release AAR 发布到 Nexus，并复制到根目录 `sdk_lib/`，文件名格式为 `lamps-artifactId-version.aar`，例如 `lamps-sdk-0.0.5.aar`。只构建并收集本地 AAR（不上传 Nexus）可执行 `./gradlew collectReleaseAars`。
+该任务会将所有 release AAR 发布到 Maven Central，并复制到根目录 `sdk_lib/`，文件名格式为 `lamps-artifactId-version.aar`，例如 `lamps-sdk-0.0.5.aar`。只构建并收集本地 AAR（不上传 Maven Central）可执行 `./gradlew collectReleaseAars`。
 
 ## 初始化
 

@@ -1,7 +1,10 @@
+import com.vanniktech.maven.publish.SonatypeHost
+import com.vanniktech.maven.publish.AndroidSingleVariantLibrary
+
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
-    id("maven-publish")
+    id("com.vanniktech.maven.publish")
 }
 
 android {
@@ -37,20 +40,12 @@ android {
         jvmTarget = "1.8"
     }
 
-    publishing {
-        singleVariant("release")
-    }
 }
 
-publishing {
-    publications {
-        register<MavenPublication>("release") {
-            afterEvaluate {
-                from(components["release"])
-            }
-            artifactId = "core"
-        }
-    }
+mavenPublishing {
+    configure(AndroidSingleVariantLibrary(sourcesJar = false))
+    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
+    signAllPublications()
 }
 
 dependencies {
