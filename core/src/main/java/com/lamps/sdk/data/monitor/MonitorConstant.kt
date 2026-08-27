@@ -18,6 +18,7 @@ internal object MonitorConstant {
     const val ANDROID_ID = "__ANDROIDID__"
     const val OAID = "__OAID__"
     const val APP_ID = "__APPID__"
+    const val PACKAGE_NAME = "__PACKAGE_NAME__"
     const val SDK_VERSION = "__SDK_VERSION__"
     const val PHONE_BRAND = "__PHONE_BRAND__"
     const val NETWORK = "__NETWORK__"

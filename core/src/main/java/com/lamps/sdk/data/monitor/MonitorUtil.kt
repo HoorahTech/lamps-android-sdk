@@ -11,6 +11,7 @@ import com.lamps.sdk.data.monitor.MonitorConstant.MAC
 import com.lamps.sdk.data.monitor.MonitorConstant.NETWORK
 import com.lamps.sdk.data.monitor.MonitorConstant.OAID
 import com.lamps.sdk.data.monitor.MonitorConstant.OS
+import com.lamps.sdk.data.monitor.MonitorConstant.PACKAGE_NAME
 import com.lamps.sdk.data.monitor.MonitorConstant.PHONE_BRAND
 import com.lamps.sdk.data.monitor.MonitorConstant.REM_SIGN
 import com.lamps.sdk.data.monitor.MonitorConstant.SDK_VERSION
@@ -126,6 +127,7 @@ object MonitorUtil {
             ANDROID_ID to context?.let(DeviceUtils::androidId).orEmpty(),
             OAID to DeviceUtils.oaid(context),
             APP_ID to DeviceUtils.appId(context),
+            PACKAGE_NAME to context?.packageName.orEmpty(),
             SDK_VERSION to BuildConfig.SDK_VERSION,
             PHONE_BRAND to DeviceUtils.phoneBrand(context),
             NETWORK to DeviceUtils.networkType(context)

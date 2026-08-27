@@ -74,7 +74,7 @@ Base64 解码
 | `mac` | string | 设备 MAC；不可用时为空字符串 |
 | `imei` | string | 设备 IMEI；不可用时为空字符串 |
 | `os` | string | 固定为 `Android` |
-| `androidId` | string | Android ID；不可用时为空字符串 |
+| `androidId` | string | Android ID；获取失败时使用并持久化 UUID |
 | `oaid` | string | OAID；不可用时为空字符串 |
 | `appid` | string | 宿主应用 App ID |
 | `sdkVersion` | string | SDK 版本号 |

@@ -13,6 +13,7 @@ import android.telephony.TelephonyManager
 import android.webkit.WebSettings
 import com.lamps.sdk.config.SdkConfig
 import java.net.NetworkInterface
+import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
 internal object DeviceUtils {
@@ -33,9 +34,11 @@ internal object DeviceUtils {
     fun androidId(context: Context): String {
         return cached(context, KEY_ANDROID_ID) {
             try {
-                Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID).orEmpty()
+                Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
+                    ?.takeIf { it.isNotEmpty() }
+                    ?: UUID.randomUUID().toString()
             } catch (_: Throwable) {
-                ""
+                UUID.randomUUID().toString()
             }
         }
     }
