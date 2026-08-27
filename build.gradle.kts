@@ -49,7 +49,7 @@ require(publishTarget == "maven" || publishTarget == "mavencentral") {
 plugins {
     id("com.android.library") version "8.5.2" apply false
     id("com.android.application") version "8.5.2" apply false
-    id("org.jetbrains.kotlin.android") version "1.9.24" apply false
+    id("org.jetbrains.kotlin.android") version "1.7.10" apply false
     id("com.vanniktech.maven.publish") version "0.30.0" apply false
 }
 
@@ -117,9 +117,12 @@ subprojects {
 }
 
 val releaseLibraryModules = listOf(
-    "core", "sdk", "pangle", "ylh", "noah", "sdk-tools",
-    "pangle-ads-sdk-pro", "pangle-ads-sdk-tools"
+    "core", "sdk", "pangle", "ylh", "noah", "sdk-tools"
 )
+val excludedFromPublishAllModules = setOf(
+    "pangle-ads-sdk-pro", "pangle-ads-sdk-tools", "noah-vendor"
+)
+val vendorModules = excludedFromPublishAllModules.toList()
 val deliverableLibraryModules = listOf("core", "sdk", "pangle", "ylh", "noah", "sdk-tools")
 val releaseVersion = rootProject.property("LAMPS_VERSION").toString()
 val sdkLibDir = rootProject.layout.projectDirectory.dir("sdk_lib").asFile
@@ -144,10 +147,11 @@ val collectReleaseAars = tasks.register("collectReleaseAars") {
     }
 }
 
+val publishModules = releaseLibraryModules.filterNot(excludedFromPublishAllModules::contains)
 val publishTasks = if (publishTarget == "maven") {
-    releaseLibraryModules.map { ":$it:publishAllPublicationsToHupuMavenRepository" }
+    publishModules.map { ":$it:publishAllPublicationsToHupuMavenRepository" }
 } else {
-    releaseLibraryModules.map { ":$it:publishToMavenCentral" }
+    publishModules.map { ":$it:publishToMavenCentral" }
 }
 collectReleaseAars.configure { mustRunAfter(publishTasks) }
 
@@ -156,6 +160,18 @@ val publishAll = tasks.register("publishAll") {
     description = "Publish all release libraries to Maven Central and collect versioned AARs."
     dependsOn(publishTasks)
     dependsOn(collectReleaseAars)
+}
+
+val vendorPublishTasks = if (publishTarget == "maven") {
+    vendorModules.map { ":$it:publishMavenPublicationToHupuMavenRepository" }
+} else {
+    vendorModules.map { ":$it:publishToMavenCentral" }
+}
+
+tasks.register("publishVendors") {
+    group = "publishing"
+    description = "Publish vendor libraries to the configured repository."
+    dependsOn(vendorPublishTasks)
 }
 
 tasks.register("push") {

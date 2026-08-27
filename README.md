@@ -49,7 +49,7 @@ grep '^LAMPS_PUBLISH_TARGET=' gradle.properties
 
 该任务会将所有 release AAR 发布到所选仓库，并复制到根目录 `sdk_lib/`，文件名格式为 `lamps-artifactId-version.aar`，例如 `lamps-sdk-0.0.5.aar`。只构建并收集本地 AAR（不上传仓库）可执行 `./gradlew collectReleaseAars`。
 
-Pangle 的定制二进制也会随 `publishAll` 发布到 Maven Central，坐标保持其 SDK 版本并使用 `pangle-` 前缀：`io.github.hoorahtech:pangle-ads-sdk-pro:7.6.1.2` 和 `io.github.hoorahtech:pangle-ads-sdk-tools:7.6.4.2`（Maven 版本不带 `-hupu`）。对应 release AAR 文件名为 `pangle-ads-sdk-pro-release.aar` 和 `pangle-ads-sdk-tools-release.aar`。因此 `pangle`、`sdk-tools` 的新版本不再依赖公司 Nexus 中的 `com.pangle.cn` 坐标。
+Pangle 的定制二进制不随统一 `publishAll` 发布；需要单独执行对应 module 的 Maven Central 发布任务。坐标保持其 SDK 版本并使用 `pangle-` 前缀：`io.github.hoorahtech:pangle-ads-sdk-pro:7.6.1.2` 和 `io.github.hoorahtech:pangle-ads-sdk-tools:7.6.4.2`（Maven 版本不带 `-hupu`）。对应 release AAR 文件名为 `pangle-ads-sdk-pro-release.aar` 和 `pangle-ads-sdk-tools-release.aar`。因此 `pangle`、`sdk-tools` 的新版本不再依赖公司 Nexus 中的 `com.pangle.cn` 坐标。
 
 ## 初始化
 

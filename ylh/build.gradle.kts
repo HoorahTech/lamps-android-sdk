@@ -46,5 +46,5 @@ mavenPublishing {
 
 dependencies {
     implementation(project(":core"))
-    implementation("com.qq.e.union:union:4.690.1560")
+    implementation("com.qq.e.union:union:${rootProject.property("GDT_UNION_VERSION")}")
 }

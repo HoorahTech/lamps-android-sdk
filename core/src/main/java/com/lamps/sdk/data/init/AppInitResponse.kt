@@ -28,7 +28,7 @@ enum class RewardSlotType {
 
     companion object {
         fun from(raw: String): RewardSlotType {
-            return entries.firstOrNull { it.name.equals(raw.trim(), ignoreCase = true) } ?: PD
+            return values().firstOrNull { it.name.equals(raw.trim(), ignoreCase = true) } ?: PD
         }
     }
 }

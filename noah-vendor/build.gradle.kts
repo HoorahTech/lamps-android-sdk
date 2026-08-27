@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "io.github.hoorahtech"
-version = "15.1.4002"
+version = rootProject.property("NOAH_VENDOR_VERSION") as String
 
 android {
     namespace = "io.github.hoorahtech.noah.vendor"
@@ -21,6 +21,8 @@ android {
 dependencies {
     // Compile against the authorized vendor binary; the published artifact is copied below.
     compileOnly(files("libs/noah-15.1.4002.aar"))
+    implementation("androidx.appcompat:appcompat:1.4.1")
+    implementation("com.google.android.material:material:1.3.0")
 }
 
 mavenPublishing {

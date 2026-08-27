@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "io.github.hoorahtech"
-version = "7.6.1.2"
+version = rootProject.property("PANGLE_ADS_SDK_PRO_VERSION") as String
 
 android {
     namespace = "io.github.hoorahtech.ads.sdk.pro"
@@ -19,6 +19,8 @@ android {
 
 dependencies {
     compileOnly(files("libs/ads-sdk-pro-7.6.1.2.aar"))
+    implementation("androidx.appcompat:appcompat:1.4.1")
+    implementation("com.google.android.material:material:1.3.0")
 }
 
 mavenPublishing {

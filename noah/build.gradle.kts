@@ -46,5 +46,10 @@ mavenPublishing {
 
 dependencies {
     implementation(project(":core"))
-    implementation("io.github.hoorahtech:noah-vendor:15.1.4002")
+    implementation("io.github.hoorahtech:noah-vendor:${rootProject.property("NOAH_VENDOR_VERSION")}") {
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib")
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk7")
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk8")
+    }
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.7.10")
 }

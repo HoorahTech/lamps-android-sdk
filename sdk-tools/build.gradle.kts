@@ -49,6 +49,11 @@ dependencies {
     implementation(project(":pangle"))
     implementation(project(":ylh"))
     implementation(project(":noah"))
-    implementation("io.github.hoorahtech:pangle-ads-sdk-tools:7.6.4.2")
-    implementation("com.qq.e.union:tools:2.4")
+    implementation("io.github.hoorahtech:pangle-ads-sdk-tools:${rootProject.property("PANGLE_ADS_SDK_TOOLS_VERSION")}") {
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib")
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk7")
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk8")
+    }
+    implementation("com.qq.e.union:tools:${rootProject.property("GDT_TOOLS_VERSION")}")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.7.10")
 }
