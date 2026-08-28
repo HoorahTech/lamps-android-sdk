@@ -9,6 +9,7 @@ import android.webkit.WebChromeClient
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import com.lamps.sdk.BuildConfig
 import com.lamps.sdk.config.SdkConfig
 import com.lamps.sdk.data.sdk.reward.RewardAdAbilityInstaller
 import com.lamps.sdk.webview.bridge.LampsAbilityInstaller
@@ -62,6 +63,7 @@ open class LampsWebView @JvmOverloads constructor(
     private fun initSettings() {
         setWebContentsDebuggingEnabled(SdkConfig.current?.debug == true)
         settings.apply {
+            userAgentString = "$userAgentString LampsSDK/${BuildConfig.SDK_VERSION}"
             javaScriptEnabled = true
             domStorageEnabled = true
             loadWithOverviewMode = true

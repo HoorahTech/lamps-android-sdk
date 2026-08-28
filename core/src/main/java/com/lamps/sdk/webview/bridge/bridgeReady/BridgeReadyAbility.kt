@@ -4,6 +4,7 @@ import android.os.Build
 import com.lamps.sdk.BuildConfig
 import com.lamps.sdk.config.SdkConfig
 import com.lamps.sdk.utils.DeviceUtils
+import com.lamps.sdk.utils.LampsApiHost
 import com.lamps.sdk.webview.LampsWebView
 import com.lamps.sdk.webview.bridge.LampsAbility
 import com.lamps.sdk.webview.bridge.LampsNativeCallback
@@ -28,8 +29,6 @@ internal class BridgeReadyAbility : LampsAbility {
         val context = config?.applicationContext ?: webView.context.applicationContext
         val metrics = context.resources.displayMetrics
         return JSONObject().apply {
-            put("ts", (System.currentTimeMillis() / 1000L).toString())
-            put("et", (System.currentTimeMillis() / 1000L).toString())
             put("ua", DeviceUtils.userAgent(context))
             put("ip", config?.appInitData?.clientIp.orEmpty())
             put("mac", DeviceUtils.mac(context))
@@ -44,10 +43,10 @@ internal class BridgeReadyAbility : LampsAbility {
             put("oaid", DeviceUtils.oaid(context))
             put("appVer", DeviceUtils.appVersion(context))
             put("osVer", Build.VERSION.RELEASE.orEmpty())
-            put("env", config?.appInitData?.apiEnv.orEmpty())
+            put("env", LampsApiHost.envName(context))
             put("packageName", context.packageName)
-            put("client_width", metrics.widthPixels)
-            put("client_height", metrics.heightPixels)
+            put("clientWidth", metrics.widthPixels)
+            put("clientHeight", metrics.heightPixels)
             put("density", metrics.density)
         }
     }

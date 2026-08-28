@@ -37,10 +37,15 @@ internal class TrackAbilityUtil(
 
     private fun refreshPendingTimestamp() {
         val timestamp = nowSeconds()
-        pendingOnloadData.forEach { it.data[VT] = timestamp }
+        pendingOnloadData.forEach {
+            it.data[VT] = timestamp
+            it.data.remove(LT)
+        }
     }
 
     private fun flush(clear: Boolean = false) {
+        val timestamp = nowSeconds()
+        pendingOnloadData.forEach { it.data[LT] = timestamp }
         pendingOnloadData.toList().forEach { report(it.action, it.data) }
         if (clear) {
             pendingOnloadData.clear()
@@ -65,6 +70,7 @@ internal class TrackAbilityUtil(
     )
 
     private companion object {
+        const val LT = "lt"
         const val VT = "vt"
     }
 }

@@ -42,6 +42,13 @@ internal object LampsApiHost {
 
     fun baseUrl(context: Context? = null): String = current(context).baseUrl
 
+    fun envName(context: Context? = null): String {
+        return when (current(context)) {
+            Env.DEV -> "dev"
+            Env.PROD -> "prd"
+        }
+    }
+
     fun set(context: Context, env: Env) {
         currentEnv = env
         context.applicationContext

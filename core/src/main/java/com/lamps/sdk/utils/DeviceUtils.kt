@@ -25,6 +25,12 @@ internal object DeviceUtils {
     private const val KEY_PHONE_BRAND = "phone_brand"
     private const val KEY_IMEI = "imei"
     private const val INVALID_MAC = "02:00:00:00:00:00"
+    private const val NETWORK_WIFI = "wifi"
+    private const val NETWORK_2G = "2g"
+    private const val NETWORK_3G = "3g"
+    private const val NETWORK_4G = "4g"
+    private const val NETWORK_5G = "5g"
+    private const val NETWORK_UNKNOWN = "unknown"
 
     private val memory = ConcurrentHashMap<String, String>()
 
@@ -93,20 +99,53 @@ internal object DeviceUtils {
     }
 
     fun networkType(context: Context?): String {
-        if (context == null) return ""
+        if (context == null) return NETWORK_UNKNOWN
         return try {
             val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
-                ?: return ""
-            val network = cm.activeNetwork ?: return ""
-            val caps = cm.getNetworkCapabilities(network) ?: return ""
+                ?: return NETWORK_UNKNOWN
+            val network = cm.activeNetwork ?: return NETWORK_UNKNOWN
+            val caps = cm.getNetworkCapabilities(network) ?: return NETWORK_UNKNOWN
             when {
-                caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> "wifi"
-                caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> "mobile"
-                caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> "ethernet"
-                else -> ""
+                caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> NETWORK_WIFI
+                caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> cellularNetworkType(context)
+                else -> NETWORK_UNKNOWN
             }
         } catch (_: Throwable) {
-            ""
+            NETWORK_UNKNOWN
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun cellularNetworkType(context: Context): String {
+        val telephony = context.getSystemService(Context.TELEPHONY_SERVICE) as? TelephonyManager
+            ?: return NETWORK_UNKNOWN
+        val type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            telephony.dataNetworkType
+        } else {
+            telephony.networkType
+        }
+        return when (type) {
+            TelephonyManager.NETWORK_TYPE_GPRS,
+            TelephonyManager.NETWORK_TYPE_EDGE,
+            TelephonyManager.NETWORK_TYPE_CDMA,
+            TelephonyManager.NETWORK_TYPE_1xRTT,
+            TelephonyManager.NETWORK_TYPE_IDEN,
+            TelephonyManager.NETWORK_TYPE_GSM -> NETWORK_2G
+
+            TelephonyManager.NETWORK_TYPE_UMTS,
+            TelephonyManager.NETWORK_TYPE_HSDPA,
+            TelephonyManager.NETWORK_TYPE_HSUPA,
+            TelephonyManager.NETWORK_TYPE_HSPA,
+            TelephonyManager.NETWORK_TYPE_HSPAP,
+            TelephonyManager.NETWORK_TYPE_TD_SCDMA,
+            TelephonyManager.NETWORK_TYPE_EVDO_0,
+            TelephonyManager.NETWORK_TYPE_EVDO_A,
+            TelephonyManager.NETWORK_TYPE_EVDO_B,
+            TelephonyManager.NETWORK_TYPE_EHRPD -> NETWORK_3G
+
+            TelephonyManager.NETWORK_TYPE_LTE -> NETWORK_4G
+            TelephonyManager.NETWORK_TYPE_NR -> NETWORK_5G
+            else -> NETWORK_UNKNOWN
         }
     }
 

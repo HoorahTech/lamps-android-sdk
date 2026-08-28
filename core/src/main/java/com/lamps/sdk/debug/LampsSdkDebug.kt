@@ -125,8 +125,6 @@ object LampsSdkDebug {
                 }
             },
             section("服务端下发配置") {
-                line("apiEnv", initData?.apiEnv.orEmpty().ifBlank { "-" })
-                line("apiBaseUrl", initData?.apiBaseUrl.orEmpty().ifBlank { "-" })
                 line("clientIp", initData?.clientIp.orEmpty())
                 line("gameCenterPage", initData?.gameCenterPage.orEmpty())
 

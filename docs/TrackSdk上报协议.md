@@ -79,7 +79,7 @@ Base64 解码
 | `appid` | string | 宿主应用 App ID |
 | `sdkVersion` | string | SDK 版本号 |
 | `phoneBrand` | string | 手机品牌 |
-| `network` | string | 当前网络类型 |
+| `network` | string | 当前网络类型：`wifi`、`2g`、`3g`、`4g`、`5g` 或 `unknown` |
 | `type` | string | 调用 `sendData` 时传入的事件类型 |
 | `pdata` | object | 调用方传入的业务数据，字段和值保持 JSON 结构 |
 
