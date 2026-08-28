@@ -14,7 +14,7 @@ import com.lamps.sdk.reward.RewardAdShowCallback
 import com.lamps.sdk.utils.LampsApiHost
 import com.lamps.sdk.utils.SdkLog
 import com.lamps.sdk.utils.ThreadUtils
-import com.lamps.sdk.webview.LampsWebViewActivity
+import com.lamps.sdk.webview.CommonWebViewActivity
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicReference
 
@@ -214,10 +214,9 @@ object SdkRuntime {
             ?.takeIf { it.isNotBlank() }
             ?: return
         context.startActivity(
-            LampsWebViewActivity.buildIntent(
+            CommonWebViewActivity.buildIntent(
                 context = context,
                 url = url,
-                title = "游戏中心"
             )
         )
     }

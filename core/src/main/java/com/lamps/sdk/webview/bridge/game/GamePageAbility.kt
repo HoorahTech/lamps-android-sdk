@@ -2,7 +2,7 @@ package com.lamps.sdk.webview.bridge.game
 
 import android.net.Uri
 import com.lamps.sdk.webview.LampsWebView
-import com.lamps.sdk.webview.LampsWebViewActivity
+import com.lamps.sdk.webview.GameWebViewActivity
 import com.lamps.sdk.webview.bridge.LampsAbility
 import com.lamps.sdk.webview.bridge.LampsNativeCallback
 import org.json.JSONObject
@@ -25,7 +25,7 @@ class GamePageAbility : LampsAbility {
         }
 
         webView.context.startActivity(
-            LampsWebViewActivity.buildIntent(
+            GameWebViewActivity.buildIntent(
                 context = webView.context,
                 url = url
             )

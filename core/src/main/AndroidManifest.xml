@@ -7,7 +7,13 @@
 
     <application>
         <activity
-            android:name=".webview.LampsWebViewActivity"
+            android:name=".webview.GameWebViewActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize|fontScale"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Material.Light.NoActionBar" />
+        <activity
+            android:name=".webview.CommonWebViewActivity"
             android:configChanges="orientation|keyboardHidden|screenSize|fontScale"
             android:exported="false"
             android:screenOrientation="portrait"
