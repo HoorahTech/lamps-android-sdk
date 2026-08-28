@@ -14,6 +14,7 @@ import java.util.WeakHashMap
 
 internal data class ScreenConfig(
     val immersive: Boolean? = null,
+    val statusBarOverlay: Boolean? = null,
     val statusBarColor: Int? = null,
     val statusBarFontDark: Boolean? = null,
     val orientation: Int? = null
@@ -38,10 +39,11 @@ internal object ScreenConfigApplier {
         config.orientation?.let { activity.requestedOrientation = it }
         val window = activity.window
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-        when (config.immersive) {
-            true -> applyImmersive(window)
-            false -> applyNonImmersive(window, config)
-            null -> applyStatusBarStyle(window, config)
+        when {
+            config.statusBarOverlay == true -> applyOverlay(window, config)
+            config.immersive == true -> applyImmersive(window)
+            config.immersive == false -> applyNonImmersive(window, config)
+            else -> applyStatusBarStyle(window, config)
         }
     }
 
@@ -90,6 +92,40 @@ internal object ScreenConfigApplier {
         }
     }
 
+    private fun applyOverlay(window: Window, config: ScreenConfig) {
+        window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
+        window.navigationBarColor = Color.TRANSPARENT
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            window.isNavigationBarContrastEnforced = false
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            window.attributes = window.attributes.apply {
+                layoutInDisplayCutoutMode =
+                    WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+            }
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            window.setDecorFitsSystemWindows(false)
+            @Suppress("DEPRECATION")
+            window.decorView.systemUiVisibility =
+                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            window.insetsController?.let { controller ->
+                controller.show(WindowInsets.Type.statusBars())
+                controller.hide(WindowInsets.Type.navigationBars())
+            }
+        } else {
+            @Suppress("DEPRECATION")
+            window.decorView.systemUiVisibility =
+                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+        }
+        applyStatusBarStyle(window, config)
+    }
+
     private fun applyNonImmersive(window: Window, config: ScreenConfig) {
         window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -111,12 +147,11 @@ internal object ScreenConfigApplier {
     }
 
     private fun applyStatusBarStyle(window: Window, config: ScreenConfig) {
-        val statusBarColor = config.statusBarColor
-            ?.takeUnless { it == Color.TRANSPARENT }
-        if (statusBarColor != null) {
-            window.statusBarColor = statusBarColor
-        } else if (config.immersive == false) {
-            window.statusBarColor = Color.WHITE
+        val color = config.statusBarColor
+        when {
+            color != null -> window.statusBarColor = color
+            config.statusBarOverlay == true -> window.statusBarColor = Color.TRANSPARENT
+            config.immersive == false -> window.statusBarColor = Color.WHITE
         }
         val fontDark = config.statusBarFontDark ?: inferFontDark(config)
         setStatusBarFontDark(window, fontDark)
@@ -164,6 +199,12 @@ internal fun ScreenConfig.merge(params: JSONObject): ScreenConfig {
         params.has("fullScreen") -> flexibleBoolean(params, "fullScreen")
         else -> this.immersive
     }
+    val statusBarOverlay = when {
+        immersive == false -> false
+        params.has("statusBarOverlay") -> flexibleBoolean(params, "statusBarOverlay")
+        params.has("statusBarVisible") -> flexibleBoolean(params, "statusBarVisible")
+        else -> this.statusBarOverlay
+    }
     val statusBarColor = if (params.has("statusBarColor")) {
         parseColor(params.optString("statusBarColor")) ?: this.statusBarColor
     } else {
@@ -171,7 +212,13 @@ internal fun ScreenConfig.merge(params: JSONObject): ScreenConfig {
     }
     val statusBarFontDark = parseStatusBarFontDark(params) ?: this.statusBarFontDark
     val orientation = parseOrientation(params) ?: this.orientation
-    return ScreenConfig(immersive, statusBarColor, statusBarFontDark, orientation)
+    return ScreenConfig(
+        immersive = immersive,
+        statusBarOverlay = statusBarOverlay,
+        statusBarColor = statusBarColor,
+        statusBarFontDark = statusBarFontDark,
+        orientation = orientation
+    )
 }
 
 internal fun parseOrientation(params: JSONObject): Int? {
