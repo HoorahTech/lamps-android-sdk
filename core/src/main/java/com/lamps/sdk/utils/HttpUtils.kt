@@ -1,10 +1,14 @@
 package com.lamps.sdk.utils
 
+import com.lamps.sdk.config.SdkConfig
 import java.io.BufferedReader
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
+import javax.net.ssl.HttpsURLConnection
+import javax.net.ssl.SSLContext
+import javax.net.ssl.SSLSocketFactory
 
 internal data class HttpResponse(
     val code: Int,
@@ -48,6 +52,7 @@ internal object HttpUtils {
             val url = URL(buildUrl(path, query))
             SdkLog.d("$method $url")
             val connection = (url.openConnection() as HttpURLConnection).apply {
+                attachDebugSsl(this)
                 requestMethod = method
                 connectTimeout = connectTimeoutMs
                 readTimeout = readTimeoutMs
@@ -110,4 +115,15 @@ internal object HttpUtils {
 
     private const val CONNECT_TIMEOUT_MS = 10_000
     private const val READ_TIMEOUT_MS = 10_000
+
+    // setDebug(true) only: Pangle replaces the process SSL factory and breaks Charles.
+    internal fun attachDebugSsl(connection: HttpURLConnection) {
+        if (SdkConfig.current?.debug != true) return
+        val https = connection as? HttpsURLConnection ?: return
+        https.sslSocketFactory = debugSslFactory
+    }
+
+    private val debugSslFactory: SSLSocketFactory by lazy {
+        SSLContext.getInstance("TLS").apply { init(null, null, null) }.socketFactory
+    }
 }

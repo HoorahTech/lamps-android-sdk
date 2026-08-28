@@ -2,6 +2,7 @@ package com.lamps.sdk.webview.bridge.network
 
 import android.net.Uri
 import android.webkit.CookieManager
+import com.lamps.sdk.utils.HttpUtils
 import com.lamps.sdk.utils.SdkLog
 import com.lamps.sdk.webview.LampsWebView
 import com.lamps.sdk.webview.bridge.EMPTY_JSON_OBJ
@@ -93,6 +94,7 @@ internal class NetworkAbility : LampsAbility {
         val connection = URL(targetUrl).openConnection() as HttpURLConnection
         try {
             connection.apply {
+                HttpUtils.attachDebugSsl(this)
                 requestMethod = if (isGet) "GET" else "POST"
                 connectTimeout = CONNECT_TIMEOUT_MS
                 readTimeout = READ_TIMEOUT_MS
