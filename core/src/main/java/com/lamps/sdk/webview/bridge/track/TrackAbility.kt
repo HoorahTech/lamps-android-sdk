@@ -14,6 +14,8 @@ import org.json.JSONObject
  */
 class TrackAbility : LampsAbility {
 
+    private val trackUtil = TrackAbilityUtil(TrackSdk::sendData)
+
     companion object {
         const val RIG_UPLOAD = "lamps.common.track"
     }
@@ -28,20 +30,30 @@ class TrackAbility : LampsAbility {
         callback: LampsNativeCallback
     ) {
         when (methodName) {
-            RIG_UPLOAD -> handleRigUpload(params, callbackId, callback)
+            RIG_UPLOAD -> handleRigUpload(webView, params, callbackId, callback)
         }
     }
 
     private fun handleRigUpload(
+        webView: LampsWebView,
         params: JSONObject,
         callbackId: String?,
         callback: LampsNativeCallback
     ) {
+        trackUtil.observe(webView)
+        val action = params.optString("action")
         val type = params.optString("type")
-        params.remove("type")
         val data = jsonToHashMap(params)
-        TrackSdk.sendData(type, data)
+        if (type == "onload") {
+            trackUtil.cacheOnload(action, data)
+        } else {
+            TrackSdk.sendData(action, data)
+        }
         callback.callback(generateResult(EMPTY_JSON_OBJ), callbackId)
+    }
+
+    override fun destroy() {
+        trackUtil.destroy()
     }
 
     private fun jsonToHashMap(jsonObject: JSONObject): HashMap<String, Any> {
@@ -49,8 +61,9 @@ class TrackAbility : LampsAbility {
         val it: Iterator<*> = jsonObject.keys()
         while (it.hasNext()) {
             val key = it.next().toString()
-            map[key] = jsonObject.opt(key)
+            map[key] = jsonObject.opt(key) ?: ""
         }
         return map
     }
+
 }
