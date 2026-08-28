@@ -40,13 +40,17 @@ internal class TrackAbilityUtil(
         pendingOnloadData.forEach {
             it.data[VT] = timestamp
             it.data.remove(LT)
+            it.reported = false
         }
     }
 
     private fun flush(clear: Boolean = false) {
         val timestamp = nowSeconds()
-        pendingOnloadData.forEach { it.data[LT] = timestamp }
-        pendingOnloadData.toList().forEach { report(it.action, it.data) }
+        pendingOnloadData.filterNot { it.reported }.forEach {
+            it.data[LT] = timestamp
+            report(it.action, it.data)
+            it.reported = true
+        }
         if (clear) {
             pendingOnloadData.clear()
         }
@@ -66,7 +70,8 @@ internal class TrackAbilityUtil(
 
     private data class PendingEvent(
         val action: String,
-        val data: HashMap<String, Any>
+        val data: HashMap<String, Any>,
+        var reported: Boolean = false
     )
 
     private companion object {
