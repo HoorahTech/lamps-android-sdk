@@ -98,6 +98,17 @@ internal object DeviceUtils {
         }
     }
 
+    fun statusBarHeight(context: Context?): Int {
+        if (context == null) return 0
+        return try {
+            val resources = context.resources
+            val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android")
+            if (resourceId > 0) resources.getDimensionPixelSize(resourceId) else 0
+        } catch (_: Throwable) {
+            0
+        }
+    }
+
     fun networkType(context: Context?): String {
         if (context == null) return NETWORK_UNKNOWN
         return try {

@@ -1,4 +1,4 @@
-package com.lamps.sdk.webview
+package com.lamps.sdk.webview.view
 
 import android.content.Context
 import android.graphics.Canvas
@@ -299,7 +299,8 @@ internal class GameWebViewActionBar @JvmOverloads constructor(
             contentDescription = description
             foreground = selectableBackground(android.R.attr.selectableItemBackgroundBorderless)
             setOnClickListener { onClick() }
-            addView(ActionGlyphView(context, glyph), FrameLayout.LayoutParams(
+            addView(
+                ActionGlyphView(context, glyph), FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
             ))

@@ -48,6 +48,7 @@ internal class BridgeReadyAbility : LampsAbility {
             put("clientWidth", metrics.widthPixels)
             put("clientHeight", metrics.heightPixels)
             put("density", metrics.density)
+            put("statusBarHeight", DeviceUtils.statusBarHeight(context))
         }
     }
 
