@@ -4,7 +4,7 @@ import com.lamps.sdk.webview.bridge.back.BackAbility
 import com.lamps.sdk.webview.bridge.bridgeReady.BridgeReadyAbility
 import com.lamps.sdk.webview.bridge.game.GamePageAbility
 import com.lamps.sdk.webview.bridge.network.NetworkAbility
-import com.lamps.sdk.webview.bridge.screen.ScreenConfigAbility
+import com.lamps.sdk.webview.bridge.statusbar.StatusBarAbility
 import com.lamps.sdk.webview.bridge.track.TrackAbility
 
 /**
@@ -19,7 +19,7 @@ class CommonAbilityInstaller : LampsAbilityInstaller() {
             TrackAbility(),
             GamePageAbility(),
             BridgeReadyAbility(),
-            ScreenConfigAbility(),
+            StatusBarAbility(),
             BackAbility()
         )
     }

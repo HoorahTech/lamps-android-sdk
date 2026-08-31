@@ -9,7 +9,7 @@ import android.view.View
 import android.widget.FrameLayout
 import com.lamps.sdk.webview.bridge.back.BackAbilityUtil
 import com.lamps.sdk.webview.view.GameWebViewActionBar
-import com.lamps.sdk.webview.view.ScreenConfigApplier
+import com.lamps.sdk.webview.view.StatusBarApplier
 
 internal class GameWebViewActivity : Activity() {
     private lateinit var webView: LampsWebView
@@ -17,7 +17,6 @@ internal class GameWebViewActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        ScreenConfigApplier.applyDefault(this)
 
         initialUrl = intent.getStringExtra(EXTRA_URL).orEmpty()
         if (initialUrl.isBlank()) {
@@ -26,15 +25,9 @@ internal class GameWebViewActivity : Activity() {
         }
 
         setContentView(createContentView())
+        StatusBarApplier.applyDefault(this, webView)
         attachActionBar()
         webView.loadUrl(initialUrl)
-    }
-
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) {
-            ScreenConfigApplier.reapply(this)
-        }
     }
 
     override fun onResume() {
@@ -67,7 +60,15 @@ internal class GameWebViewActivity : Activity() {
 
     private fun createContentView(): View {
         webView = LampsWebView(this)
-        return webView
+        return FrameLayout(this).apply {
+            addView(
+                webView,
+                FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    FrameLayout.LayoutParams.MATCH_PARENT
+                )
+            )
+        }
     }
 
     private fun attachActionBar() {

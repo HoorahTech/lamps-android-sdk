@@ -1,20 +1,19 @@
-package com.lamps.sdk.webview.bridge.screen
+package com.lamps.sdk.webview.bridge.statusbar
 
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import com.lamps.sdk.webview.LampsWebView
-import com.lamps.sdk.webview.view.ScreenConfigApplier
 import com.lamps.sdk.webview.bridge.EMPTY_JSON_OBJ
 import com.lamps.sdk.webview.bridge.LampsAbility
 import com.lamps.sdk.webview.bridge.LampsNativeCallback
 import com.lamps.sdk.webview.bridge.generateResult
-import com.lamps.sdk.webview.view.invalidScreenConfigMessage
-import com.lamps.sdk.webview.view.merge
+import com.lamps.sdk.webview.view.StatusBarApplier
+import com.lamps.sdk.webview.view.invalidStatusBarMessage
 import org.json.JSONObject
 
-internal class ScreenConfigAbility : LampsAbility {
-    override val names: Array<String> = arrayOf(METHOD_SCREEN_CONFIG)
+internal class StatusBarAbility : LampsAbility {
+    override val names: Array<String> = arrayOf(METHOD_STATUS_BAR)
 
     override fun executeAsync(
         webView: LampsWebView,
@@ -31,7 +30,7 @@ internal class ScreenConfigAbility : LampsAbility {
             )
             return
         }
-        val invalidMessage = invalidScreenConfigMessage(params)
+        val invalidMessage = invalidStatusBarMessage(params)
         if (invalidMessage != null) {
             callback.callback(
                 generateResult(EMPTY_JSON_OBJ, ERROR_INVALID_PARAM, invalidMessage),
@@ -39,13 +38,12 @@ internal class ScreenConfigAbility : LampsAbility {
             )
             return
         }
-        val config = ScreenConfigApplier.current(activity).merge(params)
-        ScreenConfigApplier.apply(activity, config)
+        StatusBarApplier.apply(activity, webView, params)
         callback.callback(generateResult(EMPTY_JSON_OBJ), callbackId)
     }
 
     private companion object {
-        const val METHOD_SCREEN_CONFIG = "lamps.common.screenConfig"
+        const val METHOD_STATUS_BAR = "lamps.common.statusBar"
         const val ERROR_NO_ACTIVITY = 801
         const val ERROR_INVALID_PARAM = 801
     }

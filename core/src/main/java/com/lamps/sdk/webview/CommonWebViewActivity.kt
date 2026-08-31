@@ -5,8 +5,9 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.FrameLayout
 import com.lamps.sdk.webview.bridge.back.BackAbilityUtil
-import com.lamps.sdk.webview.view.ScreenConfigApplier
+import com.lamps.sdk.webview.view.StatusBarApplier
 
 internal class CommonWebViewActivity : Activity() {
     private lateinit var webView: LampsWebView
@@ -14,7 +15,6 @@ internal class CommonWebViewActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        ScreenConfigApplier.applyDefault(this)
 
         initialUrl = intent.getStringExtra(EXTRA_URL).orEmpty()
         if (initialUrl.isBlank()) {
@@ -23,14 +23,8 @@ internal class CommonWebViewActivity : Activity() {
         }
 
         setContentView(createContentView())
+        StatusBarApplier.applyDefault(this, webView)
         webView.loadUrl(initialUrl)
-    }
-
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) {
-            ScreenConfigApplier.reapply(this)
-        }
     }
 
     override fun onResume() {
@@ -63,7 +57,15 @@ internal class CommonWebViewActivity : Activity() {
 
     private fun createContentView(): View {
         webView = LampsWebView(this)
-        return webView
+        return FrameLayout(this).apply {
+            addView(
+                webView,
+                FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    FrameLayout.LayoutParams.MATCH_PARENT
+                )
+            )
+        }
     }
 
     companion object {
