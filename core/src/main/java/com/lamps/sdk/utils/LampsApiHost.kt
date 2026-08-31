@@ -67,6 +67,6 @@ internal object LampsApiHost {
     }
 
     private fun defaultEnv(): Env {
-        return if (BuildConfig.DEBUG) Env.DEV else Env.PROD
+        return Env.PROD
     }
 }
