@@ -13,25 +13,18 @@ import org.json.JSONObject
 import java.util.WeakHashMap
 
 internal data class ScreenConfig(
-    val immersive: Boolean? = null,
-    val statusBarOverlay: Boolean? = null,
-    val statusBarColor: Int? = null,
-    val statusBarFontDark: Boolean? = null,
-    val orientation: Int? = null
+    val immersive: Boolean = DEFAULT_IMMERSIVE,
+    val showStatusBar: Boolean = DEFAULT_SHOW_STATUS_BAR,
+    val statusBarColor: Int = DEFAULT_STATUS_BAR_COLOR,
+    val statusBarFontDark: Boolean = DEFAULT_STATUS_BAR_FONT_DARK,
+    val orientation: Int? = DEFAULT_ORIENTATION
 )
 
 internal object ScreenConfigApplier {
     private val configs = WeakHashMap<Activity, ScreenConfig>()
 
     fun applyDefault(activity: Activity) {
-        apply(
-            activity,
-            ScreenConfig(
-                immersive = true,
-                statusBarColor = Color.TRANSPARENT,
-                statusBarFontDark = true
-            )
-        )
+        apply(activity, ScreenConfig())
     }
 
     fun apply(activity: Activity, config: ScreenConfig) {
@@ -40,10 +33,9 @@ internal object ScreenConfigApplier {
         val window = activity.window
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
         when {
-            config.statusBarOverlay == true -> applyOverlay(window, config)
-            config.immersive == true -> applyImmersive(window)
-            config.immersive == false -> applyNonImmersive(window, config)
-            else -> applyStatusBarStyle(window, config)
+            config.immersive && config.showStatusBar -> applyImmersiveWithStatusBar(window, config)
+            config.immersive -> applyImmersive(window)
+            else -> applyNonImmersive(window, config)
         }
     }
 
@@ -92,7 +84,7 @@ internal object ScreenConfigApplier {
         }
     }
 
-    private fun applyOverlay(window: Window, config: ScreenConfig) {
+    private fun applyImmersiveWithStatusBar(window: Window, config: ScreenConfig) {
         window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
         window.navigationBarColor = Color.TRANSPARENT
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -147,24 +139,8 @@ internal object ScreenConfigApplier {
     }
 
     private fun applyStatusBarStyle(window: Window, config: ScreenConfig) {
-        val color = config.statusBarColor
-        when {
-            color != null -> window.statusBarColor = color
-            config.statusBarOverlay == true -> window.statusBarColor = Color.TRANSPARENT
-            config.immersive == false -> window.statusBarColor = Color.WHITE
-        }
-        val fontDark = config.statusBarFontDark ?: inferFontDark(config)
-        setStatusBarFontDark(window, fontDark)
-    }
-
-    private fun inferFontDark(config: ScreenConfig): Boolean {
-        val color = config.statusBarColor?.takeUnless { it == Color.TRANSPARENT }
-        if (color != null) {
-            val luminance =
-                (Color.red(color) * 299 + Color.green(color) * 587 + Color.blue(color) * 114) / 1000
-            return luminance >= 128
-        }
-        return config.immersive == false
+        window.statusBarColor = config.statusBarColor
+        setStatusBarFontDark(window, config.statusBarFontDark)
     }
 
     private fun setStatusBarFontDark(window: Window, fontDark: Boolean) {
@@ -194,83 +170,101 @@ internal object ScreenConfigApplier {
 }
 
 internal fun ScreenConfig.merge(params: JSONObject): ScreenConfig {
-    val immersive = when {
-        params.has("immersive") -> flexibleBoolean(params, "immersive")
-        params.has("fullScreen") -> flexibleBoolean(params, "fullScreen")
-        else -> this.immersive
+    val immersive = parseBoolean(params, KEY_IMMERSIVE) ?: immersive
+    val passedStatusBarStyle = hasValue(params, KEY_STATUS_BAR_COLOR) ||
+        hasValue(params, KEY_STATUS_BAR_FONT_DARK)
+    val showStatusBar = when {
+        !immersive -> true
+        passedStatusBarStyle -> true
+        hasValue(params, KEY_IMMERSIVE) -> false
+        else -> showStatusBar
     }
-    val statusBarOverlay = when {
-        immersive == false -> false
-        params.has("statusBarOverlay") -> flexibleBoolean(params, "statusBarOverlay")
-        params.has("statusBarVisible") -> flexibleBoolean(params, "statusBarVisible")
-        else -> this.statusBarOverlay
-    }
-    val statusBarColor = if (params.has("statusBarColor")) {
-        parseColor(params.optString("statusBarColor")) ?: this.statusBarColor
-    } else {
-        this.statusBarColor
-    }
-    val statusBarFontDark = parseStatusBarFontDark(params) ?: this.statusBarFontDark
-    val orientation = parseOrientation(params) ?: this.orientation
     return ScreenConfig(
         immersive = immersive,
-        statusBarOverlay = statusBarOverlay,
-        statusBarColor = statusBarColor,
-        statusBarFontDark = statusBarFontDark,
-        orientation = orientation
+        showStatusBar = showStatusBar,
+        statusBarColor = parseColor(params, KEY_STATUS_BAR_COLOR) ?: statusBarColor,
+        statusBarFontDark = parseBoolean(params, KEY_STATUS_BAR_FONT_DARK) ?: statusBarFontDark,
+        orientation = parseOrientation(params) ?: orientation
     )
 }
 
-internal fun parseOrientation(params: JSONObject): Int? {
-    if (!params.has("orientation")) return null
-    val raw = params.opt("orientation") ?: return null
-    val value = raw.toString().trim().lowercase()
+internal fun invalidScreenConfigMessage(params: JSONObject): String? {
+    if (isInvalidBoolean(params, KEY_IMMERSIVE)) return "immersive is invalid"
+    if (isInvalidBoolean(params, KEY_STATUS_BAR_FONT_DARK)) return "statusBarFontDark is invalid"
+    if (isInvalidColor(params, KEY_STATUS_BAR_COLOR)) return "statusBarColor is invalid"
+    if (isInvalidOrientation(params)) return "orientation is invalid"
+    return null
+}
+
+internal const val DEFAULT_IMMERSIVE = true
+internal const val DEFAULT_SHOW_STATUS_BAR = false
+internal val DEFAULT_STATUS_BAR_COLOR = Color.TRANSPARENT
+internal const val DEFAULT_STATUS_BAR_FONT_DARK = true
+internal val DEFAULT_ORIENTATION: Int? = null
+
+private const val KEY_IMMERSIVE = "immersive"
+private const val KEY_STATUS_BAR_COLOR = "statusBarColor"
+private const val KEY_STATUS_BAR_FONT_DARK = "statusBarFontDark"
+private const val KEY_ORIENTATION = "orientation"
+
+private const val ORIENTATION_PORTRAIT = "portrait"
+private const val ORIENTATION_LANDSCAPE = "landscape"
+private const val ORIENTATION_AUTO = "auto"
+private const val ORIENTATION_DEFAULT = "default"
+
+private fun parseBoolean(params: JSONObject, key: String): Boolean? {
+    if (!hasValue(params, key)) return null
+    return params.opt(key) as? Boolean
+}
+
+private fun parseColor(params: JSONObject, key: String): Int? {
+    if (!hasValue(params, key)) return null
+    val raw = params.opt(key) as? String ?: return null
+    val color = raw.trim()
+    if (color.isEmpty()) return null
+    return runCatching { Color.parseColor(color) }.getOrNull()
+}
+
+private fun parseOrientation(params: JSONObject): Int? {
+    val value = orientationValue(params) ?: return null
     return when (value) {
-        "portrait", "0", "vertical" -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-        "landscape", "1", "horizontal" -> ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-        "sensor", "auto" -> ActivityInfo.SCREEN_ORIENTATION_SENSOR
-        "unspecified", "default" -> ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        ORIENTATION_PORTRAIT -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        ORIENTATION_LANDSCAPE -> ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+        ORIENTATION_AUTO -> ActivityInfo.SCREEN_ORIENTATION_SENSOR
+        ORIENTATION_DEFAULT -> ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
         else -> null
     }
 }
 
-internal fun isInvalidOrientation(params: JSONObject): Boolean {
-    if (!params.has("orientation")) return false
-    val raw = params.opt("orientation") ?: return false
-    if (raw.toString().trim().isEmpty()) return false
-    return parseOrientation(params) == null
+private fun isInvalidBoolean(params: JSONObject, key: String): Boolean {
+    if (!hasValue(params, key)) return false
+    return params.opt(key) !is Boolean
 }
 
-private fun parseStatusBarFontDark(params: JSONObject): Boolean? {
-    if (params.has("statusBarStyle")) {
-        return when (params.optString("statusBarStyle").trim().lowercase()) {
-            "dark" -> true
-            "light" -> false
-            else -> null
-        }
-    }
-    if (params.has("statusBarFontDark")) {
-        return flexibleBoolean(params, "statusBarFontDark")
-    }
-    if (params.has("statusBarFontColor")) {
-        val color = parseColor(params.optString("statusBarFontColor")) ?: return null
-        val luminance = (Color.red(color) * 299 + Color.green(color) * 587 + Color.blue(color) * 114) / 1000
-        return luminance < 128
-    }
-    return null
+private fun isInvalidColor(params: JSONObject, key: String): Boolean {
+    if (!hasValue(params, key)) return false
+    val raw = params.opt(key)
+    if (raw !is String) return true
+    val color = raw.trim()
+    if (color.isEmpty()) return false
+    return runCatching { Color.parseColor(color) }.getOrNull() == null
 }
 
-private fun flexibleBoolean(params: JSONObject, key: String): Boolean {
-    return when (val value = params.opt(key)) {
-        is Boolean -> value
-        is Number -> value.toInt() != 0
-        is String -> value.equals("true", true) || value == "1"
-        else -> params.optBoolean(key)
-    }
+private fun isInvalidOrientation(params: JSONObject): Boolean {
+    val value = orientationValue(params) ?: return false
+    return value != ORIENTATION_PORTRAIT &&
+        value != ORIENTATION_LANDSCAPE &&
+        value != ORIENTATION_AUTO &&
+        value != ORIENTATION_DEFAULT
 }
 
-private fun parseColor(value: String): Int? {
-    val color = value.trim()
-    if (color.isEmpty()) return null
-    return runCatching { Color.parseColor(color) }.getOrNull()
+private fun orientationValue(params: JSONObject): String? {
+    if (!hasValue(params, KEY_ORIENTATION)) return null
+    val raw = params.opt(KEY_ORIENTATION)
+    if (raw !is String) return ""
+    return raw.trim().takeIf { it.isNotEmpty() }
+}
+
+private fun hasValue(params: JSONObject, key: String): Boolean {
+    return params.has(key) && !params.isNull(key)
 }

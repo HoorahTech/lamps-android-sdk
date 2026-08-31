@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import com.lamps.sdk.webview.bridge.back.BackAbilityUtil
 import com.lamps.sdk.webview.view.ScreenConfigApplier
 
 internal class CommonWebViewActivity : Activity() {
@@ -48,9 +49,7 @@ internal class CommonWebViewActivity : Activity() {
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        if (::webView.isInitialized && webView.canGoBack()) {
-            webView.goBack()
-        } else {
+        if (!::webView.isInitialized || !BackAbilityUtil.handleBackPressed(this, webView)) {
             super.onBackPressed()
         }
     }

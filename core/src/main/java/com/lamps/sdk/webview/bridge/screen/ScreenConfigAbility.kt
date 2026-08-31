@@ -9,7 +9,7 @@ import com.lamps.sdk.webview.bridge.EMPTY_JSON_OBJ
 import com.lamps.sdk.webview.bridge.LampsAbility
 import com.lamps.sdk.webview.bridge.LampsNativeCallback
 import com.lamps.sdk.webview.bridge.generateResult
-import com.lamps.sdk.webview.view.isInvalidOrientation
+import com.lamps.sdk.webview.view.invalidScreenConfigMessage
 import com.lamps.sdk.webview.view.merge
 import org.json.JSONObject
 
@@ -31,9 +31,10 @@ internal class ScreenConfigAbility : LampsAbility {
             )
             return
         }
-        if (isInvalidOrientation(params)) {
+        val invalidMessage = invalidScreenConfigMessage(params)
+        if (invalidMessage != null) {
             callback.callback(
-                generateResult(EMPTY_JSON_OBJ, ERROR_INVALID_PARAM, "orientation is invalid"),
+                generateResult(EMPTY_JSON_OBJ, ERROR_INVALID_PARAM, invalidMessage),
                 callbackId
             )
             return

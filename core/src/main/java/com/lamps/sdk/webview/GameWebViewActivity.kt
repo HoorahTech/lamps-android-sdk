@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.Gravity
 import android.view.View
 import android.widget.FrameLayout
+import com.lamps.sdk.webview.bridge.back.BackAbilityUtil
 import com.lamps.sdk.webview.view.GameWebViewActionBar
 import com.lamps.sdk.webview.view.ScreenConfigApplier
 
@@ -52,9 +53,7 @@ internal class GameWebViewActivity : Activity() {
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        if (::webView.isInitialized && webView.canGoBack()) {
-            webView.goBack()
-        } else {
+        if (!::webView.isInitialized || !BackAbilityUtil.handleBackPressed(this, webView)) {
             super.onBackPressed()
         }
     }
