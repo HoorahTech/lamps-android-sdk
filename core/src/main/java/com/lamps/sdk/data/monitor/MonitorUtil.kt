@@ -75,12 +75,15 @@ object MonitorUtil {
     ): String {
         var result = url
         values.forEach { (macro, value) ->
-            if (result.contains(macro)) {
+            if (value.isNotEmpty() && result.contains(macro)) {
                 result = result.replace(macro, encode(value))
             }
         }
         if (needSign && result.contains(REM_SIGN)) {
-            result = result.replace(REM_SIGN, computeSign(result).orEmpty())
+            val sign = computeSign(result)
+            if (!sign.isNullOrEmpty()) {
+                result = result.replace(REM_SIGN, sign)
+            }
         }
         return result
     }
