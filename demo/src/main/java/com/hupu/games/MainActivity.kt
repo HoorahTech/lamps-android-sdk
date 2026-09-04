@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
+import android.widget.EditText
 import com.lamps.sdk.LampsSdk
 
 class MainActivity : Activity() {
@@ -15,6 +16,11 @@ class MainActivity : Activity() {
 
         findViewById<Button>(R.id.navigateGameCenterButton).setOnClickListener {
             LampsSdk.navigateToGameCenter(this)
+        }
+
+        findViewById<Button>(R.id.navigateGameButton).setOnClickListener {
+            val gameId = findViewById<EditText>(R.id.gameIdInput).text?.toString().orEmpty()
+            LampsSdk.navigateToGame(this, gameId)
         }
 
         findViewById<Button>(R.id.getGameCenterFragmentButton).setOnClickListener {

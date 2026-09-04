@@ -2,6 +2,7 @@ package com.lamps.sdk.core
 
 import android.app.Activity
 import android.content.Context
+import android.net.Uri
 import com.lamps.sdk.config.SdkConfig
 import com.lamps.sdk.data.init.AppInitDataLoader
 import com.lamps.sdk.data.sdk.channel.SdkInitCallback
@@ -15,6 +16,7 @@ import com.lamps.sdk.utils.LampsApiHost
 import com.lamps.sdk.utils.SdkLog
 import com.lamps.sdk.utils.ThreadUtils
 import com.lamps.sdk.webview.CommonWebViewActivity
+import com.lamps.sdk.webview.GameWebViewActivity
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicReference
 
@@ -221,6 +223,31 @@ object SdkRuntime {
         )
     }
 
+    fun navigateToGame(context: Context, gameId: String) {
+        val template = SdkConfig.current?.appInitData?.gamePlayPageTemplate
+            ?.takeIf { it.isNotBlank() }
+        if (template == null) {
+            SdkLog.e("navigateToGame failed: gamePlayPageTemplate is empty")
+            return
+        }
+        val id = gameId.trim()
+        if (id.isEmpty()) {
+            SdkLog.e("navigateToGame failed: gameId is empty")
+            return
+        }
+        val url = template.replace(GAME_ID_PLACEHOLDER, id)
+        if (!isHttpUrl(url)) {
+            SdkLog.e("navigateToGame failed: invalid url=$url")
+            return
+        }
+        context.startActivity(
+            GameWebViewActivity.buildIntent(
+                context = context,
+                url = url,
+            )
+        )
+    }
+
     fun getGameCenterUrl(): String? {
         val url = SdkConfig.current?.appInitData?.gameCenterPage
             ?.takeIf { it.isNotBlank() }
@@ -228,6 +255,14 @@ object SdkRuntime {
         return url
     }
 
+    private fun isHttpUrl(url: String): Boolean {
+        val uri = runCatching { Uri.parse(url) }.getOrNull() ?: return false
+        return (uri.scheme.equals("http", ignoreCase = true) ||
+            uri.scheme.equals("https", ignoreCase = true)) &&
+            !uri.host.isNullOrBlank()
+    }
+
     private const val METRIC_TOTAL = "lamps.total"
     private const val METRIC_OAID = "lamps.oaid"
+    private const val GAME_ID_PLACEHOLDER = "__GAMEID__"
 }

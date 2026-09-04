@@ -5,5 +5,7 @@
     <string name="show_reward_video">展示激励视频</string>
     <string name="reward_idle">激励视频: 空闲</string>
     <string name="navigate_game_center">跳转游戏中心</string>
+    <string name="game_id_hint">请输入 gameId</string>
+    <string name="navigate_game">跳转游戏</string>
     <string name="get_game_center_fragment">TabLayout 演示</string>
 </resources>

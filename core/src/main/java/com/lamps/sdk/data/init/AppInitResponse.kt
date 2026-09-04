@@ -6,12 +6,14 @@ internal class AppInitResponse(
     val channelList: List<ChannelInfoResponse>,
     val rewardAdSlots: List<RewardSlotResponse>,
     val monitorLinks: MonitorLinksResponse,
-    val gameCenterPage: String = ""
+    val gameCenterPage: String = "",
+    val gamePlayPageTemplate: String = ""
 ) {
     override fun toString(): String {
         return "AppInitResponse(clientIp=$clientIp, " +
             "channelList=$channelList, rewardAdSlots=$rewardAdSlots, " +
-            "monitorLinks=$monitorLinks, gameCenterPage=$gameCenterPage)"
+            "monitorLinks=$monitorLinks, gameCenterPage=$gameCenterPage, " +
+            "gamePlayPageTemplate=$gamePlayPageTemplate)"
     }
 }
 

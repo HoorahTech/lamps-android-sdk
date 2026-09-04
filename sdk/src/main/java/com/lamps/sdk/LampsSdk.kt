@@ -34,6 +34,11 @@ object LampsSdk {
     }
 
     @JvmStatic
+    fun navigateToGame(context: Context, gameId: String) {
+        SdkRuntime.navigateToGame(context, gameId)
+    }
+
+    @JvmStatic
     fun getGameCenterView(context: Context): GameCenterView? {
         return SdkRuntime.getGameCenterUrl()?.let { GameCenterView(context, it) }
     }

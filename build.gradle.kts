@@ -1,5 +1,8 @@
+import com.vanniktech.maven.publish.MavenPublishBaseExtension
+import com.vanniktech.maven.publish.SonatypeHost
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.api.tasks.GradleBuild
 import org.gradle.plugins.signing.SigningExtension
 import java.util.Properties
 
@@ -45,6 +48,15 @@ val publishTarget = providers.gradleProperty("LAMPS_PUBLISH_TARGET")
 require(publishTarget == "maven" || publishTarget == "mavencentral") {
     "LAMPS_PUBLISH_TARGET must be 'maven' or 'mavenCentral', but was '$publishTarget'"
 }
+
+// 0.30.0 registers sonatype-repository-build-service as soon as publishToMavenCentral()
+// is configured. That service reads mavenCentralUsername/password on close and fails
+// ordinary compile/assemble builds when those properties are absent.
+val enableMavenCentralPublishing = publishTarget == "mavencentral" &&
+    gradle.startParameter.taskNames.any { requested ->
+        val taskName = requested.substringAfterLast(':').lowercase()
+        taskName.contains("publish") || taskName == "push"
+    }
 
 plugins {
     id("com.android.library") version "8.5.2" apply false
@@ -104,6 +116,14 @@ subprojects {
         }
     }
 
+    pluginManager.withPlugin("com.vanniktech.maven.publish") {
+        if (enableMavenCentralPublishing) {
+            extensions.configure<MavenPublishBaseExtension> {
+                publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
+            }
+        }
+    }
+
     pluginManager.withPlugin("signing") {
         extensions.configure<SigningExtension> {
             val key = localProperties.getProperty("signingInMemoryKey")
@@ -155,27 +175,81 @@ val publishTasks = if (publishTarget == "maven") {
 }
 collectReleaseAars.configure { mustRunAfter(publishTasks) }
 
-val publishAll = tasks.register("publishAll") {
-    group = "publishing"
-    description = "Publish all release libraries to Maven Central and collect versioned AARs."
-    dependsOn(publishTasks)
-    dependsOn(collectReleaseAars)
-}
-
 val vendorPublishTasks = if (publishTarget == "maven") {
     vendorModules.map { ":$it:publishMavenPublicationToHupuMavenRepository" }
 } else {
     vendorModules.map { ":$it:publishToMavenCentral" }
 }
 
-tasks.register("publishVendors") {
-    group = "publishing"
-    description = "Publish vendor libraries to the configured repository."
-    dependsOn(vendorPublishTasks)
+val centralPortalPropertyNames = listOf(
+    "mavenCentralUsername",
+    "mavenCentralPassword",
+    "signingInMemoryKey",
+    "signingInMemoryKeyPassword"
+)
+
+fun hasCentralPortalGradleProperties(): Boolean =
+    centralPortalPropertyNames.take(2).all { providers.gradleProperty(it).isPresent }
+
+fun centralPortalPropertiesFromLocal(): Map<String, String> = centralPortalPropertyNames.mapNotNull { key ->
+    localProperties.getProperty(key)?.takeIf { it.isNotBlank() }?.let { key to it }
+}.toMap()
+
+// 0.30.0 reads mavenCentralUsername/password only via providers.gradleProperty().
+// Values in local.properties are invisible to that API and to the Sonatype build
+// service, so publish tasks write a local staging dir and then fail on service stop.
+fun registerPublishEntry(
+    name: String,
+    description: String,
+    targetTasks: List<String>,
+    aliases: List<String> = emptyList()
+) {
+    val needsNestedCentralLaunch = publishTarget == "mavencentral" &&
+        enableMavenCentralPublishing &&
+        !hasCentralPortalGradleProperties()
+    val injected = centralPortalPropertiesFromLocal()
+    if (needsNestedCentralLaunch) {
+        require(injected.containsKey("mavenCentralUsername") && injected.containsKey("mavenCentralPassword")) {
+            "Maven Central publishing requires mavenCentralUsername and mavenCentralPassword " +
+                "as Gradle project properties or in local.properties"
+        }
+    }
+
+    (listOf(name to description) + aliases.map { it to "$description (alias of $name)" }).forEach { (taskName, taskDescription) ->
+        if (needsNestedCentralLaunch) {
+            tasks.register<GradleBuild>(taskName) {
+                group = "publishing"
+                this.description = taskDescription
+                dir = rootDir
+                tasks = targetTasks
+                startParameter.projectProperties = HashMap(gradle.startParameter.projectProperties).apply {
+                    putAll(injected)
+                    put("LAMPS_PUBLISH_TARGET", "mavenCentral")
+                }
+            }
+        } else {
+            tasks.register(taskName) {
+                group = "publishing"
+                this.description = taskDescription
+                dependsOn(targetTasks)
+            }
+        }
+    }
 }
 
-tasks.register("push") {
-    group = "publishing"
-    description = "Publish all SDK libraries and collect their AARs in sdk_lib."
-    dependsOn(publishAll)
-}
+registerPublishEntry(
+    name = "publishAll",
+    description = "Publish all release libraries to the configured repository and collect versioned AARs.",
+    targetTasks = publishTasks + ":collectReleaseAars"
+)
+registerPublishEntry(
+    name = "publishVendors",
+    description = "Publish vendor libraries to the configured repository.",
+    targetTasks = vendorPublishTasks,
+    aliases = listOf("pushVendors")
+)
+registerPublishEntry(
+    name = "push",
+    description = "Publish all SDK libraries and collect their AARs in sdk_lib.",
+    targetTasks = listOf(":publishAll")
+)

@@ -23,7 +23,8 @@ internal object AppInitDataParser {
                 channelList = parseChannelList(data.optJSONArray("channelList")),
                 rewardAdSlots = parseSlots(data.optJSONArray("rewardAdSlots")),
                 monitorLinks = parseMonitorLinks(data.optJSONObject("monitorLinks")),
-                gameCenterPage = data.optString("gameCenterPage", "")
+                gameCenterPage = data.optString("gameCenterPage", ""),
+                gamePlayPageTemplate = data.optString("gamePlayPageTemplate", "")
             )
             Result.success(appInitData)
         } catch (t: Throwable) {

@@ -113,6 +113,16 @@ override fun onDestroyView() {
 
 如果在 RecyclerView 中使用，建议在 `onViewRecycled` 中调用 `GameCenterView.destroy()`，并确保销毁后的 View 不再重新绑定。
 
+## 打开游戏
+
+初始化完成后，可传入 `gameId` 打开游戏页。SDK 会用服务端下发的 `gamePlayPageTemplate` 将 `__GAMEID__` 替换为传入的 `gameId`，再跳转到游戏 WebView。
+
+```kotlin
+LampsSdk.navigateToGame(this, gameId)
+```
+
+`gameId` 为空、模板未下发或替换后不是完整 `http(s)` URL 时不会跳转。
+
 ## 初始化错误码
 
 | code | 含义 |

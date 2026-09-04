@@ -127,6 +127,7 @@ object LampsSdkDebug {
             section("服务端下发配置") {
                 line("clientIp", initData?.clientIp.orEmpty())
                 line("gameCenterPage", initData?.gameCenterPage.orEmpty())
+                line("gamePlayPageTemplate", initData?.gamePlayPageTemplate.orEmpty())
 
                 appendLine("rewardAdSlots:")
                 if (initData?.rewardAdSlots.orEmpty().isEmpty()) {
