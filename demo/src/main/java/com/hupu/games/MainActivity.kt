@@ -5,8 +5,10 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
+import android.widget.RadioGroup
 import com.lamps.sdk.LampsSdk
 import com.lamps.sdk.config.GameCenterConfig
+import com.lamps.sdk.config.NightMode
 
 class MainActivity : Activity() {
 
@@ -16,7 +18,7 @@ class MainActivity : Activity() {
         SdkToolsBinder.bind(this, findViewById(R.id.openSdkToolsButton))
 
         findViewById<Button>(R.id.navigateGameCenterButton).setOnClickListener {
-            LampsSdk.navigateToGameCenter(this, demoGameCenterConfig())
+            LampsSdk.navigateToGameCenter(this, selectedGameCenterConfig())
         }
 
         findViewById<Button>(R.id.navigateGameButton).setOnClickListener {
@@ -28,8 +30,19 @@ class MainActivity : Activity() {
             startActivity(Intent(this, DemoTabActivity::class.java))
         }
     }
+
+    private fun selectedGameCenterConfig(): GameCenterConfig {
+        val nightMode = when (findViewById<RadioGroup>(R.id.gameCenterNightModeGroup).checkedRadioButtonId) {
+            R.id.nightModeDay -> NightMode.DAY
+            R.id.nightModeNight -> NightMode.NIGHT
+            else -> null
+        }
+        return demoGameCenterConfig(nightMode)
+    }
 }
 
-internal fun demoGameCenterConfig(): GameCenterConfig {
-    return GameCenterConfig.Builder().build()
+internal fun demoGameCenterConfig(nightMode: NightMode? = null): GameCenterConfig {
+    return GameCenterConfig.Builder()
+        .apply { if (nightMode != null) setNightMode(nightMode) }
+        .build()
 }

@@ -32,6 +32,13 @@ class SdkConfig(
         return runCatching { nightModeProvider?.isNight() == true }.getOrDefault(false)
     }
 
+    fun resolveNightModeLabel(): String {
+        val provider = nightModeProvider ?: return ""
+        return runCatching {
+            if (provider.isNight()) "NIGHT" else "DAY"
+        }.getOrDefault("")
+    }
+
     companion object {
         @Volatile
         private var instance: SdkConfig? = null

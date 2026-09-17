@@ -85,6 +85,7 @@ object LampsSdkDebug {
                 line("initYlhSdk", config?.initYlhSdk ?: true)
                 line("initNoahSdk", config?.initNoahSdk ?: true)
                 line("oaid", runCatching { config?.resolveOaid().orEmpty() }.getOrDefault(""))
+                line("nightMode", runCatching { config?.resolveNightModeLabel().orEmpty() }.getOrDefault(""))
                 line("androidId", DeviceUtils.androidId(app))
                 line("appVersion", DeviceUtils.appVersion(app))
                 line("customData", config?.customData.orEmpty())

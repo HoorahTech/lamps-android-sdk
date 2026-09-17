@@ -13,6 +13,41 @@
         android:layout_marginTop="12dp"
         android:text="@string/open_lamps_sdk_tools" />
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="@string/game_center_night_mode" />
+
+    <RadioGroup
+        android:id="@+id/gameCenterNightModeGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/nightModeFollowGlobal"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:checked="true"
+            android:text="@string/night_mode_follow_global" />
+
+        <RadioButton
+            android:id="@+id/nightModeDay"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/night_mode_day" />
+
+        <RadioButton
+            android:id="@+id/nightModeNight"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/night_mode_night" />
+    </RadioGroup>
+
     <Button
         android:id="@+id/navigateGameCenterButton"
         android:layout_width="match_parent"
