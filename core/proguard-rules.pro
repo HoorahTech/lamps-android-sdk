@@ -4,6 +4,7 @@
 -keep class com.lamps.sdk.config.SdkConfig$Companion { *; }
 -keep interface com.lamps.sdk.core.CoreInitCallback { public *; }
 -keep interface com.lamps.sdk.core.CoreOaidProvider { public *; }
+-keep interface com.lamps.sdk.core.CoreNightModeProvider { public *; }
 -keep class com.lamps.sdk.webview.LampsWebView { *; }
 -keep class com.lamps.sdk.webview.GameCenterPageOptions { public *; }
 -keep class com.lamps.sdk.provider.LampsProvider { *; }

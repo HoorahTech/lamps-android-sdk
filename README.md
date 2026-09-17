@@ -58,12 +58,14 @@ Pangle 的定制二进制不随统一 `publishAll` 发布；需要单独执行�
 ```kotlin
 import com.lamps.sdk.LampsSdk
 import com.lamps.sdk.config.LampsConfig
+import com.lamps.sdk.config.NightMode
 import com.lamps.sdk.core.InitCallback
 import com.lamps.sdk.core.OaidProvider
 
 val config = LampsConfig.Builder()
     .appId("your_app_id")
     .setOaidProvider(OaidProvider { mediaOaid }) // 可选；返回空值时继续初始化
+    .setNightModeProvider { NightMode.DAY } // 可选；每次打开游戏中心时读取
     .setDebug(false)
     .setCustomData(mapOf("source" to "your_app"))
     .build()
@@ -82,17 +84,20 @@ LampsSdk.startAsync(object : InitCallback {
 
 `setOaidProvider` 由宿主提供 OAID 读取逻辑。未设置 provider 或返回空字符串不会阻断初始化。
 
+`setNightModeProvider` 由宿主提供全局日夜间。每次 `navigateToGameCenter` / `getGameCenterView` 都会重新读取。`GameCenterConfig.setNightMode` 有值时优先用单次配置，未设再用这个全局值；都未设置时默认日间。
+
 `startAsync` 完成前不要使用LampsSdk能力。可使用 `LampsSdk.isSdkReady()` 查询当前状态，使用 `LampsSdk.getSdkVersion()` 获取 SDK 版本。
 
 ## 游戏中心
 
-打开游戏中心时由宿主传入 `GameCenterConfig`，至少指定日夜间。后续扩展字段加在 `GameCenterConfig.Builder` 上。未传 config 时默认日间。
+打开游戏中心时可传入 `GameCenterConfig`。日夜间优先 `setNightMode`；未设则每次从 `LampsConfig.setNightModeProvider` 读取；仍没有则默认日间。后续扩展字段加在 Builder 上。
 
 ```kotlin
 import com.lamps.sdk.config.GameCenterConfig
+import com.lamps.sdk.config.NightMode
 
 val gameCenterConfig = GameCenterConfig.Builder()
-    .setNightMode(GameCenterConfig.NightMode.NIGHT) // 或 DAY
+    .setNightMode(NightMode.NIGHT) // 可选；不设则用全局 provider
     .build()
 
 LampsSdk.navigateToGameCenter(this, gameCenterConfig)

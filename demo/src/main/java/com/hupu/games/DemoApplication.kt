@@ -4,6 +4,7 @@ import android.app.Application
 import android.util.Log
 import com.lamps.sdk.LampsSdk
 import com.lamps.sdk.config.LampsConfig
+import com.lamps.sdk.config.NightMode
 import com.lamps.sdk.core.InitCallback
 
 class DemoApplication : Application() {
@@ -15,6 +16,7 @@ class DemoApplication : Application() {
             LampsConfig.Builder()
                 .appId("10001")
                 .setOaidProvider { DEMO_OAID }
+                .setNightModeProvider { NightMode.DAY }
                 .setDebug(true)
                 .setCustomData(mapOf("source" to "demo"))
                 .build()

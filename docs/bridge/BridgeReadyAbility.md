@@ -68,7 +68,7 @@ WebView 加载完成后，H5 向 Native 请求宿主公共运行参数。Native 
 | `density` | number | 屏幕像素密度 |
 | `statusBarHeight` | number | 状态栏高度（像素） |
 | `displayMode` | string | 页面展示模式。游戏中心由 SDK 按打开方式写入 `GameCenterConfig`，见下表 |
-| `night` | number | 日夜间。`1` 夜间，`0` 日间。由宿主通过 `GameCenterConfig` 传入，未传时为 `0` |
+| `night` | number | 日夜间。`1` 夜间，`0` 日间。优先 `GameCenterConfig.setNightMode`；未设则每次读 `LampsConfig.setNightModeProvider`；都没有则为 `0` |
 
 ### `displayMode` 取值
 
@@ -80,7 +80,7 @@ WebView 加载完成后，H5 向 Native 请求宿主公共运行参数。Native 
 | `embed` | `DisplayMode.EMBED` | `LampsSdk.getGameCenterView` | 内嵌模式 |
 | `""` | 无 | 其他页面 | 未指定 |
 
-`night` 对应 `GameCenterConfig.NightMode`：`DAY` 为 `0`，`NIGHT` 为 `1`。
+`night` 对应 `NightMode`：`DAY` 为 `0`，`NIGHT` 为 `1`。打开时优先单次 `GameCenterConfig`，否则现取全局 provider。
 
 ## 注册方式
 

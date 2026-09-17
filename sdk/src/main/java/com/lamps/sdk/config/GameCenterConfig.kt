@@ -6,17 +6,13 @@ import com.lamps.sdk.webview.GameCenterPageOptions
  * 游戏中心打开配置。由宿主在 [com.lamps.sdk.LampsSdk.navigateToGameCenter]
  * / [com.lamps.sdk.LampsSdk.getGameCenterView] 时传入，后续扩展字段加在 Builder 上。
  *
- * [NightMode] 由宿主设置；[DisplayMode] 由 SDK 按打开方式写入，不要通过 Builder 设置。
+ * 日夜间优先用 [Builder.setNightMode]；未设则打开时从 [LampsConfig] 的 NightModeProvider 现取；都没有则默认日间。
+ * [DisplayMode] 由 SDK 按打开方式写入，不要通过 Builder 设置。
  */
 class GameCenterConfig private constructor(
-    val nightMode: NightMode,
+    private val nightMode: NightMode?,
     internal val displayMode: DisplayMode?,
 ) {
-    enum class NightMode(val value: Int) {
-        DAY(0),
-        NIGHT(1),
-    }
-
     enum class DisplayMode(val value: String) {
         PAGE("page"),
         EMBED("embed"),
@@ -30,14 +26,19 @@ class GameCenterConfig private constructor(
     }
 
     internal fun toPageOptions(): GameCenterPageOptions {
+        val resolved = nightMode ?: if (SdkConfig.current?.resolveIsNight() == true) {
+            NightMode.NIGHT
+        } else {
+            NightMode.DAY
+        }
         return GameCenterPageOptions(
-            night = nightMode == NightMode.NIGHT,
+            night = resolved == NightMode.NIGHT,
             displayMode = displayMode?.value.orEmpty(),
         )
     }
 
     class Builder {
-        private var nightMode: NightMode = NightMode.DAY
+        private var nightMode: NightMode? = null
 
         fun setNightMode(nightMode: NightMode) = apply { this.nightMode = nightMode }
 

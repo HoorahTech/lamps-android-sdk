@@ -1,6 +1,7 @@
 package com.lamps.sdk.config
 
 import android.content.Context
+import com.lamps.sdk.core.CoreNightModeProvider
 import com.lamps.sdk.core.CoreOaidProvider
 import com.lamps.sdk.data.init.AppInitResponse
 
@@ -10,6 +11,7 @@ import com.lamps.sdk.data.init.AppInitResponse
 class SdkConfig(
     val appId: String,
     val oaidProvider: CoreOaidProvider?,
+    val nightModeProvider: CoreNightModeProvider?,
     val debug: Boolean,
     val customData: Map<String, String>,
     val initPangleSdk: Boolean,
@@ -24,6 +26,10 @@ class SdkConfig(
 
     fun resolveOaid(): String {
         return runCatching { oaidProvider?.getOaid()?.trim().orEmpty() }.getOrDefault("")
+    }
+
+    fun resolveIsNight(): Boolean {
+        return runCatching { nightModeProvider?.isNight() == true }.getOrDefault(false)
     }
 
     companion object {

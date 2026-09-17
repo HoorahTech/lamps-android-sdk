@@ -31,7 +31,5 @@ class MainActivity : Activity() {
 }
 
 internal fun demoGameCenterConfig(): GameCenterConfig {
-    return GameCenterConfig.Builder()
-        .setNightMode(GameCenterConfig.NightMode.DAY)
-        .build()
+    return GameCenterConfig.Builder().build()
 }
