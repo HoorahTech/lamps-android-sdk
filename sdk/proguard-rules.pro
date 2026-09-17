@@ -2,6 +2,10 @@
 -keep class com.lamps.sdk.LampsSdk { public *; }
 -keep class com.lamps.sdk.config.LampsConfig { public *; }
 -keep class com.lamps.sdk.config.LampsConfig$Builder { public *; }
+-keep class com.lamps.sdk.config.GameCenterConfig { public *; }
+-keep class com.lamps.sdk.config.GameCenterConfig$Builder { public *; }
+-keep class com.lamps.sdk.config.GameCenterConfig$NightMode { public *; }
+-keep class com.lamps.sdk.config.GameCenterConfig$DisplayMode { public *; }
 -keep interface com.lamps.sdk.core.InitCallback { public *; }
 -keep interface com.lamps.sdk.core.OaidProvider { public *; }
 -keep class com.lamps.sdk.view.GameCenterView { public *; }

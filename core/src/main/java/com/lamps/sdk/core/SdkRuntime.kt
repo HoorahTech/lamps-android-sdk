@@ -16,6 +16,7 @@ import com.lamps.sdk.utils.LampsApiHost
 import com.lamps.sdk.utils.SdkLog
 import com.lamps.sdk.utils.ThreadUtils
 import com.lamps.sdk.webview.CommonWebViewActivity
+import com.lamps.sdk.webview.GameCenterPageOptions
 import com.lamps.sdk.webview.GameWebViewActivity
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicReference
@@ -211,7 +212,10 @@ object SdkRuntime {
     }
 
 
-    fun navigateToGameCenter(context: Context) {
+    fun navigateToGameCenter(
+        context: Context,
+        options: GameCenterPageOptions = GameCenterPageOptions(),
+    ) {
         val url = SdkConfig.current?.appInitData?.gameCenterPage
             ?.takeIf { it.isNotBlank() }
             ?: return
@@ -219,6 +223,7 @@ object SdkRuntime {
             CommonWebViewActivity.buildIntent(
                 context = context,
                 url = url,
+                pageOptions = options,
             )
         )
     }

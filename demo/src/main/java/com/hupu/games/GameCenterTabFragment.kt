@@ -24,7 +24,7 @@ class GameCenterTabFragment : Fragment() {
     ): View {
         val root = FrameLayout(requireActivity())
 
-        val view = LampsSdk.getGameCenterView(requireActivity())
+        val view = LampsSdk.getGameCenterView(requireActivity(), demoGameCenterConfig())
         if (view != null) {
             gameCenterView = view
             root.addView(

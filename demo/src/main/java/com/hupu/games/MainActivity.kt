@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
 import com.lamps.sdk.LampsSdk
+import com.lamps.sdk.config.GameCenterConfig
 
 class MainActivity : Activity() {
 
@@ -15,7 +16,7 @@ class MainActivity : Activity() {
         SdkToolsBinder.bind(this, findViewById(R.id.openSdkToolsButton))
 
         findViewById<Button>(R.id.navigateGameCenterButton).setOnClickListener {
-            LampsSdk.navigateToGameCenter(this)
+            LampsSdk.navigateToGameCenter(this, demoGameCenterConfig())
         }
 
         findViewById<Button>(R.id.navigateGameButton).setOnClickListener {
@@ -27,4 +28,10 @@ class MainActivity : Activity() {
             startActivity(Intent(this, DemoTabActivity::class.java))
         }
     }
+}
+
+internal fun demoGameCenterConfig(): GameCenterConfig {
+    return GameCenterConfig.Builder()
+        .setNightMode(GameCenterConfig.NightMode.DAY)
+        .build()
 }

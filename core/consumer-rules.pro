@@ -5,6 +5,8 @@
 -keep interface com.lamps.sdk.core.CoreInitCallback { public *; }
 -keep interface com.lamps.sdk.core.CoreOaidProvider { public *; }
 -keep class com.lamps.sdk.webview.LampsWebView { *; }
+-keep class com.lamps.sdk.webview.GameCenterPageOptions { public *; }
+-keep class com.lamps.sdk.webview.GameCenterPageOptions { public *; }
 -keep class com.lamps.sdk.provider.LampsProvider { *; }
 -keep class com.lamps.sdk.data.sdk.provider.ISdkProvider$* { *; }
 -keep class com.lamps.sdk.data.sdk.channel.RewardAdSdkLoadCallback$* { *; }

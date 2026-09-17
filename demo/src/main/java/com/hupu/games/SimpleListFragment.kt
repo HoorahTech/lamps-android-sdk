@@ -63,7 +63,7 @@ class SimpleListFragment : Fragment() {
 
             override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
                 if (getItemViewType(position) == 1) {
-                    return LampsSdk.getGameCenterView(requireActivity())?.apply {
+                    return LampsSdk.getGameCenterView(requireActivity(), demoGameCenterConfig())?.apply {
                         layoutParams = ViewGroup.LayoutParams(
                             ViewGroup.LayoutParams.MATCH_PARENT,
                             dp(240)

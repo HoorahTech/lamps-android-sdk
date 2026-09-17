@@ -24,6 +24,11 @@ open class LampsWebView @JvmOverloads constructor(
     private val BRIDGE_NAME = "androidBridge"
     private val bridge = LampsWebViewBridge(this)
 
+    var displayMode: String = ""
+
+    /** Host day/night. Exposed to H5 as `night`: 1 night, 0 day. */
+    var night: Boolean = false
+
     init {
         initSettings()
         addJavascriptInterface(bridge, BRIDGE_NAME)

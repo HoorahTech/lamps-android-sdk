@@ -49,6 +49,8 @@ internal class BridgeReadyAbility : LampsAbility {
             put("clientHeight", metrics.heightPixels)
             put("density", metrics.density)
             put("statusBarHeight", DeviceUtils.statusBarHeight(context))
+            put("displayMode", webView.displayMode)
+            put("night", if (webView.night) 1 else 0)
         }
     }
 

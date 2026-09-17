@@ -86,10 +86,22 @@ LampsSdk.startAsync(object : InitCallback {
 
 ## 游戏中心
 
+打开游戏中心时由宿主传入 `GameCenterConfig`，至少指定日夜间。后续扩展字段加在 `GameCenterConfig.Builder` 上。未传 config 时默认日间。
+
+```kotlin
+import com.lamps.sdk.config.GameCenterConfig
+
+val gameCenterConfig = GameCenterConfig.Builder()
+    .setNightMode(GameCenterConfig.NightMode.NIGHT) // 或 DAY
+    .build()
+
+LampsSdk.navigateToGameCenter(this, gameCenterConfig)
+```
+
 可获取 `GameCenterView` 并添加到宿主布局。实现方式如下：
 
 ```kotlin
-val gameCenterView = LampsSdk.getGameCenterView(this)
+val gameCenterView = LampsSdk.getGameCenterView(this, gameCenterConfig)
 if (gameCenterView != null) {
     container.addView(
         gameCenterView,

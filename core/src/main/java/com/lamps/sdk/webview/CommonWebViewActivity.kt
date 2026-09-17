@@ -56,7 +56,11 @@ internal class CommonWebViewActivity : Activity() {
     }
 
     private fun createContentView(): View {
-        webView = LampsWebView(this)
+        webView = LampsWebView(this).apply {
+            val options = pageOptions()
+            displayMode = options.displayMode
+            night = options.night
+        }
         return FrameLayout(this).apply {
             addView(
                 webView,
@@ -68,17 +72,26 @@ internal class CommonWebViewActivity : Activity() {
         }
     }
 
+    private fun pageOptions(): GameCenterPageOptions {
+        @Suppress("DEPRECATION")
+        return intent.getSerializableExtra(EXTRA_PAGE_OPTIONS) as? GameCenterPageOptions
+            ?: GameCenterPageOptions()
+    }
+
     companion object {
         const val EXTRA_URL = "extra_url"
+        const val EXTRA_PAGE_OPTIONS = "extra_page_options"
 
         @JvmStatic
         @JvmOverloads
         fun buildIntent(
             context: Context,
             url: String,
+            pageOptions: GameCenterPageOptions = GameCenterPageOptions(),
         ): Intent {
             return Intent(context, CommonWebViewActivity::class.java).apply {
                 putExtra(EXTRA_URL, url)
+                putExtra(EXTRA_PAGE_OPTIONS, pageOptions)
                 if (context !is Activity) {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }

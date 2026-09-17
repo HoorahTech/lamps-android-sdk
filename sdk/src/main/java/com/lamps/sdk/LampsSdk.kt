@@ -1,6 +1,7 @@
 package com.lamps.sdk
 
 import android.content.Context
+import com.lamps.sdk.config.GameCenterConfig
 import com.lamps.sdk.config.LampsConfig
 import com.lamps.sdk.core.InitCallback
 import com.lamps.sdk.core.SdkRuntime
@@ -29,8 +30,16 @@ object LampsSdk {
     fun getSdkVersion(): String = BuildConfig.SDK_VERSION
 
     @JvmStatic
-    fun navigateToGameCenter(context: Context) {
-        SdkRuntime.navigateToGameCenter(context)
+    @JvmOverloads
+    fun navigateToGameCenter(
+        context: Context,
+        config: GameCenterConfig = GameCenterConfig.Builder().build()
+    ) {
+        SdkRuntime.navigateToGameCenter(
+            context,
+            config.withDisplayMode(GameCenterConfig.DisplayMode.PAGE)
+                .toPageOptions()
+        )
     }
 
     @JvmStatic
@@ -39,7 +48,17 @@ object LampsSdk {
     }
 
     @JvmStatic
-    fun getGameCenterView(context: Context): GameCenterView? {
-        return SdkRuntime.getGameCenterUrl()?.let { GameCenterView(context, it) }
+    @JvmOverloads
+    fun getGameCenterView(
+        context: Context,
+        config: GameCenterConfig = GameCenterConfig.Builder().build()
+    ): GameCenterView? {
+        return SdkRuntime.getGameCenterUrl()?.let {
+            GameCenterView(
+                context,
+                it,
+                config.withDisplayMode(GameCenterConfig.DisplayMode.EMBED)
+            )
+        }
     }
 }
