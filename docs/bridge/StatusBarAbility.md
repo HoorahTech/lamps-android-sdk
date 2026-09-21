@@ -6,6 +6,8 @@
 
 配置当前 WebView 容器的状态栏。窗口始终沉浸（`fitsSystemWindows=false`，状态栏透明），用父容器背景色做出状态栏颜色。不再做横竖屏切换。
 
+仅整页模式可用。内嵌模式（`bridgeReady` 返回 `displayMode` 为 `embed`）下窗口归宿主所有，本接口不做任何修改并回调 801，H5 不要在内嵌页调用。
+
 `showStatusBar` 只控制系统状态栏显隐；`statusBarImmersive` 只控制 WebView 是否铺到状态栏下面。
 
 ### 入参 `data`
@@ -64,6 +66,7 @@
 
 | msg | 含义 |
 |---|---|
+| `embed mode not supported` | 当前是内嵌模式，窗口归宿主，不允许配置 |
 | `activity not found` | 找不到宿主 Activity |
 | `showStatusBar is invalid` | 不是 boolean |
 | `statusBarImmersive is invalid` | 不是 boolean |

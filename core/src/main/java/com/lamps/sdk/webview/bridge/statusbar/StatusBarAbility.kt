@@ -22,6 +22,14 @@ internal class StatusBarAbility : LampsAbility {
         callbackId: String?,
         callback: LampsNativeCallback
     ) {
+        // 内嵌模式下这个 Activity 是宿主的，改窗口会连带隐藏宿主的系统导航栏，直接拒绝。
+        if (webView.displayMode == LampsWebView.DISPLAY_MODE_EMBED) {
+            callback.callback(
+                generateResult(EMPTY_JSON_OBJ, ERROR_EMBED_MODE, "embed mode not supported"),
+                callbackId
+            )
+            return
+        }
         val activity = webView.context.findActivity()
         if (activity == null) {
             callback.callback(
@@ -46,6 +54,7 @@ internal class StatusBarAbility : LampsAbility {
         const val METHOD_STATUS_BAR = "lamps.common.statusBar"
         const val ERROR_NO_ACTIVITY = 801
         const val ERROR_INVALID_PARAM = 801
+        const val ERROR_EMBED_MODE = 801
     }
 }
 

@@ -28,6 +28,7 @@ open class LampsWebView @JvmOverloads constructor(
     private val BRIDGE_NAME = "androidBridge"
     private val bridge = LampsWebViewBridge(this)
 
+    /** 展示形态，取值见 [DISPLAY_MODE_PAGE] / [DISPLAY_MODE_EMBED]，未指定为空串。 */
     var displayMode: String = ""
 
     /**
@@ -129,5 +130,13 @@ open class LampsWebView @JvmOverloads constructor(
             textZoom = 100
         }
         CookieManager.getInstance().setAcceptCookie(true)
+    }
+
+    companion object {
+        /** 整页模式：WebView 独占宿主 Activity，可以改窗口。 */
+        const val DISPLAY_MODE_PAGE = "page"
+
+        /** 内嵌模式：WebView 只是宿主布局里的一块，窗口归宿主，SDK 不得修改。 */
+        const val DISPLAY_MODE_EMBED = "embed"
     }
 }

@@ -1,6 +1,7 @@
 package com.lamps.sdk.config
 
 import com.lamps.sdk.webview.GameCenterPageOptions
+import com.lamps.sdk.webview.LampsWebView
 
 /**
  * 游戏中心打开配置。由宿主在 [com.lamps.sdk.LampsSdk.navigateToGameCenter]
@@ -14,8 +15,8 @@ class GameCenterConfig private constructor(
     internal val displayMode: DisplayMode?,
 ) {
     enum class DisplayMode(val value: String) {
-        PAGE("page"),
-        EMBED("embed"),
+        PAGE(LampsWebView.DISPLAY_MODE_PAGE),
+        EMBED(LampsWebView.DISPLAY_MODE_EMBED),
     }
 
     internal fun withDisplayMode(displayMode: DisplayMode): GameCenterConfig {
