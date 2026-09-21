@@ -175,7 +175,7 @@ object LampsSdkDebug {
                         line("  state", ad.state.name)
                         line("  slotType", ad.slot.type.name)
                         line("  price", ad.price)
-                        line("  sdkPrice", ad.adData?.getPrice() ?: 0.0)
+                        line("  sdkPrice", ad.sdkPrice)
                         line("  slotPrice", ad.slot.price)
                         line("  hasAdData", ad.adData != null)
                         line("  isValid", ad.isValid)

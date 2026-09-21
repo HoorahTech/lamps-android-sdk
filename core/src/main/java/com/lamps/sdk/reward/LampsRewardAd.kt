@@ -26,14 +26,24 @@ class LampsRewardAd internal constructor(
     var adData: RewardVideoAd? = null
         internal set
 
+    /** 平台 SDK 实时 eCPM，单位：分。[release] 之后返回释放前的快照。 */
+    val sdkPrice: Double
+        get() {
+            val current = adData?.getPrice() ?: 0.0
+            return if (current > 0.0) current else releasedSdkPrice
+        }
+
+    @Volatile
+    private var releasedSdkPrice: Double = 0.0
+
     /**
      * 当前广告用于竞价的价格，单位：分。
      * 优先取平台 SDK 实时 eCPM，拿不到或无效时回落到接口下发的 `price`（同样按分）。
      */
     val price: Double
         get() {
-            val sdkPrice = adData?.getPrice() ?: 0.0
-            if (sdkPrice > 0.0) return sdkPrice
+            val price = sdkPrice
+            if (price > 0.0) return price
             return slot.price.takeIf { it > 0.0 } ?: 0.0
         }
 
@@ -44,6 +54,10 @@ class LampsRewardAd internal constructor(
     /** 渠道名称，例如穿山甲、优量汇、汇川。 */
     val channelName: String
         get() = slot.channelName
+
+    /** 广告已进入展示流程且尚未终结。此时不能 [release]，否则渠道展示回调会被提前断开。 */
+    internal val isShowingOrShown: Boolean
+        get() = state == SdkRewardState.SHOWING || state == SdkRewardState.SHOWN
 
     /** 广告是否仍可展示。已展示、已关闭或加载失败时为 `false`。 */
     val isValid: Boolean
@@ -89,6 +103,18 @@ class LampsRewardAd internal constructor(
      */
     fun show(activity: Activity, callback: RewardAdShowCallback) {
         SdkRuntime.showReward(activity, this, callback)
+    }
+
+    /**
+     * 丢开渠道广告对象。流程终结或宿主页面销毁时调用，避免渠道回调链把 WebView 和 Activity
+     * 挂在 [com.lamps.sdk.data.sdk.reward.SdkRewardDispatcher] 的列表上。状态与耗时数据保留。
+     */
+    @Synchronized
+    internal fun release() {
+        val ad = adData ?: return
+        releasedSdkPrice = runCatching { ad.getPrice() }.getOrDefault(0.0)
+        runCatching { ad.release() }
+        adData = null
     }
 
     @Synchronized

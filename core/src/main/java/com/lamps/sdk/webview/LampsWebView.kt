@@ -2,7 +2,9 @@ package com.lamps.sdk.webview
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.os.Looper
 import android.util.AttributeSet
+import android.view.ViewGroup
 import android.webkit.CookieManager
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
@@ -15,6 +17,8 @@ import com.lamps.sdk.data.sdk.reward.RewardAdAbilityInstaller
 import com.lamps.sdk.webview.bridge.LampsAbilityInstaller
 import com.lamps.sdk.webview.bridge.LampsWebViewBridge
 import com.lamps.sdk.webview.bridge.CommonAbilityInstaller
+import com.lamps.sdk.webview.bridge.nightmode.NightModeEvent
+import org.json.JSONObject
 
 open class LampsWebView @JvmOverloads constructor(
     context: Context,
@@ -26,8 +30,15 @@ open class LampsWebView @JvmOverloads constructor(
 
     var displayMode: String = ""
 
-    /** Host day/night. Exposed to H5 as `night`: 1 night, 0 day. */
+    /**
+     * Host day/night. Exposed to H5 as `night`: 1 night, 0 day.
+     *
+     * Set this before loading the page. For runtime changes use [updateNight] so the already
+     * loaded page is notified as well.
+     */
     var night: Boolean = false
+
+    private var destroyed = false
 
     init {
         initSettings()
@@ -43,6 +54,26 @@ open class LampsWebView @JvmOverloads constructor(
     }
 
     /**
+     * Updates day/night at runtime.
+     *
+     * Stores the value so a later `lamps.common.bridgeReady` returns it, and notifies the already
+     * loaded page through [NightModeEvent.SEND_NIGHT_MODE_CHANGE]. Same-value calls are ignored.
+     * Safe to call from any thread.
+     */
+    fun updateNight(night: Boolean) {
+        if (Looper.myLooper() != Looper.getMainLooper()) {
+            post { updateNight(night) }
+            return
+        }
+        if (destroyed || this.night == night) return
+        this.night = night
+        send(
+            NightModeEvent.SEND_NIGHT_MODE_CHANGE,
+            JSONObject().put("night", if (night) 1 else 0)
+        )
+    }
+
+    /**
      * Dispatches a native event to HoorahBridge, with HupuBridge as a legacy fallback.
      */
     @JvmOverloads
@@ -54,13 +85,22 @@ open class LampsWebView @JvmOverloads constructor(
         bridge.send(methodName, params, callback)
     }
 
+    /**
+     * Releases the WebView. Idempotent: later calls are ignored, so a host that destroys the
+     * embedded view itself and a container that destroys it again cannot hit a torn-down WebView.
+     */
     override fun destroy() {
+        if (destroyed) return
+        destroyed = true
         removeJavascriptInterface(BRIDGE_NAME)
         bridge.destroy()
         stopLoading()
-        loadUrl("about:blank")
+        onPause()
         clearHistory()
+        // WebView.destroy() requires the view to be detached first.
+        (parent as? ViewGroup)?.removeView(this)
         removeAllViews()
+        CookieManager.getInstance().flush()
         super.destroy()
     }
 

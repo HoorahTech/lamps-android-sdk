@@ -25,6 +25,18 @@ internal class NetworkAbility : LampsAbility {
 
     private val executor = Executors.newCachedThreadPool()
 
+    @Volatile
+    private var destroyed = false
+
+    /**
+     * Stops the pool and silences in-flight requests. Without this a request that is still waiting
+     * on the network keeps the WebView alive and then calls back into a destroyed one.
+     */
+    override fun destroy() {
+        destroyed = true
+        executor.shutdownNow()
+    }
+
     override fun executeAsync(
         webView: LampsWebView,
         methodName: String,
@@ -32,6 +44,7 @@ internal class NetworkAbility : LampsAbility {
         callbackId: String?,
         callback: LampsNativeCallback
     ) {
+        if (destroyed) return
         val url = params.optString("url")
         val data = params.optJSONObject("data")
         val method = params.optString("method")
@@ -45,12 +58,16 @@ internal class NetworkAbility : LampsAbility {
             return
         }
 
+        val guardedCallback = LampsNativeCallback { result, id ->
+            if (!destroyed) callback.callback(result, id)
+        }
         executor.execute {
+            if (destroyed) return@execute
             try {
-                performRequest(webView, url, method, data, header, callback, callbackId)
+                performRequest(url, method, data, header, guardedCallback, callbackId)
             } catch (error: Exception) {
                 SdkLog.e("network ability failed: ${error.message}", error)
-                callback.callback(
+                guardedCallback.callback(
                     generateResult(EMPTY_JSON_OBJ, NetworkErrCode.networkThrowableToCode(error), error.message.orEmpty()),
                     callbackId
                 )
@@ -59,7 +76,6 @@ internal class NetworkAbility : LampsAbility {
     }
 
     private fun performRequest(
-        webView: LampsWebView,
         url: String,
         method: String,
         data: JSONObject?,

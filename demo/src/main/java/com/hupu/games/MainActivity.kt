@@ -18,7 +18,10 @@ class MainActivity : Activity() {
         SdkToolsBinder.bind(this, findViewById(R.id.openSdkToolsButton))
 
         findViewById<Button>(R.id.navigateGameCenterButton).setOnClickListener {
-            LampsSdk.navigateToGameCenter(this, selectedGameCenterConfig())
+            val config = GameCenterConfig.Builder()
+                .setNightMode(NightMode.NIGHT)
+                .build()
+            LampsSdk.navigateToGameCenter(this, config)
         }
 
         findViewById<Button>(R.id.navigateGameButton).setOnClickListener {

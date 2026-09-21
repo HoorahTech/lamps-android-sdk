@@ -151,6 +151,13 @@ internal class TTRewardVideoAd(
         }
     }
 
+    override fun release() {
+        mainHandler.removeCallbacks(timeout)
+        loadCallback = null
+        showCallback = null
+        rewardAd = null
+    }
+
     private fun finishLoad(action: () -> Unit): Boolean {
         if (!loadFinished.compareAndSet(false, true)) return false
         action()

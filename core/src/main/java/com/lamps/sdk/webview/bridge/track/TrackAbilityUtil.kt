@@ -8,6 +8,7 @@ internal class TrackAbilityUtil(
 ) {
     private val pendingOnloadData = mutableListOf<PendingEvent>()
     private var observedWebView: LampsWebView? = null
+    private var observedTreeObserver: ViewTreeObserver? = null
     private var windowFocusListener: ViewTreeObserver.OnWindowFocusChangeListener? = null
 
     fun observe(webView: LampsWebView) {
@@ -20,8 +21,10 @@ internal class TrackAbilityUtil(
                 flush()
             }
         }
-        webView.viewTreeObserver.addOnWindowFocusChangeListener(listener)
+        val treeObserver = webView.viewTreeObserver
+        treeObserver.addOnWindowFocusChangeListener(listener)
         observedWebView = webView
+        observedTreeObserver = treeObserver
         windowFocusListener = listener
     }
 
@@ -57,12 +60,17 @@ internal class TrackAbilityUtil(
     }
 
     private fun removeObserver() {
-        val webView = observedWebView
         val listener = windowFocusListener
-        if (webView != null && listener != null && webView.viewTreeObserver.isAlive) {
-            webView.viewTreeObserver.removeOnWindowFocusChangeListener(listener)
+        if (listener != null) {
+            // 注册用的 ViewTreeObserver 可能是 attach 前的浮动实例，attach 时会被合并，
+            // 所以注册时那个和当前那个都要摘一次。
+            setOf(observedTreeObserver, observedWebView?.viewTreeObserver)
+                .filterNotNull()
+                .filter { it.isAlive }
+                .forEach { it.removeOnWindowFocusChangeListener(listener) }
         }
         observedWebView = null
+        observedTreeObserver = null
         windowFocusListener = null
     }
 

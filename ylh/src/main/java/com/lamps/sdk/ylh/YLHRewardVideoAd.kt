@@ -149,6 +149,12 @@ internal class YLHRewardVideoAd(
         }
     }
 
+    override fun release() {
+        mainHandler.removeCallbacks(timeout)
+        loadCallback = null
+        showCallback = null
+    }
+
     private fun finishLoad(action: () -> Unit): Boolean {
         if (!loadFinished.compareAndSet(false, true)) return false
         action()

@@ -201,6 +201,7 @@ internal object SdkRewardDispatcher {
                 )
             if (winner == null) {
                 val failures = rewardDataList.filter { it.state == SdkRewardState.LOAD_FAILED }
+                rewardDataList.forEach { it.release() }
                 callback.onAdLoadFailed(
                     RewardAdErrorCode.ALL_SDK_LOAD_FAILED,
                     buildString {
@@ -231,6 +232,8 @@ internal object SdkRewardDispatcher {
                         RewardAdErrorCode.BID_FAILED,
                         "reward ad lost bidding"
                     )
+                    // 竞价通知已发出，落选和加载失败的广告不会再展示，立刻断开渠道回调引用。
+                    candidate.release()
                 }
             }
             callback.onAdLoadSuccess(winner)
@@ -256,6 +259,7 @@ internal object SdkRewardDispatcher {
 
             override fun onAdClosed() {
                 rewardData.markClosed()
+                rewardData.release()
                 callback.onAdClosed()
             }
 
@@ -266,6 +270,7 @@ internal object SdkRewardDispatcher {
 
             override fun onAdShowFailed(code: Int, message: String?) {
                 rewardData.markShowFailed(code, message)
+                rewardData.release()
                 callback.onAdShowFailed(code, message)
             }
         }

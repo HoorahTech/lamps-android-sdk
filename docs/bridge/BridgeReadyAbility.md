@@ -82,6 +82,8 @@ WebView 加载完成后，H5 向 Native 请求宿主公共运行参数。Native 
 
 `night` 对应 `NightMode`：`DAY` 为 `0`，`NIGHT` 为 `1`。打开时优先单次 `GameCenterConfig`，否则现取全局 provider。
 
+内嵌模式下宿主可在页面存活期间切换日夜间，变化通过 `lamps.common.onnightmodechange` 事件下发，见 [NightModeEvent](NightModeEvent.md)。本接口返回的始终是当前最新值。
+
 ## 注册方式
 
 通过 `CommonAbilityInstaller` 注册到 WebView：

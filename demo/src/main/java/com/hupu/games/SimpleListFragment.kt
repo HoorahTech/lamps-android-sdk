@@ -9,12 +9,19 @@ import android.widget.ListView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.lamps.sdk.LampsSdk
+import com.lamps.sdk.view.GameCenterView
 import java.util.Locale
 
 /**
  * 简单的列表 Fragment，用于 TabLayout 演示中的非游戏中心页面。
  */
 class SimpleListFragment : Fragment() {
+
+    /**
+     * 列表里的游戏中心 View 只创建一份并复用。
+     * ListView 每次滑进屏幕都会调 getView，如果每次新建就会攒出一堆没销毁的 WebView。
+     */
+    private var gameCenterView: GameCenterView? = null
 
     companion object {
         private const val EXTRA_TITLE = "extra_title"
@@ -63,12 +70,16 @@ class SimpleListFragment : Fragment() {
 
             override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
                 if (getItemViewType(position) == 1) {
-                    return LampsSdk.getGameCenterView(requireActivity(), demoGameCenterConfig())?.apply {
-                        layoutParams = ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            dp(240)
-                        )
-                    } ?: createTextView(position + 1)
+                    gameCenterView?.let { return it }
+                    val created = LampsSdk
+                        .getGameCenterView(requireActivity(), demoGameCenterConfig())
+                        ?: return createTextView(position + 1)
+                    created.layoutParams = ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        dp(240)
+                    )
+                    gameCenterView = created
+                    return created
                 }
                 return (convertView as? TextView ?: createTextView(position + 1)).apply {
                     text = itemText(position + 1)
@@ -88,6 +99,12 @@ class SimpleListFragment : Fragment() {
             }
         }
         return listView
+    }
+
+    override fun onDestroyView() {
+        gameCenterView?.destroy()
+        gameCenterView = null
+        super.onDestroyView()
     }
 
     private fun dp(value: Int): Int {

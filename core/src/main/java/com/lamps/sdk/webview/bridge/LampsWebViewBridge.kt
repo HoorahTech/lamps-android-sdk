@@ -14,8 +14,12 @@ class LampsWebViewBridge internal constructor(
     private val dispatcher = LampsAbilityDispatcher()
     private val messageIds = ConcurrentHashMap<String, Boolean>()
 
+    @Volatile
+    private var destroyed = false
+
     @JavascriptInterface
     fun callNativeAsync(methodName: String, dataJson: String?, callBackSig: String?) {
+        if (destroyed) return
         SdkLog.d(
             "web bridge H5->Native async method=$methodName callbackSig=$callBackSig data=$dataJson"
         )
@@ -30,6 +34,7 @@ class LampsWebViewBridge internal constructor(
 
     @JavascriptInterface
     fun callNativeSync(methodName: String, dataJson: String?): String {
+        if (destroyed) return EMPTY_RESULT
         SdkLog.d("web bridge H5->Native sync method=$methodName data=$dataJson")
         val result = dispatcher.invokeSync(webView, methodName, dataJson)
         SdkLog.d("web bridge Native->H5 sync method=$methodName result=$result")
@@ -42,6 +47,7 @@ class LampsWebViewBridge internal constructor(
      */
     @JavascriptInterface
     fun postMessage(messageString: String?) {
+        if (destroyed) return
         if (messageString.isNullOrBlank()) {
             SdkLog.w("web bridge postMessage is empty")
             return
@@ -89,6 +95,7 @@ class LampsWebViewBridge internal constructor(
         params: Any? = null,
         callback: ValueCallback<String>? = null
     ) {
+        if (destroyed) return
         val paramsJson = when (params) {
             null -> "null"
             is JSONObject -> params.toString()
@@ -98,13 +105,19 @@ class LampsWebViewBridge internal constructor(
         callJs(methodName, paramsJson, callback)
     }
 
+    /**
+     * Detaches the bridge from the WebView. After this every H5->Native and Native->H5 path is a
+     * no-op, so abilities whose async work outlives the WebView (network requests, reward ad
+     * callbacks) can no longer touch a destroyed WebView.
+     */
     internal fun destroy() {
+        destroyed = true
         dispatcher.destroy()
         messageIds.clear()
     }
 
     private fun callNativeBack(result: JSONObject?, callBackSig: String?) {
-        if (callBackSig.isNullOrEmpty()) return
+        if (destroyed || callBackSig.isNullOrEmpty()) return
 
         if (messageIds.remove(callBackSig) != null) {
             val response = JSONObject()
@@ -157,10 +170,12 @@ class LampsWebViewBridge internal constructor(
         script: String,
         callback: ValueCallback<String>? = null
     ) {
+        if (destroyed) return
         if (Looper.myLooper() == Looper.getMainLooper()) {
             webView.evaluateJavascript(script, callback)
         } else {
             webView.post {
+                if (destroyed) return@post
                 webView.evaluateJavascript(script, callback)
             }
         }
@@ -169,5 +184,6 @@ class LampsWebViewBridge internal constructor(
     private companion object {
         const val TYPE_REQUEST = "request"
         const val TYPE_RESPONSE = "response"
+        const val EMPTY_RESULT = "{}"
     }
 }

@@ -118,7 +118,28 @@ if (gameCenterView != null) {
 }
 ```
 
-宿主负责在页面永久销毁时释放资源；不要在普通的列表或 ViewPager detach 场景销毁：
+### 运行时更新配置
+
+View 已经添加到宿主布局后，宿主自身状态发生变化（典型场景是宿主切换日夜间）时，调用 `GameCenterView.updateConfig` 同步给 SDK，调用时机由宿主控制：
+
+```kotlin
+// 宿主切换日夜间时调用
+gameCenterView?.updateConfig(
+    GameCenterConfig.Builder()
+        .setNightMode(NightMode.DAY)
+        .build()
+)
+```
+
+说明：
+
+- 目前生效字段为日夜间。传入的 `GameCenterConfig` 未设 `setNightMode` 时，按 `LampsConfig.setNightModeProvider` 现取；都没有则日间。
+- 与当前值相同时不会重复下发，不会触发 H5 重复渲染。
+- 可从任意线程调用；`destroy()` 之后调用无效果，不会抛异常。
+- 整页模式 `navigateToGameCenter` 的日夜间在打开时确定，没有这个入口。
+- H5 侧通过 `lamps.common.onnightmodechange` 事件接收变化，详见 [docs/bridge/NightModeEvent.md](docs/bridge/NightModeEvent.md)。
+
+宿主负责在 View 不再会被复用时释放资源。判断标准是"这个 `GameCenterView` 实例之后还会不会被重新展示"：不会就必须 `destroy()`，`destroy()` 之后的实例不能再加回布局。
 
 ```kotlin
 override fun onDestroyView() {
@@ -128,7 +149,13 @@ override fun onDestroyView() {
 }
 ```
 
-如果在 RecyclerView 中使用，建议在 `onViewRecycled` 中调用 `GameCenterView.destroy()`，并确保销毁后的 View 不再重新绑定。
+几个容易漏的场景：
+
+- `ViewPager2` + `FragmentStateAdapter`：ViewHolder 被回收时 Fragment 会被真正移除，所以 `onDestroyView` 里必须 `destroy()`，否则来回滑 tab 会攒出多个还在跑的 WebView。
+- `RecyclerView`：在 `onViewRecycled` 中 `destroy()`，并确保销毁后的 View 不再重新绑定；更省心的做法是整个列表只持有一个实例并复用，不要在 `onBindViewHolder` / `getView` 里新建。
+- 只是临时从父容器 detach（View 之后还会加回来）时不要 `destroy()`，`destroy()` 是一次性的。
+
+`GameCenterView.destroy()` 可以重复调用，第二次及以后无效果，所以宿主"多兜一次"是安全的。
 
 ## 打开游戏
 

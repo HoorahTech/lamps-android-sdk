@@ -13,6 +13,14 @@ abstract class RewardVideoAd {
     abstract fun loadAD(callback: RewardAdSdkLoadCallback)
 
     abstract fun showAD(activity: Activity, callback: RewardAdShowCallback)
+
+    /**
+     * 释放渠道广告对象持有的加载/展示回调与待执行超时任务。
+     *
+     * 广告流程终结（关闭、展示失败、竞价失败）或宿主页面销毁时调用。渠道回调链路会一直指回调用方，
+     * 不断开的话已销毁的 WebView 和 Activity 会被渠道 SDK 一直持有。调用后本实例不应再 show。
+     */
+    open fun release() = Unit
 }
 
 interface RewardAdSdkLoadCallback {

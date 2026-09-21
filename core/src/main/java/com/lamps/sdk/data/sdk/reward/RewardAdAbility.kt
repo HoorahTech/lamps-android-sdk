@@ -30,6 +30,10 @@ private class RewardAdAbility : LampsAbility {
     @Volatile
     private var destroyed = false
 
+    /** 本次流程拿到的广告，destroy 时要断开它对 WebView 的回调引用。 */
+    @Volatile
+    private var pendingAd: LampsRewardAd? = null
+
     override fun executeAsync(
         webView: LampsWebView,
         methodName: String,
@@ -101,6 +105,11 @@ private class RewardAdAbility : LampsAbility {
     override fun destroy() {
         destroyed = true
         flowInProgress.set(false)
+        // 正在播放的广告不能在这里 release：断开渠道 showCallback 会连带打掉挂在
+        // SdkRewardDispatcher 展示回调上的 PM/DM/CM 上报，而 PM 和 DM 是带签名的结算口径。
+        // 这种情况交给 onAdClosed / onAdShowFailed 收口，引用最多留到广告关闭。
+        pendingAd?.takeIf { !it.isShowingOrShown }?.release()
+        pendingAd = null
     }
 
     private fun createLoadCallback(
@@ -109,8 +118,15 @@ private class RewardAdAbility : LampsAbility {
     ): RewardAdLoadCallback {
         return object : RewardAdLoadCallback {
             override fun onAdLoadSuccess(ad: LampsRewardAd) {
+                // WebView 已销毁时不能再展示：内嵌模式下宿主 Activity 还活着，
+                // 激励视频会盖在宿主界面上播，而且没有页面能收到奖励回调。
+                if (destroyed) {
+                    ad.release()
+                    return
+                }
+                pendingAd = ad
                 sendEvent(webView, "onLoadSuccess")
-                ad.show(activity,createShowCallback(webView))
+                ad.show(activity, createShowCallback(webView))
             }
 
             override fun onAdLoadFailed(code: Int, message: String?) {
@@ -134,10 +150,12 @@ private class RewardAdAbility : LampsAbility {
 
             override fun onAdClosed() {
                 flowInProgress.set(false)
+                pendingAd = null
                 sendEvent(webView, "onClose", rewardStatus = rewarded)
             }
 
             override fun onAdShowFailed(code: Int, message: String?) {
+                pendingAd = null
                 sendError(
                     webView,
                     code,
