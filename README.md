@@ -106,6 +106,8 @@ LampsSdk.navigateToGameCenter(this, gameCenterConfig)
 
 可获取 `GameCenterView` 并添加到宿主布局。实现方式如下：
 
+内嵌在可左右滑动的 Tab / ViewPager 中时，横向滑动先滚动页面里的内容，这个方向已经滚不动之后，后续滑动才交给外层切页。
+
 ```kotlin
 val gameCenterView = LampsSdk.getGameCenterView(this, gameCenterConfig)
 if (gameCenterView != null) {

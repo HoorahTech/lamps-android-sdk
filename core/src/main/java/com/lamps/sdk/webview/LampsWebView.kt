@@ -2,8 +2,10 @@ package com.lamps.sdk.webview
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Bitmap
 import android.os.Looper
 import android.util.AttributeSet
+import android.view.MotionEvent
 import android.view.ViewGroup
 import android.webkit.CookieManager
 import android.webkit.ValueCallback
@@ -26,7 +28,9 @@ open class LampsWebView @JvmOverloads constructor(
     defStyleAttr: Int = android.R.attr.webViewStyle
 ) : WebView(context, attrs, defStyleAttr) {
     private val BRIDGE_NAME = "androidBridge"
+    private val NEST_SCROLL_NAME = "LampsNestedScroll"
     private val bridge = LampsWebViewBridge(this)
+    private val horizontalNesting = HorizontalNesting(this)
 
     /** 展示形态，取值见 [DISPLAY_MODE_PAGE] / [DISPLAY_MODE_EMBED]，未指定为空串。 */
     var displayMode: String = ""
@@ -51,10 +55,28 @@ open class LampsWebView @JvmOverloads constructor(
     init {
         initSettings()
         addJavascriptInterface(bridge, BRIDGE_NAME)
+        addJavascriptInterface(horizontalNesting, NEST_SCROLL_NAME)
         bridge.registerAbilityInstaller(RewardAdAbilityInstaller)
         bridge.registerAbilityInstaller(CommonAbilityInstaller())
-        webViewClient = WebViewClient()
+        webViewClient = object : WebViewClient() {
+            override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+                horizontalNesting.onPageStarted()
+                super.onPageStarted(view, url, favicon)
+            }
+
+            override fun onPageFinished(view: WebView?, url: String?) {
+                super.onPageFinished(view, url)
+                horizontalNesting.install()
+            }
+        }
         webChromeClient = WebChromeClient()
+    }
+
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        horizontalNesting.onDispatchTouchEvent(ev)
+        val handled = super.dispatchTouchEvent(ev)
+        horizontalNesting.afterDispatchTouchEvent()
+        return handled
     }
 
     fun registerAbilityInstaller(installer: LampsAbilityInstaller) {
@@ -100,7 +122,9 @@ open class LampsWebView @JvmOverloads constructor(
     override fun destroy() {
         if (destroyed) return
         destroyed = true
+        horizontalNesting.destroy()
         removeJavascriptInterface(BRIDGE_NAME)
+        removeJavascriptInterface(NEST_SCROLL_NAME)
         bridge.destroy()
         stopLoading()
         onPause()
