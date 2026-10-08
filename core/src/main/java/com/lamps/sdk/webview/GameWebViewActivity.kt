@@ -75,8 +75,11 @@ internal class GameWebViewActivity : Activity() {
         addContentView(
             GameWebViewActionBar(this).apply {
                 setOnRestartClickListener {
-                    webView.stopLoading()
-                    webView.loadUrl(initialUrl)
+                    if (webView.url.isNullOrBlank() || webView.url != initialUrl) {
+                        webView.loadUrl(initialUrl)
+                    } else {
+                        webView.reload()
+                    }
                 }
                 setOnExitClickListener { finish() }
             },
