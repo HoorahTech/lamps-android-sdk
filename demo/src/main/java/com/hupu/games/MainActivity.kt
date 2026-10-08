@@ -47,5 +47,6 @@ class MainActivity : Activity() {
 internal fun demoGameCenterConfig(nightMode: NightMode? = null): GameCenterConfig {
     return GameCenterConfig.Builder()
         .apply { if (nightMode != null) setNightMode(nightMode) }
+        .setHideTitle(true)
         .build()
 }

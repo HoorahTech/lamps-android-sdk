@@ -39,6 +39,13 @@ open class LampsWebView @JvmOverloads constructor(
      */
     var night: Boolean = false
 
+    /**
+     * Whether the host wants the H5 title hidden.
+     *
+     * Exposed to H5 as `hideTitle`: 1 hidden, 0 shown. Set before loading the page.
+     */
+    var hideTitle: Boolean = false
+
     private var destroyed = false
 
     init {

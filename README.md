@@ -90,7 +90,7 @@ LampsSdk.startAsync(object : InitCallback {
 
 ## 游戏中心
 
-打开游戏中心时可传入 `GameCenterConfig`。日夜间优先 `setNightMode`；未设则每次从 `LampsConfig.setNightModeProvider` 读取；仍没有则默认日间。后续扩展字段加在 Builder 上。
+打开游戏中心时可传入 `GameCenterConfig`。日夜间优先 `setNightMode`；未设则每次从 `LampsConfig.setNightModeProvider` 读取；仍没有则默认日间。`setHideTitle(true)` 隐藏标题，默认不隐藏。后续扩展字段加在 Builder 上。
 
 ```kotlin
 import com.lamps.sdk.config.GameCenterConfig
@@ -98,6 +98,7 @@ import com.lamps.sdk.config.NightMode
 
 val gameCenterConfig = GameCenterConfig.Builder()
     .setNightMode(NightMode.NIGHT) // 可选；不设则用全局 provider
+    .setHideTitle(true) // 可选；true 隐藏标题，默认 false
     .build()
 
 LampsSdk.navigateToGameCenter(this, gameCenterConfig)
@@ -133,7 +134,7 @@ gameCenterView?.updateConfig(
 
 说明：
 
-- 目前生效字段为日夜间。传入的 `GameCenterConfig` 未设 `setNightMode` 时，按 `LampsConfig.setNightModeProvider` 现取；都没有则日间。
+- 目前生效字段为日夜间。传入的 `GameCenterConfig` 未设 `setNightMode` 时，按 `LampsConfig.setNightModeProvider` 现取；都没有则日间。`setHideTitle` 只在打开时生效。
 - 与当前值相同时不会重复下发，不会触发 H5 重复渲染。
 - 可从任意线程调用；`destroy()` 之后调用无效果，不会抛异常。
 - 整页模式 `navigateToGameCenter` 的日夜间在打开时确定，没有这个入口。

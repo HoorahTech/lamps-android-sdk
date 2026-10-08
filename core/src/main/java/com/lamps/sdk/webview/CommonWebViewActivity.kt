@@ -60,6 +60,7 @@ internal class CommonWebViewActivity : Activity() {
             val options = pageOptions()
             displayMode = options.displayMode
             night = options.night
+            hideTitle = options.hideTitle
         }
         return FrameLayout(this).apply {
             addView(

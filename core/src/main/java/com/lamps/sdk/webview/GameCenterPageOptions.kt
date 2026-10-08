@@ -6,6 +6,7 @@ import java.io.Serializable
 class GameCenterPageOptions(
     val night: Boolean = false,
     val displayMode: String = "",
+    val hideTitle: Boolean = false,
 ) : Serializable {
     companion object {
         private const val serialVersionUID = 1L

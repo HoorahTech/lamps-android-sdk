@@ -51,6 +51,7 @@ internal class BridgeReadyAbility : LampsAbility {
             put("statusBarHeight", DeviceUtils.statusBarHeight(context))
             put("displayMode", webView.displayMode)
             put("night", if (webView.night) 1 else 0)
+            put("hideTitle", if (webView.hideTitle) 1 else 0)
         }
     }
 
