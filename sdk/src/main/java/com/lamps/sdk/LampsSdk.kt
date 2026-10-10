@@ -9,8 +9,6 @@ import com.lamps.sdk.core.InitCallback
 import com.lamps.sdk.core.RewardMonitorCallback
 import com.lamps.sdk.core.SdkRuntime
 import com.lamps.sdk.core.TrackCallback
-import com.lamps.sdk.data.monitor.RewardMonitor
-import com.lamps.sdk.utils.TrackSdk
 import com.lamps.sdk.view.GameCenterView
 
 object LampsSdk {
@@ -35,7 +33,7 @@ object LampsSdk {
      */
     @JvmStatic
     fun registerTrackCallback(callback: TrackCallback) {
-        TrackSdk.addListener(
+        SdkRuntime.registerTrackCallback(
             callback,
             CoreTrackCallback { action, payload -> callback.onTrack(action, payload) }
         )
@@ -43,7 +41,7 @@ object LampsSdk {
 
     @JvmStatic
     fun unregisterTrackCallback(callback: TrackCallback) {
-        TrackSdk.removeListener(callback)
+        SdkRuntime.unregisterTrackCallback(callback)
     }
 
     /**
@@ -52,15 +50,17 @@ object LampsSdk {
      */
     @JvmStatic
     fun registerRewardMonitorCallback(callback: RewardMonitorCallback) {
-        RewardMonitor.addListener(
+        SdkRuntime.registerRewardMonitorCallback(
             callback,
-            CoreRewardMonitorCallback { event, payload -> callback.onRewardMonitor(event, payload) }
+            CoreRewardMonitorCallback { event, payload ->
+                callback.onRewardMonitor(event, payload)
+            }
         )
     }
 
     @JvmStatic
     fun unregisterRewardMonitorCallback(callback: RewardMonitorCallback) {
-        RewardMonitor.removeListener(callback)
+        SdkRuntime.unregisterRewardMonitorCallback(callback)
     }
 
     @JvmStatic

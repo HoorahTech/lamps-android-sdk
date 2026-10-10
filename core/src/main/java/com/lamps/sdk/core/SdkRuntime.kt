@@ -12,9 +12,11 @@ import com.lamps.sdk.data.sdk.reward.SdkRewardDispatcher
 import com.lamps.sdk.reward.LampsRewardAd
 import com.lamps.sdk.reward.RewardAdLoadCallback
 import com.lamps.sdk.reward.RewardAdShowCallback
+import com.lamps.sdk.data.monitor.RewardMonitor
 import com.lamps.sdk.utils.LampsApiHost
 import com.lamps.sdk.utils.SdkLog
 import com.lamps.sdk.utils.ThreadUtils
+import com.lamps.sdk.utils.TrackSdk
 import com.lamps.sdk.webview.CommonWebViewActivity
 import com.lamps.sdk.webview.GameCenterPageOptions
 import com.lamps.sdk.webview.GameWebViewActivity
@@ -46,6 +48,22 @@ object SdkRuntime {
         }
     }
 
+
+    fun registerTrackCallback(owner: Any, callback: CoreTrackCallback) {
+        TrackSdk.addListener(owner, callback)
+    }
+
+    fun unregisterTrackCallback(owner: Any) {
+        TrackSdk.removeListener(owner)
+    }
+
+    fun registerRewardMonitorCallback(owner: Any, callback: CoreRewardMonitorCallback) {
+        RewardMonitor.addListener(owner, callback)
+    }
+
+    fun unregisterRewardMonitorCallback(owner: Any) {
+        RewardMonitor.removeListener(owner)
+    }
 
     fun startAsync(callback: CoreInitCallback) {
         callbacks.add(callback)
