@@ -88,6 +88,49 @@ LampsSdk.startAsync(object : InitCallback {
 
 `startAsync` 完成前不要使用LampsSdk能力。可使用 `LampsSdk.isSdkReady()` 查询当前状态，使用 `LampsSdk.getSdkVersion()` 获取 SDK 版本。
 
+## 埋点回调
+
+SDK 自己的上报不变。接入方可以用 `registerTrackCallback` 拿到每一次提交的埋点，转发到自己的监控，方便和 SDK 上报核对。
+
+`action` 是事件名。`payload` 是上报接口解压后的明文 JSON，包含公共字段和 `pdata`。回调发生在产生事件的线程，不一定是主线程；回调里不要做耗时操作。同一回调实例重复注册只会收到一次。HTTP 是否成功不影响这次回调。
+
+```kotlin
+import com.lamps.sdk.core.TrackCallback
+
+val trackCallback = TrackCallback { action, payload ->
+    // 转发到接入方自己的监控
+}
+
+LampsSdk.registerTrackCallback(trackCallback)
+// 不再需要时
+LampsSdk.unregisterTrackCallback(trackCallback)
+```
+
+## 激励视频监测回调
+
+激励视频监测有 5 类事件。SDK 自己的监测请求不变，接入方可以用 `registerRewardMonitorCallback` 拿到同一次事件里写入监测链接的字段。
+
+| event | 时机 | payload 额外字段 |
+| --- | --- | --- |
+| `RM` | 每个广告位加载结束各一次 | `isSuccess`：`1` 有填充，`0` 无填充；无填充时 `code` 为错误码 |
+| `WM` | 竞价选出胜出广告 | 无 |
+| `PM` | 广告曝光 | 无 |
+| `CM` | 广告点击 | 无 |
+| `DM` | 激励任务完成 | `action` 为 `30` |
+
+公共字段包括 `requestId`、`forwardSource`、`price`、`unionName`、`slotId`，以及设备信息。关闭和展示失败没有监测事件。回调发生在产生事件的线程，不一定是主线程；回调里不要做耗时操作。同一回调实例重复注册只会收到一次。服务端没下发对应监测链接时，回调仍然会来。
+
+```kotlin
+import com.lamps.sdk.core.RewardMonitorCallback
+
+val rewardMonitorCallback = RewardMonitorCallback { event, payload ->
+    // 转发到接入方自己的监控
+}
+
+LampsSdk.registerRewardMonitorCallback(rewardMonitorCallback)
+LampsSdk.unregisterRewardMonitorCallback(rewardMonitorCallback)
+```
+
 ## 游戏中心
 
 打开游戏中心时可传入 `GameCenterConfig`。日夜间优先 `setNightMode`；未设则每次从 `LampsConfig.setNightModeProvider` 读取；仍没有则默认日间。`setHideTitle(true)` 隐藏标题，默认不隐藏。后续扩展字段加在 Builder 上。

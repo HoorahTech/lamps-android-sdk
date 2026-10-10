@@ -4,14 +4,26 @@ import android.os.Build
 import android.util.Base64
 import com.lamps.sdk.BuildConfig
 import com.lamps.sdk.config.SdkConfig
+import com.lamps.sdk.core.CoreTrackCallback
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.zip.GZIPOutputStream
 
 /** Sends tracking data to the endpoint selected by the SDK API environment. */
 object TrackSdk {
     private const val TAG = "TrackSdk"
     private const val REPORT_PATH = "/api/v1/event/report"
+    private val listeners = CopyOnWriteArrayList<Listener>()
+
+    fun addListener(owner: Any, callback: CoreTrackCallback) {
+        if (listeners.any { it.owner === owner }) return
+        listeners.add(Listener(owner, callback))
+    }
+
+    fun removeListener(owner: Any) {
+        listeners.removeAll { it.owner === owner }
+    }
 
     @JvmStatic
     fun sendData(action: String, data: HashMap<String, Any>) {
@@ -26,11 +38,27 @@ object TrackSdk {
                 }
             })
         }
-        SdkLog.d("$TAG params: $payload")
+        val body = payload.toString()
+        SdkLog.d("$TAG params: $body")
+        dispatch(action, body)
         ThreadUtils.runOnWork {
-            doReport(payload.toString())
+            doReport(body)
         }
     }
+
+    private fun dispatch(action: String, payload: String) {
+        listeners.forEach { listener ->
+            runCatching { listener.callback.onTrack(action, payload) }
+                .onFailure { error ->
+                    SdkLog.e("$TAG track callback failed: ${error.message}", error)
+                }
+        }
+    }
+
+    private class Listener(
+        val owner: Any,
+        val callback: CoreTrackCallback
+    )
 
     private fun buildDefaultValues(): Map<String, String> {
         val config = SdkConfig.current

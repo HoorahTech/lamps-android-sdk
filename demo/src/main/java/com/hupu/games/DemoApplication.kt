@@ -6,6 +6,8 @@ import com.lamps.sdk.LampsSdk
 import com.lamps.sdk.config.LampsConfig
 import com.lamps.sdk.config.NightMode
 import com.lamps.sdk.core.InitCallback
+import com.lamps.sdk.core.RewardMonitorCallback
+import com.lamps.sdk.core.TrackCallback
 
 class DemoApplication : Application() {
 
@@ -22,6 +24,13 @@ class DemoApplication : Application() {
                 .build()
         )
         Log.i(TAG, "init accepted=$accepted")
+
+        LampsSdk.registerTrackCallback(TrackCallback { action, payload ->
+            Log.i(TAG, "track action=$action payload=$payload")
+        })
+        LampsSdk.registerRewardMonitorCallback(RewardMonitorCallback { event, payload ->
+            Log.i(TAG, "reward monitor event=$event payload=$payload")
+        })
 
         LampsSdk.startAsync(object : InitCallback {
             override fun success() {

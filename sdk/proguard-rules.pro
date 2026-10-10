@@ -7,6 +7,8 @@
 -keep class com.lamps.sdk.config.GameCenterConfig$DisplayMode { public *; }
 -keep class com.lamps.sdk.config.NightMode { public *; }
 -keep interface com.lamps.sdk.core.InitCallback { public *; }
+-keep interface com.lamps.sdk.core.TrackCallback { public *; }
+-keep interface com.lamps.sdk.core.RewardMonitorCallback { public *; }
 -keep interface com.lamps.sdk.core.OaidProvider { public *; }
 -keep interface com.lamps.sdk.core.NightModeProvider { public *; }
 -keep class com.lamps.sdk.view.GameCenterView { public *; }
