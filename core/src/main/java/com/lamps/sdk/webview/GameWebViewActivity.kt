@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.Gravity
 import android.view.View
 import android.widget.FrameLayout
+import com.lamps.sdk.data.init.AppInitDataLoader
 import com.lamps.sdk.webview.bridge.back.BackAbilityUtil
 import com.lamps.sdk.webview.view.GameWebViewActionBar
 import com.lamps.sdk.webview.view.StatusBarApplier
@@ -27,6 +28,7 @@ internal class GameWebViewActivity : Activity() {
         setContentView(createContentView())
         StatusBarApplier.applyDefault(this, webView)
         attachActionBar()
+        AppInitDataLoader.refreshIfStale()
         webView.loadUrl(initialUrl)
     }
 
