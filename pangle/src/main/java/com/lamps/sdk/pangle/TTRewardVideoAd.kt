@@ -12,6 +12,7 @@ import com.lamps.sdk.data.sdk.channel.RewardAdSdkLoadCallback
 import com.lamps.sdk.data.sdk.channel.RewardVideoAd
 import com.lamps.sdk.data.sdk.reward.RewardAdErrorCode
 import com.lamps.sdk.reward.RewardAdShowCallback
+import com.lamps.sdk.utils.SdkLog
 import java.util.concurrent.atomic.AtomicBoolean
 
 internal class TTRewardVideoAd(
@@ -137,7 +138,11 @@ internal class TTRewardVideoAd(
                         rewardType: Int,
                         extraInfo: Bundle?
                     ) {
-                        if (isRewardValid) showCallback?.onAdRewarded()
+                        SdkLog.i(
+                            "pangle onRewardArrived isRewardValid=$isRewardValid " +
+                                "rewardType=$rewardType extraInfo=$extraInfo"
+                        )
+                        showCallback?.onAdRewarded()
                     }
                 }
             )
