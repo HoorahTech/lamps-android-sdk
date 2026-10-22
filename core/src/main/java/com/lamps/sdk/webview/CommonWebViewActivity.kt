@@ -11,6 +11,7 @@ import com.lamps.sdk.webview.view.StatusBarApplier
 
 internal class CommonWebViewActivity : Activity() {
     private lateinit var webView: LampsWebView
+    private lateinit var loadGuard: PageLoadGuard
     private lateinit var initialUrl: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -24,7 +25,7 @@ internal class CommonWebViewActivity : Activity() {
 
         setContentView(createContentView())
         StatusBarApplier.applyDefault(this, webView)
-        webView.loadUrl(initialUrl)
+        loadGuard.load(initialUrl)
     }
 
     override fun onResume() {
@@ -50,6 +51,7 @@ internal class CommonWebViewActivity : Activity() {
 
     override fun onDestroy() {
         if (::webView.isInitialized) {
+            loadGuard.destroy()
             webView.destroy()
         }
         super.onDestroy()
@@ -70,6 +72,7 @@ internal class CommonWebViewActivity : Activity() {
                     FrameLayout.LayoutParams.MATCH_PARENT
                 )
             )
+            loadGuard = PageLoadGuard(webView, this)
         }
     }
 
