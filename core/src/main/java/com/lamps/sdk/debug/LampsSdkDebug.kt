@@ -129,6 +129,7 @@ object LampsSdkDebug {
                 line("clientIp", initData?.clientIp.orEmpty())
                 line("gameCenterPage", initData?.gameCenterPage.orEmpty())
                 line("gamePlayPageTemplate", initData?.gamePlayPageTemplate.orEmpty())
+                line("autoReloadTime", initData?.autoReloadTime?.toString() ?: "-")
 
                 appendLine("rewardAdSlots:")
                 if (initData?.rewardAdSlots.orEmpty().isEmpty()) {

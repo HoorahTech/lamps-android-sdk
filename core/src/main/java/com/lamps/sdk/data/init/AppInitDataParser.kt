@@ -24,7 +24,8 @@ internal object AppInitDataParser {
                 rewardAdSlots = parseSlots(data.optJSONArray("rewardAdSlots")),
                 monitorLinks = parseMonitorLinks(data.optJSONObject("monitorLinks")),
                 gameCenterPage = data.optString("gameCenterPage", ""),
-                gamePlayPageTemplate = data.optString("gamePlayPageTemplate", "")
+                gamePlayPageTemplate = data.optString("gamePlayPageTemplate", ""),
+                autoReloadTime = parseAutoReloadTime(data)
             )
             Result.success(appInitData)
         } catch (t: Throwable) {
@@ -77,6 +78,15 @@ internal object AppInitDataParser {
             wm = stringList(obj?.optJSONArray("wm")),
             dm = rem
         )
+    }
+
+    private fun parseAutoReloadTime(data: JSONObject): Long? {
+        if (!data.has("autoReloadTime") || data.isNull("autoReloadTime")) return null
+        return when (val value = data.opt("autoReloadTime")) {
+            is Number -> value.toLong()
+            is String -> value.trim().toLongOrNull()
+            else -> null
+        }
     }
 
     private fun parsePrice(item: JSONObject): Double {

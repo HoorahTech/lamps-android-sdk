@@ -32,16 +32,17 @@ internal object AppInitDataLoader {
     }
 
     /**
-     * 进入游戏容器时调用。距上次成功更新超过 5 分钟才再请求；
-     * 请求在工作线程执行，不阻塞页面打开。
+     * 进入游戏容器时调用。距上次成功更新超过 autoReloadTime 秒才再请求；
+     * 字段缺失或小于 0 时使用默认间隔。请求在工作线程执行，不阻塞页面打开。
      */
     fun refreshIfStale() {
         val config = SdkConfig.current ?: return
         ThreadUtils.runOnWork {
             val last = lastSuccessElapsed.get()
             val elapsed = SystemClock.elapsedRealtime() - last
-            if (last != 0L && elapsed < REFRESH_INTERVAL_MS) {
-                SdkLog.d("skip appInitData refresh: last update ${elapsed}ms ago")
+            val intervalMs = refreshIntervalMs(config)
+            if (last != 0L && elapsed < intervalMs) {
+                SdkLog.d("skip appInitData refresh: last update ${elapsed}ms ago, interval=${intervalMs}ms")
                 return@runOnWork
             }
             applyRemote(config, updateCurrent = true, trackMetrics = false)
@@ -137,6 +138,14 @@ internal object AppInitDataLoader {
             data.channelList.all { channel ->
                 channel.channelName.isNotBlank() && channel.channelAppId.isNotBlank()
             }
+    }
+
+    private fun refreshIntervalMs(config: SdkConfig): Long {
+        val seconds = config.appInitData?.autoReloadTime
+        if (seconds == null || seconds < 0L) {
+            return REFRESH_INTERVAL_MS
+        }
+        return seconds * 1000L
     }
 
     private const val METRIC_LOAD = "appInitData.load"
