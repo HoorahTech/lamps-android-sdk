@@ -5,6 +5,7 @@ import android.app.Application
 import com.lamps.sdk.config.SdkConfig
 import com.lamps.sdk.data.init.ChannelInfoResponse
 import com.lamps.sdk.data.init.RewardSlotResponse
+import com.lamps.sdk.data.init.RewardSlotType
 import com.lamps.sdk.data.sdk.channel.RewardAdSdkLoadCallback
 import com.lamps.sdk.data.sdk.channel.RewardVideoAd
 import com.lamps.sdk.data.sdk.channel.SdkChannel
@@ -35,9 +36,16 @@ internal class TTSdkProvider : ISdkProvider {
     override fun loadReward(
         activity: Activity,
         slot: RewardSlotResponse,
+        requestId: String,
         callback: RewardAdSdkLoadCallback
     ) {
-        TTSdkManager.loadReward(activity, slot.slotId, callback)
+        TTSdkManager.loadReward(
+            activity,
+            slot.slotId,
+            serverBid = slot.type == RewardSlotType.BD,
+            requestId = requestId,
+            callback = callback
+        )
     }
 
     override fun showReward(

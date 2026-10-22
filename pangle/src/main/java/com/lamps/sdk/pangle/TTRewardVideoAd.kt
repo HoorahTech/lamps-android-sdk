@@ -13,11 +13,17 @@ import com.lamps.sdk.data.sdk.channel.RewardVideoAd
 import com.lamps.sdk.data.sdk.reward.RewardAdErrorCode
 import com.lamps.sdk.reward.RewardAdShowCallback
 import com.lamps.sdk.utils.SdkLog
+import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
 
+/**
+ * @param serverBid 穿山甲 BD 模式：先用 SDK bidding token 请求服务端竞价拿 adm，再带 adm 加载。
+ */
 internal class TTRewardVideoAd(
     private val activity: Activity,
-    private val slotId: String
+    private val slotId: String,
+    private val serverBid: Boolean,
+    private val requestId: String
 ) : RewardVideoAd() {
     private val mainHandler = Handler(Looper.getMainLooper())
     private val loadFinished = AtomicBoolean(false)
@@ -30,6 +36,10 @@ internal class TTRewardVideoAd(
             )
         }
     }
+
+    /** 服务端竞价出价，单位：分。SDK 实时价拿不到时用它参与比价。 */
+    @Volatile
+    private var serverBidPrice: Double = 0.0
 
     @Volatile
     private var rewardAd: PangleRewardVideoAd? = null
@@ -47,7 +57,7 @@ internal class TTRewardVideoAd(
         return readFen(extra, "price")
             ?: readFen(extra, "ecpm")
             ?: readFen(extra, "eCPM")
-            ?: 0.0
+            ?: serverBidPrice
     }
 
     private fun readFen(extra: Map<String, Any>, key: String): Double? {
@@ -63,12 +73,56 @@ internal class TTRewardVideoAd(
         loadCallback = callback
         showCallback = null
         rewardAd = null
+        serverBidPrice = 0.0
         loadFinished.set(false)
-        mainHandler.postDelayed(timeout, LOAD_TIMEOUT_MS)
-        val adSlot = AdSlot.Builder()
+        if (serverBid) {
+            requestServerBid()
+        } else {
+            loadRewardVideo(adm = null)
+        }
+    }
+
+    private fun requestServerBid() {
+        TTRewardServerBidder.requestBid(
+            requestId = requestId,
+            slotId = slotId
+        ) { result ->
+            if (loadFinished.get() || loadCallback == null) return@requestBid
+            result.fold(
+                onSuccess = { bidAd ->
+                    serverBidPrice = bidAd.price
+                    SdkLog.d("pangle server bid success slotId=$slotId price=${bidAd.price}")
+                    loadRewardVideo(bidAd.adm)
+                },
+                onFailure = { error ->
+                    val code = if (error is TimeoutException) {
+                        RewardAdErrorCode.SERVER_BID_TIMEOUT
+                    } else {
+                        RewardAdErrorCode.SERVER_BID_FAILED
+                    }
+                    finishLoad {
+                        loadCallback?.onLoadFailed(
+                            code,
+                            error.message ?: "Pangle server bid failed",
+                            this@TTRewardVideoAd
+                        )
+                    }
+                }
+            )
+        }
+    }
+
+    private fun buildAdSlot(adm: String?): AdSlot {
+        return AdSlot.Builder()
             .setCodeId(slotId)
             .setAdLoadType(TTAdLoadType.LOAD)
+            .apply { if (!adm.isNullOrBlank()) withBid(adm) }
             .build()
+    }
+
+    private fun loadRewardVideo(adm: String?) {
+        mainHandler.postDelayed(timeout, LOAD_TIMEOUT_MS)
+        val adSlot = buildAdSlot(adm)
         TTAdSdk.getAdManager()
             .createAdNative(activity)
             .loadRewardVideoAd(adSlot, object : TTRewardVideoAdListenerAdapter() {

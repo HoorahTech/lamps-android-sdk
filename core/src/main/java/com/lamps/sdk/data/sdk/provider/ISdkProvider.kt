@@ -26,9 +26,11 @@ interface ISdkProvider {
         callback: SdkInitCallback
     )
 
+    /** [requestId] 为本次 loadReward 的请求 ID，同一轮竞价的所有广告位共用，与上报埋点一致。 */
     fun loadReward(
         activity: Activity,
         slot: RewardSlotResponse,
+        requestId: String,
         callback: RewardAdSdkLoadCallback
     )
 

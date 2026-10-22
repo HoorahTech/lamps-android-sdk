@@ -40,6 +40,7 @@ internal class NoahSdkProvider : ISdkProvider {
     override fun loadReward(
         activity: Activity,
         slot: RewardSlotResponse,
+        requestId: String,
         callback: RewardAdSdkLoadCallback
     ) {
         NoahSdkManager.loadReward(activity, slot.slotId, callback)

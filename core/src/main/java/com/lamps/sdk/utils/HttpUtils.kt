@@ -10,7 +10,7 @@ import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLContext
 import javax.net.ssl.SSLSocketFactory
 
-internal data class HttpResponse(
+data class HttpResponse(
     val code: Int,
     val body: String
 ) {
@@ -20,7 +20,7 @@ internal data class HttpResponse(
 /**
  * 公共网络请求。path 可以是相对路径（拼到当前配置域名）或完整 http(s) 地址。
  */
-internal object HttpUtils {
+object HttpUtils {
 
     fun get(
         path: String,

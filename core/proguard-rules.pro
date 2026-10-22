@@ -31,6 +31,9 @@
 -keep class com.lamps.sdk.data.init.RewardSlotResponse { public *; }
 -keep enum com.lamps.sdk.core.LampsErrorCode { public *; }
 -keep class com.lamps.sdk.data.sdk.reward.RewardAdErrorCode { public *; }
+-keep class com.lamps.sdk.utils.HttpUtils { public *; }
+-keep class com.lamps.sdk.utils.HttpResponse { public *; }
+-keep class com.lamps.sdk.BuildConfig { public *; }
 -keep class com.lamps.sdk.utils.SdkLog { public *; }
 
 # H5 JavaScript bridge methods are looked up by their declared names.

@@ -84,6 +84,8 @@ object TTSdkManager {
     internal fun loadReward(
         activity: Activity,
         slotId: String,
+        serverBid: Boolean,
+        requestId: String,
         callback: RewardAdSdkLoadCallback
     ) {
         if (!isInitialized()) {
@@ -93,7 +95,7 @@ object TTSdkManager {
             )
             return
         }
-        TTRewardVideoAd(activity, slotId).loadAD(callback)
+        TTRewardVideoAd(activity, slotId, serverBid, requestId).loadAD(callback)
     }
 
     internal fun showReward(

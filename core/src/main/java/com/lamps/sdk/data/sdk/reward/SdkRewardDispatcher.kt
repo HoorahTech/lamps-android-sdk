@@ -171,6 +171,7 @@ internal object SdkRewardDispatcher {
                     rewardData.provider.loadReward(
                         activity,
                         rewardData.slot,
+                        rewardData.requestId,
                         loadCallback
                     )
                 }.onFailure { error ->

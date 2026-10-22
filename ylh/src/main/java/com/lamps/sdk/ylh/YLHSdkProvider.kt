@@ -36,6 +36,7 @@ internal class YLHSdkProvider : ISdkProvider {
     override fun loadReward(
         activity: Activity,
         slot: RewardSlotResponse,
+        requestId: String,
         callback: RewardAdSdkLoadCallback
     ) {
         YLHSdkManager.loadReward(activity, slot.slotId, callback)
