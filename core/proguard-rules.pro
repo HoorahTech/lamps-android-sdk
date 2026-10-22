@@ -29,7 +29,11 @@
 -keep interface com.lamps.sdk.reward.RewardAdShowCallback { public *; }
 -keep class com.lamps.sdk.data.init.ChannelInfoResponse { public *; }
 -keep class com.lamps.sdk.data.init.RewardSlotResponse { public *; }
--keep enum com.lamps.sdk.core.LampsErrorCode { public *; }
+# Channel AARs call getType()/RewardSlotType.BD by the original names.
+# Keeping RewardSlotResponse alone still lets R8 rename this enum and rewrite the getter descriptor.
+-keep enum com.lamps.sdk.data.init.RewardSlotType { public *; }
+# Kotlin object, not an enum. const values are inlined, but keep the type for non-const access.
+-keep class com.lamps.sdk.core.LampsErrorCode { public *; }
 -keep class com.lamps.sdk.data.sdk.reward.RewardAdErrorCode { public *; }
 -keep class com.lamps.sdk.utils.HttpUtils { public *; }
 -keep class com.lamps.sdk.utils.HttpResponse { public *; }
