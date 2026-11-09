@@ -108,10 +108,10 @@ internal class ThirdPartyPayAbility : LampsAbility {
         return JSONObject().put("msg", msg)
     }
 
-    private companion object {
+    internal companion object {
         const val METHOD_ORDER = "lamps.thirdPartyPay.order"
-        const val CHANNEL_ALIPAY = "alipay"
-        const val MSG_SDK_NOT_FOUND = "宿主未集成支付宝 SDK"
+        private const val CHANNEL_ALIPAY = "alipay"
+        private const val MSG_SDK_NOT_FOUND = "宿主未集成支付宝 SDK"
     }
 }
 

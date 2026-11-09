@@ -8,6 +8,9 @@ import com.lamps.sdk.utils.LampsApiHost
 import com.lamps.sdk.webview.LampsWebView
 import com.lamps.sdk.webview.bridge.LampsAbility
 import com.lamps.sdk.webview.bridge.LampsNativeCallback
+import com.lamps.sdk.webview.bridge.pay.AlipayPayClient
+import com.lamps.sdk.webview.bridge.pay.ThirdPartyPayAbility
+import org.json.JSONArray
 import org.json.JSONObject
 
 /** Supplies the host application's common runtime parameters to H5. */
@@ -57,7 +60,17 @@ internal class BridgeReadyAbility : LampsAbility {
             put("displayMode", webView.displayMode)
             put("night", if (webView.night) 1 else 0)
             put("hideTitle", if (webView.hideTitle) 1 else 0)
+            put("supportedBridges", supportedBridges(webView))
         }
+    }
+
+    private fun supportedBridges(webView: LampsWebView): JSONArray {
+        val bridges = JSONArray()
+        val classLoader = webView.context.classLoader
+        if (classLoader != null && AlipayPayClient.isAvailable(classLoader)) {
+            bridges.put(ThirdPartyPayAbility.METHOD_ORDER)
+        }
+        return bridges
     }
 
     private companion object {
