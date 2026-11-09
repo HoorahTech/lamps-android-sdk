@@ -159,6 +159,15 @@ val gameCenterConfig = GameCenterConfig.Builder()
 LampsSdk.navigateToGameCenter(this, gameCenterConfig)
 ```
 
+如从 deeplink 打开，可把 deeplink 的原始 query 一并透传给 H5；SDK 会按原编码追加到 `gameCenterPage`，不重新编码和解码。模板已有同名参数时，以 deeplink 的值为准：
+
+```kotlin
+LampsSdk.navigateToGameCenter(
+    this,
+    encodedQuery = uri.encodedQuery,
+)
+```
+
 可获取 `GameCenterView` 并添加到宿主布局。实现方式如下：
 
 内嵌在可左右滑动的 Tab / ViewPager 中时，横向滑动先滚动页面里的内容，这个方向已经滚不动之后，后续滑动才交给外层切页。
@@ -223,7 +232,17 @@ override fun onDestroyView() {
 LampsSdk.navigateToGame(this, gameId)
 ```
 
-`gameId` 为空、模板未下发或替换后不是完整 `http(s)` URL 时不会跳转。
+从 deeplink 打开时，可同时把原始 query 透传给 H5。`gameId` 仍按上述规则替换模板，不会改变原有逻辑；其余 query 会按原编码合并到最终 H5 链接后面：
+
+```kotlin
+LampsSdk.navigateToGame(
+    this,
+    gameId,
+    encodedQuery = uri.encodedQuery,
+)
+```
+
+`gameId` 为空、模板未下发或替换后不是完整 `http(s)` URL 时不会跳转。`encodedQuery` 中的 `gameId` 会被忽略，避免和模板替换重复；其余同名参数以 `encodedQuery` 的值为准，deeplink 内部重复参数以最后一个为准。参数为空时链接不变，`#fragment` 会保留。
 
 ## 初始化错误码
 

@@ -41,6 +41,9 @@ internal class GameWebViewActionBar @JvmOverloads constructor(
     private var safeInsetBottom = 0
     private val touchSlop = ViewConfiguration.get(context).scaledTouchSlop
     private val collapseRunnable = Runnable { collapse() }
+    private var firstRunGuide: GameActionBarGuide? = null
+    private var collapsePaused = false
+    private var touchActive = false
 
     init {
         orientation = HORIZONTAL
@@ -56,6 +59,7 @@ internal class GameWebViewActionBar @JvmOverloads constructor(
                 post {
                     val container = parent as? View ?: return@post
                     y = clampToVerticalSafeArea(container, y)
+                    firstRunGuide?.followAnchor()
                 }
             }
             insets
@@ -70,6 +74,21 @@ internal class GameWebViewActionBar @JvmOverloads constructor(
         onExitClick = listener
     }
 
+    internal fun pauseAutoCollapse() {
+        collapsePaused = true
+        cancelCollapse()
+    }
+
+    internal fun resumeAutoCollapse() {
+        if (!collapsePaused) return
+        collapsePaused = false
+        if (!touchActive) scheduleCollapse()
+    }
+
+    internal fun onGuideDismissed(guide: GameActionBarGuide) {
+        if (firstRunGuide === guide) firstRunGuide = null
+    }
+
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         requestApplyInsets()
@@ -78,11 +97,14 @@ internal class GameWebViewActionBar @JvmOverloads constructor(
                 placeAtTopRight()
                 isInitiallyPositioned = true
             }
-            scheduleCollapse()
+            firstRunGuide = GameActionBarGuide.tryShow(this)
+            if (firstRunGuide == null) scheduleCollapse()
         }
     }
 
     override fun onDetachedFromWindow() {
+        firstRunGuide?.dismiss(resumeCollapse = false)
+        firstRunGuide = null
         animate().cancel()
         menuPopup?.setOnDismissListener(null)
         menuPopup?.dismiss()
@@ -98,8 +120,7 @@ internal class GameWebViewActionBar @JvmOverloads constructor(
 
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
-                cancelCollapse()
-                animate().cancel()
+                noteTouchStarted()
                 isDragging = false
                 captureTouchStart(event)
             }
@@ -114,7 +135,10 @@ internal class GameWebViewActionBar @JvmOverloads constructor(
                 }
             }
 
-            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> scheduleCollapse()
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                noteTouchFinished()
+                scheduleCollapse()
+            }
         }
         return false
     }
@@ -122,19 +146,19 @@ internal class GameWebViewActionBar @JvmOverloads constructor(
     override fun onTouchEvent(event: MotionEvent): Boolean {
         if (!isExpanded) {
             when (event.actionMasked) {
-                MotionEvent.ACTION_DOWN -> {
-                    cancelCollapse()
-                    animate().cancel()
+                MotionEvent.ACTION_DOWN -> noteTouchStarted()
+                MotionEvent.ACTION_UP -> {
+                    noteTouchFinished()
+                    performClick()
                 }
-                MotionEvent.ACTION_UP -> performClick()
+                MotionEvent.ACTION_CANCEL -> noteTouchFinished()
             }
             return true
         }
 
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
-                cancelCollapse()
-                animate().cancel()
+                noteTouchStarted()
                 isDragging = false
                 captureTouchStart(event)
             }
@@ -153,6 +177,7 @@ internal class GameWebViewActionBar @JvmOverloads constructor(
             }
 
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                noteTouchFinished()
                 val shouldSnapToEdge = isDragging
                 parent?.requestDisallowInterceptTouchEvent(false)
                 isDragging = false
@@ -215,7 +240,7 @@ internal class GameWebViewActionBar @JvmOverloads constructor(
     }
 
     private fun collapse() {
-        if (!isExpanded || menuPopup?.isShowing == true || !isAttachedToWindow) {
+        if (!isExpanded || collapsePaused || menuPopup?.isShowing == true || !isAttachedToWindow) {
             return
         }
         val container = parent as? View ?: return
@@ -410,8 +435,20 @@ internal class GameWebViewActionBar @JvmOverloads constructor(
     }
 
     private fun scheduleCollapse() {
+        if (collapsePaused) return
         removeCallbacks(collapseRunnable)
         postDelayed(collapseRunnable, COLLAPSE_DELAY_MS)
+    }
+
+    private fun noteTouchStarted() {
+        touchActive = true
+        firstRunGuide?.dismiss(resumeCollapse = true)
+        cancelCollapse()
+        animate().cancel()
+    }
+
+    private fun noteTouchFinished() {
+        touchActive = false
     }
 
     private fun cancelCollapse() {

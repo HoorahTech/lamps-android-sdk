@@ -73,18 +73,25 @@ object LampsSdk {
     @JvmOverloads
     fun navigateToGameCenter(
         context: Context,
-        config: GameCenterConfig = GameCenterConfig.Builder().build()
+        config: GameCenterConfig = GameCenterConfig.Builder().build(),
+        encodedQuery: String? = null,
     ) {
         SdkRuntime.navigateToGameCenter(
             context,
             config.withDisplayMode(GameCenterConfig.DisplayMode.PAGE)
-                .toPageOptions()
+                .toPageOptions(),
+            encodedQuery,
         )
     }
 
     @JvmStatic
-    fun navigateToGame(context: Context, gameId: String) {
-        SdkRuntime.navigateToGame(context, gameId)
+    @JvmOverloads
+    fun navigateToGame(
+        context: Context,
+        gameId: String,
+        encodedQuery: String? = null,
+    ) {
+        SdkRuntime.navigateToGame(context, gameId, encodedQuery)
     }
 
     @JvmStatic

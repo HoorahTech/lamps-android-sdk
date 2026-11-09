@@ -230,23 +230,31 @@ object SdkRuntime {
     }
 
 
+    @JvmOverloads
     fun navigateToGameCenter(
         context: Context,
         options: GameCenterPageOptions = GameCenterPageOptions(),
+        encodedQuery: String? = null,
     ) {
         val url = SdkConfig.current?.appInitData?.gameCenterPage
             ?.takeIf { it.isNotBlank() }
             ?: return
+        val targetUrl = appendEncodedQuery(url, encodedQuery)
         context.startActivity(
             CommonWebViewActivity.buildIntent(
                 context = context,
-                url = url,
+                url = targetUrl,
                 pageOptions = options,
             )
         )
     }
 
-    fun navigateToGame(context: Context, gameId: String) {
+    @JvmOverloads
+    fun navigateToGame(
+        context: Context,
+        gameId: String,
+        encodedQuery: String? = null,
+    ) {
         val template = SdkConfig.current?.appInitData?.gamePlayPageTemplate
             ?.takeIf { it.isNotBlank() }
         if (template == null) {
@@ -263,10 +271,11 @@ object SdkRuntime {
             SdkLog.e("navigateToGame failed: invalid url=$url")
             return
         }
+        val targetUrl = appendEncodedQuery(url, encodedQuery, GAME_ID_PARAM)
         context.startActivity(
             GameWebViewActivity.buildIntent(
                 context = context,
-                url = url,
+                url = targetUrl,
             )
         )
     }
@@ -276,6 +285,35 @@ object SdkRuntime {
             ?.takeIf { it.isNotBlank() }
             ?: return null
         return url
+    }
+
+    private fun appendEncodedQuery(
+        url: String,
+        encodedQuery: String?,
+        vararg excludedKeys: String,
+    ): String {
+        val appendedQuery = encodedQuery?.removePrefix("?")?.takeIf { it.isNotBlank() }
+            ?: return url
+
+        val uri = Uri.parse(url)
+        if (!uri.isHierarchical) return url
+
+        val baseQuery = uri.encodedQuery.orEmpty()
+        val queryKey = { parameter: String -> Uri.decode(parameter.substringBefore('=')) }
+        val mergedQuery = (
+            baseQuery.split('&').filter { it.isNotEmpty() } +
+                appendedQuery.split('&')
+                    .filter { it.isNotEmpty() && queryKey(it) !in excludedKeys }
+            )
+            .associateBy(queryKey)
+            .values
+            .joinToString("&")
+
+        if (mergedQuery == baseQuery) return url
+        return uri.buildUpon()
+            .encodedQuery(mergedQuery)
+            .build()
+            .toString()
     }
 
     private fun isHttpUrl(url: String): Boolean {
@@ -288,4 +326,5 @@ object SdkRuntime {
     private const val METRIC_TOTAL = "lamps.total"
     private const val METRIC_OAID = "lamps.oaid"
     private const val GAME_ID_PLACEHOLDER = "__GAMEID__"
+    private const val GAME_ID_PARAM = "gameId"
 }
