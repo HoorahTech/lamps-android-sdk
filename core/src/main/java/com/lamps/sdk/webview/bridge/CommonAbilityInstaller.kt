@@ -4,6 +4,7 @@ import com.lamps.sdk.webview.bridge.back.BackAbility
 import com.lamps.sdk.webview.bridge.bridgeReady.BridgeReadyAbility
 import com.lamps.sdk.webview.bridge.game.GamePageAbility
 import com.lamps.sdk.webview.bridge.network.NetworkAbility
+import com.lamps.sdk.webview.bridge.pay.ThirdPartyPayAbility
 import com.lamps.sdk.webview.bridge.statusbar.StatusBarAbility
 import com.lamps.sdk.webview.bridge.track.TrackAbility
 
@@ -20,7 +21,8 @@ class CommonAbilityInstaller : LampsAbilityInstaller() {
             GamePageAbility(),
             BridgeReadyAbility(),
             StatusBarAbility(),
-            BackAbility()
+            BackAbility(),
+            ThirdPartyPayAbility()
         )
     }
 }
