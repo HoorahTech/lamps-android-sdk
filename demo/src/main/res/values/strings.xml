@@ -12,4 +12,9 @@
     <string name="game_id_hint">请输入 gameId</string>
     <string name="navigate_game">跳转游戏</string>
     <string name="get_game_center_fragment">TabLayout 演示</string>
+    <string name="user_id_hint">用户 ID</string>
+    <string name="nickname_hint">昵称</string>
+    <string name="avatar_hint">头像 URL</string>
+    <string name="update_user">同步登录用户</string>
+    <string name="clear_user">退出登录</string>
 </resources>

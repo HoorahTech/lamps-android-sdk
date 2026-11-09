@@ -9,6 +9,7 @@ import com.lamps.sdk.core.InitCallback
 import com.lamps.sdk.core.RewardMonitorCallback
 import com.lamps.sdk.core.SdkRuntime
 import com.lamps.sdk.core.TrackCallback
+import com.lamps.sdk.utils.SdkLog
 import com.lamps.sdk.view.GameCenterView
 
 object LampsSdk {
@@ -61,6 +62,27 @@ object LampsSdk {
     @JvmStatic
     fun unregisterRewardMonitorCallback(callback: RewardMonitorCallback) {
         SdkRuntime.unregisterRewardMonitorCallback(callback)
+    }
+
+    /**
+     * 同步当前登录用户。整份覆盖，可在 init 前后调用，只保存在进程内存。
+     * userId 去掉空白后为空时忽略本次调用，并保留上一份快照。
+     *
+     * @return 是否写入成功
+     */
+    @JvmStatic
+    fun updateUser(user: LampsUser?): Boolean {
+        if (user == null) {
+            SdkLog.e("updateUser ignored: user is null")
+            return false
+        }
+        return SdkRuntime.updateUser(user.userId, user.nickname, user.avatar)
+    }
+
+    /** 清除当前登录用户。退出登录时调用。 */
+    @JvmStatic
+    fun clearUser() {
+        SdkRuntime.clearUser()
     }
 
     @JvmStatic

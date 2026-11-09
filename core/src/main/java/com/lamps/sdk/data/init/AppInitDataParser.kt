@@ -25,7 +25,8 @@ internal object AppInitDataParser {
                 monitorLinks = parseMonitorLinks(data.optJSONObject("monitorLinks")),
                 gameCenterPage = data.optString("gameCenterPage", ""),
                 gamePlayPageTemplate = data.optString("gamePlayPageTemplate", ""),
-                autoReloadTime = parseAutoReloadTime(data)
+                autoReloadTime = parseAutoReloadTime(data),
+                cid = data.optString("cid").trim()
             )
             Result.success(appInitData)
         } catch (t: Throwable) {

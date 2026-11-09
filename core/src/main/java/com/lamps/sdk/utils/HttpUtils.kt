@@ -57,7 +57,9 @@ object HttpUtils {
                 connectTimeout = connectTimeoutMs
                 readTimeout = readTimeoutMs
                 doInput = true
-                headers.forEach { (key, value) -> setRequestProperty(key, value) }
+                withUidHeader(url.toString(), withCidHeader(headers)).forEach { (key, value) ->
+                    setRequestProperty(key, value)
+                }
                 if (body != null && method != "GET") {
                     doOutput = true
                     outputStream.use { it.write(body.toByteArray(Charsets.UTF_8)) }
@@ -101,6 +103,46 @@ object HttpUtils {
         return base + separator + queryString
     }
 
+    /**
+     * 已拿到服务端下发的 cid 时补上 L-CID。还没有 cid 时不带空头。
+     */
+    internal fun applyCidHeader(connection: HttpURLConnection) {
+        val cid = currentCid() ?: return
+        connection.setRequestProperty(HEADER_CID, cid)
+    }
+
+    private fun withCidHeader(headers: Map<String, String>): Map<String, String> {
+        val cid = currentCid() ?: return headers
+        return LinkedHashMap(headers).apply { put(HEADER_CID, cid) }
+    }
+
+    private fun currentCid(): String? {
+        return SdkConfig.current?.appInitData?.cid?.trim()?.takeIf { it.isNotEmpty() }
+    }
+
+    /**
+     * 已有用户 ID，且请求域名是 lampsgame 或线上 Lamps 接口时补上 L-UID。
+     */
+    internal fun applyUidHeader(connection: HttpURLConnection, url: String) {
+        val uid = uidFor(url) ?: return
+        connection.setRequestProperty(HEADER_UID, uid)
+    }
+
+    private fun withUidHeader(url: String, headers: Map<String, String>): Map<String, String> {
+        val uid = uidFor(url) ?: return headers
+        return LinkedHashMap(headers).apply { put(HEADER_UID, uid) }
+    }
+
+    private fun uidFor(url: String): String? {
+        if (!isUidHost(url)) return null
+        return SdkConfig.currentUser()?.userId?.trim()?.takeIf { it.isNotEmpty() }
+    }
+
+    private fun isUidHost(url: String): Boolean {
+        val host = runCatching { URL(url).host }.getOrNull().orEmpty()
+        return UID_HOSTS.any { it.equals(host, ignoreCase = true) }
+    }
+
     fun jsonHeaders(): Map<String, String> {
         return mapOf(
             "Accept" to "application/json",
@@ -113,6 +155,12 @@ object HttpUtils {
         return stream.bufferedReader().use(BufferedReader::readText)
     }
 
+    private const val HEADER_CID = "L-CID"
+    private const val HEADER_UID = "L-UID"
+    private val UID_HOSTS = setOf(
+        "www.lampsgame.com",
+        "lamps-api.hoorahgo.com",
+    )
     private const val CONNECT_TIMEOUT_MS = 10_000
     private const val READ_TIMEOUT_MS = 10_000
 

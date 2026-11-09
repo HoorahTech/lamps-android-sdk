@@ -3,6 +3,8 @@ package com.lamps.sdk.config
 import android.content.Context
 import com.lamps.sdk.core.CoreNightModeProvider
 import com.lamps.sdk.core.CoreOaidProvider
+import com.lamps.sdk.core.SdkUser
+import com.lamps.sdk.core.SdkUserStore
 import com.lamps.sdk.data.init.AppInitResponse
 
 /**
@@ -46,6 +48,8 @@ class SdkConfig(
         @JvmStatic
         val current: SdkConfig?
             get() = instance
+
+        internal fun currentUser(): SdkUser? = SdkUserStore.current()
 
         internal fun init(context: Context, config: SdkConfig) {
             config.applicationContext = context.applicationContext

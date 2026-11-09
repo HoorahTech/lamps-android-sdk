@@ -29,6 +29,10 @@ WebView 加载完成后，H5 向 Native 请求宿主公共运行参数。Native 
     "network": "wifi",
     "androidId": "...",
     "oaid": "",
+    "cid": "",
+    "uid": "",
+    "nickname": "",
+    "avatar": "",
     "appVer": "7.0.0",
     "osVer": "14",
     "env": "prd",
@@ -60,6 +64,10 @@ WebView 加载完成后，H5 向 Native 请求宿主公共运行参数。Native 
 | `network` | string | 当前网络类型：`wifi`、`2g`、`3g`、`4g`、`5g` 或 `unknown` |
 | `androidId` | string | Android ID；获取失败时使用并持久化 UUID |
 | `oaid` | string | OAID；不可用时为空字符串 |
+| `cid` | string | 客户端 ID，配置接口下发，同时用于请求头 `L-CID`；未下发时为空字符串 |
+| `uid` | string | 媒体传入的用户 ID，对应 `LampsSdk.updateUser`。未传入或已 `clearUser` 时为空字符串。非空时，请求 `www.lampsgame.com`、`lamps-api.hoorahgo.com` 会带请求头 `L-UID` |
+| `nickname` | string | 媒体传入的用户昵称；未传入或已清除时为空字符串 |
+| `avatar` | string | 媒体传入的用户头像地址；未传入或已清除时为空字符串 |
 | `appVer` | string | 宿主应用版本号 |
 | `osVer` | string | Android 系统版本号，如 `"14"` |
 | `env` | string | SDK 环境：`dev`（测试）、`prd`（线上） |

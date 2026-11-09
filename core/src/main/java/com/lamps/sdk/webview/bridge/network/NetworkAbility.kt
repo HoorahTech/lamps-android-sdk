@@ -131,6 +131,8 @@ internal class NetworkAbility : LampsAbility {
                 if (!cookies.isNullOrEmpty()) {
                     setRequestProperty("Cookie", cookies)
                 }
+                HttpUtils.applyCidHeader(this)
+                HttpUtils.applyUidHeader(this, targetUrl)
             }
 
             // Write body for POST

@@ -15,7 +15,10 @@ SDK 使用固定路径 `REPORT_PATH=/api/v1/event/report`，域名根据 SDK 当
 
 ```http
 Content-Type: application/json
+L-CID: <配置接口下发的 cid>
 ```
+
+`L-CID` 在已经拿到配置接口下发的 `cid` 后才会带上。首次配置请求还没有 `cid`，不发送空值。
 
 连接超时和读取超时均为 10 秒。
 

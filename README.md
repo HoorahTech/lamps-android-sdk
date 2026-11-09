@@ -100,6 +100,26 @@ LampsSdk.startAsync(object : InitCallback {
 
 `startAsync` 完成前不要使用LampsSdk能力。可使用 `LampsSdk.isSdkReady()` 查询当前状态，使用 `LampsSdk.getSdkVersion()` 获取 SDK 版本。
 
+## 登录用户
+
+媒体在登录、资料变更或切换账号时，把当前用户整份交给 SDK。SDK 只保存在进程内存里，不写入本地，也不传给 H5、埋点和广告。`init` 前后都可以调用，不依赖 `startAsync` 成功。
+
+`userId` 去掉空白后为空时，这次调用会被忽略，上一份用户仍保留。昵称和头像可以为空。退出登录调用 `clearUser`。
+
+```kotlin
+import com.lamps.sdk.LampsSdk
+import com.lamps.sdk.LampsUser
+
+val user = LampsUser.Builder()
+    .setUserId("10086")
+    .setNickname("虎扑用户")
+    .setAvatar("https://example.com/a.png")
+    .build()
+
+val accepted = LampsSdk.updateUser(user)
+LampsSdk.clearUser()
+```
+
 ## 埋点回调
 
 SDK 自己的上报不变。接入方可以用 `registerTrackCallback` 拿到每一次提交的埋点，转发到自己的监控，方便和 SDK 上报核对。

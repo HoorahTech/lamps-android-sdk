@@ -121,6 +121,14 @@ object SdkRuntime {
 
     fun isReady(): Boolean = runtime.get() == InitState.Ready
 
+    fun updateUser(userId: String, nickname: String, avatar: String): Boolean {
+        return SdkUserStore.update(userId, nickname, avatar)
+    }
+
+    fun clearUser() {
+        SdkUserStore.clear()
+    }
+
     fun loadReward(
         activity: Activity,
         callback: RewardAdLoadCallback,

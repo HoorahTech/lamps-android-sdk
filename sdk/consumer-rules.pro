@@ -1,5 +1,7 @@
 # Stable host-facing API.
 -keep class com.lamps.sdk.LampsSdk { public *; }
+-keep class com.lamps.sdk.LampsUser { public *; }
+-keep class com.lamps.sdk.LampsUser$Builder { public *; }
 -keep class com.lamps.sdk.config.LampsConfig { public *; }
 -keep class com.lamps.sdk.config.LampsConfig$Builder { public *; }
 -keep class com.lamps.sdk.config.GameCenterConfig { public *; }

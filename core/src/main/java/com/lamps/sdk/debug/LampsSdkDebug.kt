@@ -74,6 +74,10 @@ object LampsSdkDebug {
                 line("configInitialized", config != null)
                 line("sdkReady", SdkRuntime.isReady())
                 line("appInitDataLoaded", initData != null)
+                val user = SdkConfig.currentUser()
+                line("userId", user?.userId.orEmpty())
+                line("nickname", user?.nickname.orEmpty())
+                line("avatar", if (user?.avatar.isNullOrEmpty()) "无" else "有")
                 SdkProviderRegistry.all().forEach { provider ->
                     line("${provider.name}Initialized", provider.isInitialized())
                 }
@@ -126,6 +130,7 @@ object LampsSdkDebug {
                 }
             },
             section("服务端下发配置") {
+                line("cid", initData?.cid.orEmpty())
                 line("clientIp", initData?.clientIp.orEmpty())
                 line("gameCenterPage", initData?.gameCenterPage.orEmpty())
                 line("gamePlayPageTemplate", initData?.gamePlayPageTemplate.orEmpty())

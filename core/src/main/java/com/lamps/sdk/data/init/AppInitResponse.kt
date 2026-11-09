@@ -8,10 +8,11 @@ internal class AppInitResponse(
     val monitorLinks: MonitorLinksResponse,
     val gameCenterPage: String = "",
     val gamePlayPageTemplate: String = "",
-    val autoReloadTime: Long? = null
+    val autoReloadTime: Long? = null,
+    val cid: String = ""
 ) {
     override fun toString(): String {
-        return "AppInitResponse(clientIp=$clientIp, " +
+        return "AppInitResponse(cid=$cid, clientIp=$clientIp, " +
             "channelList=$channelList, rewardAdSlots=$rewardAdSlots, " +
             "monitorLinks=$monitorLinks, gameCenterPage=$gameCenterPage, " +
             "gamePlayPageTemplate=$gamePlayPageTemplate, autoReloadTime=$autoReloadTime)"
