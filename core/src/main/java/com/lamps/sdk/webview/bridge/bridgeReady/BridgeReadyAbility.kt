@@ -8,7 +8,8 @@ import com.lamps.sdk.utils.LampsApiHost
 import com.lamps.sdk.webview.LampsWebView
 import com.lamps.sdk.webview.bridge.LampsAbility
 import com.lamps.sdk.webview.bridge.LampsNativeCallback
-import com.lamps.sdk.webview.bridge.pay.AlipayPayClient
+import com.lamps.sdk.pay.PayChannel
+import com.lamps.sdk.pay.PayChannelRegistry
 import com.lamps.sdk.webview.bridge.pay.ThirdPartyPayAbility
 import org.json.JSONArray
 import org.json.JSONObject
@@ -60,14 +61,13 @@ internal class BridgeReadyAbility : LampsAbility {
             put("displayMode", webView.displayMode)
             put("night", if (webView.night) 1 else 0)
             put("hideTitle", if (webView.hideTitle) 1 else 0)
-            put("supportedBridges", supportedBridges(webView))
+            put("supportedBridges", supportedBridges())
         }
     }
 
-    private fun supportedBridges(webView: LampsWebView): JSONArray {
+    private fun supportedBridges(): JSONArray {
         val bridges = JSONArray()
-        val classLoader = webView.context.classLoader
-        if (classLoader != null && AlipayPayClient.isAvailable(classLoader)) {
+        if (PayChannelRegistry.contains(PayChannel.ALIPAY)) {
             bridges.put(ThirdPartyPayAbility.METHOD_ORDER)
         }
         return bridges

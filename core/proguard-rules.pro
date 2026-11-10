@@ -40,6 +40,10 @@
 -keep class com.lamps.sdk.BuildConfig { public *; }
 -keep class com.lamps.sdk.utils.SdkLog { public *; }
 
+# Optional pay modules implement this contract after core is obfuscated.
+-keep interface com.lamps.sdk.pay.PayChannel { *; }
+-keep class com.lamps.sdk.pay.PayProvider { *; }
+
 # H5 JavaScript bridge methods are looked up by their declared names.
 -keepclassmembers class * {
     @android.webkit.JavascriptInterface <methods>;

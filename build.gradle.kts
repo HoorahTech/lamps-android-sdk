@@ -137,13 +137,13 @@ subprojects {
 }
 
 val releaseLibraryModules = listOf(
-    "core", "sdk", "pangle", "ylh", "noah", "sdk-tools"
+    "core", "sdk", "pangle", "ylh", "noah", "alipay", "sdk-tools"
 )
 val excludedFromPublishAllModules = setOf(
     "pangle-ads-sdk-pro", "pangle-ads-sdk-tools", "noah-vendor"
 )
 val vendorModules = excludedFromPublishAllModules.toList()
-val deliverableLibraryModules = listOf("core", "sdk", "pangle", "ylh", "noah", "sdk-tools")
+val deliverableLibraryModules = listOf("core", "sdk", "pangle", "ylh", "noah", "alipay", "sdk-tools")
 val releaseVersion = rootProject.property("LAMPS_VERSION").toString()
 val sdkLibDir = rootProject.layout.projectDirectory.dir("sdk_lib").asFile
 

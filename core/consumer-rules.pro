@@ -18,6 +18,10 @@
 -keep class com.lamps.sdk.debug.LampsSdkDebugItem { public *; }
 -keep class com.lamps.sdk.debug.LampsSdkDebugSection { public *; }
 
+# Optional pay modules implement this contract. Keep it stable when the host app shrinks.
+-keep interface com.lamps.sdk.pay.PayChannel { *; }
+-keep class com.lamps.sdk.pay.PayProvider { *; }
+
 # H5 JavaScript bridge methods are looked up by their declared names.
 -keepclassmembers class * {
     @android.webkit.JavascriptInterface <methods>;

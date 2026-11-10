@@ -80,7 +80,7 @@ WebView 加载完成后，H5 向 Native 请求宿主公共运行参数。Native 
 | `displayMode` | string | 页面展示模式。游戏中心由 SDK 按打开方式写入 `GameCenterConfig`，见下表 |
 | `night` | number | 日夜间。`1` 夜间，`0` 日间。优先 `GameCenterConfig.setNightMode`；未设则每次读 `LampsConfig.setNightModeProvider`；都没有则为 `0` |
 | `hideTitle` | number | 是否隐藏标题。`1` 隐藏，`0` 不隐藏。来自 `GameCenterConfig.setHideTitle`，未设则为 `0`。打开时确定，运行时更新不生效 |
-| `supportedBridges` | string[] | 当前客户端可用的 Bridge 方法名列表。仅当宿主已集成支付宝 SDK（`com.alipay.sdk.app.PayTask` 可加载）时包含 `lamps.thirdPartyPay.order`，否则为空数组。H5 可据此判断对应 Bridge 是否可调用 |
+| `supportedBridges` | string[] | 当前客户端可用的 Bridge 方法名列表。仅当宿主依赖 `alipay` 模块时包含 `lamps.thirdPartyPay.order`，否则为空数组。H5 可据此判断对应 Bridge 是否可调用 |
 
 ### `displayMode` 取值
 

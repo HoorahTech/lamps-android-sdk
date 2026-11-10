@@ -66,11 +66,13 @@ dependencies {
         implementation(project(":pangle"))
         implementation(project(":ylh"))
         implementation(project(":noah"))
+        implementation(project(":alipay"))
         debugImplementation(project(":sdk-tools"))
     } else {
         implementation("io.github.hoorahtech:pangle:$lampsVersion")
         implementation("io.github.hoorahtech:ylh:$lampsVersion")
         implementation("io.github.hoorahtech:noah:$lampsVersion")
+        implementation("io.github.hoorahtech:alipay:$lampsVersion")
         implementation("io.github.hoorahtech:sdk:$lampsVersion")
         debugImplementation("io.github.hoorahtech:sdk-tools:$lampsVersion")
     }

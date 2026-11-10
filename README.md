@@ -31,6 +31,7 @@ dependencies {
     implementation("io.github.hoorahtech:pangle:<version>") // 可选
     implementation("io.github.hoorahtech:ylh:<version>")    // 可选
     implementation("io.github.hoorahtech:noah:<version>")   // 可选，已内置 Noah SDK
+    implementation("io.github.hoorahtech:alipay:<version>") // 可选，支付宝。POM 会传递官方支付宝 SDK
     debugImplementation("io.github.hoorahtech:sdk-tools:<version>") // 仅调试
 }
 ```

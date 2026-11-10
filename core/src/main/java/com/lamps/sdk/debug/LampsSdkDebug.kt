@@ -7,6 +7,7 @@ import com.lamps.sdk.core.SdkInitMetrics
 import com.lamps.sdk.core.SdkRuntime
 import com.lamps.sdk.data.sdk.init.SdkInitDispatcher
 import com.lamps.sdk.data.sdk.provider.SdkProviderRegistry
+import com.lamps.sdk.pay.PayChannelRegistry
 import com.lamps.sdk.data.sdk.reward.SdkRewardDispatcher
 import com.lamps.sdk.data.monitor.MonitorReportRecorder
 import com.lamps.sdk.data.monitor.MonitorUtil
@@ -81,6 +82,10 @@ object LampsSdkDebug {
                 SdkProviderRegistry.all().forEach { provider ->
                     line("${provider.name}Initialized", provider.isInitialized())
                 }
+                line(
+                    "payChannels",
+                    PayChannelRegistry.all().joinToString(",") { it.channel }.ifEmpty { "无" }
+                )
             },
             section("SDK初始化入参") {
                 line("appId", config?.appId.orEmpty())

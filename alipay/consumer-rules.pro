@@ -1,0 +1,3 @@
+-keep class com.lamps.sdk.alipay.AlipayProvider { *; }
+-keep class com.lamps.sdk.alipay.AlipayPayChannel { *; }
+-keep interface com.lamps.sdk.pay.PayChannel { *; }
