@@ -19,7 +19,7 @@ internal class GameActionBarGuide private constructor(
     fun followAnchor() {
         val width = bubble.width.takeIf { it > 0 } ?: bubble.measuredWidth
         if (width == 0) return
-        val gap = dp(6)
+        val gap = dp(8)
         val edge = dp(8).toFloat()
         bubble.x = (bar.x + bar.width - width).coerceAtLeast(edge)
         bubble.y = bar.y + bar.height + gap
@@ -46,6 +46,7 @@ internal class GameActionBarGuide private constructor(
         fun tryShow(bar: GameWebViewActionBar): GameActionBarGuide? {
             if (isShown(bar.context)) return null
             val parent = bar.parent as? ViewGroup ?: return null
+            parent.clipChildren = false
             val bubble = GameActionBarGuideView(bar.context)
             parent.addView(
                 bubble,
