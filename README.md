@@ -180,7 +180,7 @@ val gameCenterConfig = GameCenterConfig.Builder()
 LampsSdk.navigateToGameCenter(this, gameCenterConfig)
 ```
 
-如从 deeplink 打开，可把 deeplink 的原始 query 一并透传给 H5；SDK 会按原编码追加到 `gameCenterPage`，不重新编码和解码。模板已有同名参数时，以 deeplink 的值为准：
+如从 deeplink 打开，可把 deeplink 的原始 query 一并透传给 H5；SDK 会按原编码追加到 `gameCenterPage`，不重新编码和解码。模板是 hash 路由（`#/path` 或 `#/path?a=1`）时，参数合并进 `#` 后面的 query；普通链接仍追加在 `#` 前面。模板已有同名参数时，以 deeplink 的值为准：
 
 ```kotlin
 LampsSdk.navigateToGameCenter(
@@ -253,7 +253,7 @@ override fun onDestroyView() {
 LampsSdk.navigateToGame(this, gameId)
 ```
 
-从 deeplink 打开时，可同时把原始 query 透传给 H5。`gameId` 仍按上述规则替换模板，不会改变原有逻辑；其余 query 会按原编码合并到最终 H5 链接后面：
+从 deeplink 打开时，可同时把原始 query 透传给 H5。`gameId` 仍按上述规则替换模板，不会改变原有逻辑；其余 query 按原编码合并。模板形如 `index.html#/play?gameId=802&inClient=Y&v=9` 时，追加结果是 `#/play?gameId=802&inClient=Y&v=9&utm_source=1`，不会把新参数写到 `#` 前面：
 
 ```kotlin
 LampsSdk.navigateToGame(
@@ -263,7 +263,7 @@ LampsSdk.navigateToGame(
 )
 ```
 
-`gameId` 为空、模板未下发或替换后不是完整 `http(s)` URL 时不会跳转。`encodedQuery` 中的 `gameId` 会被忽略，避免和模板替换重复；其余同名参数以 `encodedQuery` 的值为准，deeplink 内部重复参数以最后一个为准。参数为空时链接不变，`#fragment` 会保留。
+`gameId` 为空、模板未下发或替换后不是完整 `http(s)` URL 时不会跳转。`encodedQuery` 中的 `gameId` 会被忽略，避免和模板替换重复；其余同名参数以 `encodedQuery` 的值为准，deeplink 内部重复参数以最后一个为准。参数为空时链接不变。普通锚点 `#fragment` 仍留在末尾，query 写在它前面。
 
 ## 初始化错误码
 

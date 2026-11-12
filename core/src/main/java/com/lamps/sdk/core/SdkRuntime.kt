@@ -306,9 +306,55 @@ object SdkRuntime {
         val uri = Uri.parse(url)
         if (!uri.isHierarchical) return url
 
+        val excluded = excludedKeys.toSet()
+        val hashIndex = url.indexOf('#')
+        if (hashIndex >= 0) {
+            val fragment = url.substring(hashIndex + 1)
+            if (isHashRoute(fragment)) {
+                return appendQueryToHashRoute(url, hashIndex, fragment, appendedQuery, excluded)
+            }
+        }
+
         val baseQuery = uri.encodedQuery.orEmpty()
+        val mergedQuery = mergeEncodedQuery(baseQuery, appendedQuery, excluded)
+        if (mergedQuery == baseQuery) return url
+        return uri.buildUpon()
+            .encodedQuery(mergedQuery)
+            .build()
+            .toString()
+    }
+
+    /**
+     * Hash 路由的业务参数在 `#` 后面，例如 `#/play?gameId=802`。
+     * 追加 query 必须进这段，写到 `#` 前面 H5 读不到。
+     */
+    private fun isHashRoute(fragment: String): Boolean {
+        return fragment.startsWith("/") || fragment.startsWith("?") || fragment.contains('?')
+    }
+
+    private fun appendQueryToHashRoute(
+        url: String,
+        hashIndex: Int,
+        fragment: String,
+        appendedQuery: String,
+        excludedKeys: Set<String>,
+    ): String {
+        val queryIndex = fragment.indexOf('?')
+        val fragmentPath = if (queryIndex >= 0) fragment.substring(0, queryIndex) else fragment
+        val fragmentQuery = if (queryIndex >= 0) fragment.substring(queryIndex + 1) else ""
+        val mergedQuery = mergeEncodedQuery(fragmentQuery, appendedQuery, excludedKeys)
+        if (mergedQuery == fragmentQuery) return url
+        val mergedFragment = if (mergedQuery.isEmpty()) fragmentPath else "$fragmentPath?$mergedQuery"
+        return url.substring(0, hashIndex + 1) + mergedFragment
+    }
+
+    private fun mergeEncodedQuery(
+        baseQuery: String,
+        appendedQuery: String,
+        excludedKeys: Set<String>,
+    ): String {
         val queryKey = { parameter: String -> Uri.decode(parameter.substringBefore('=')) }
-        val mergedQuery = (
+        return (
             baseQuery.split('&').filter { it.isNotEmpty() } +
                 appendedQuery.split('&')
                     .filter { it.isNotEmpty() && queryKey(it) !in excludedKeys }
@@ -316,12 +362,6 @@ object SdkRuntime {
             .associateBy(queryKey)
             .values
             .joinToString("&")
-
-        if (mergedQuery == baseQuery) return url
-        return uri.buildUpon()
-            .encodedQuery(mergedQuery)
-            .build()
-            .toString()
     }
 
     private fun isHttpUrl(url: String): Boolean {
