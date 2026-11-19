@@ -134,6 +134,12 @@ internal object BehaviorTracker {
     ) {
         val payload = data.toString()
         SdkLog.d("behavior $event: $payload")
+        BehaviorEventRecorder.record(
+            event = event.name,
+            pageType = pageType.name,
+            data = payload,
+            trackCustomData = trackCustomData,
+        )
         listeners.forEach { listener ->
             runCatching {
                 listener.callback.onBehavior(

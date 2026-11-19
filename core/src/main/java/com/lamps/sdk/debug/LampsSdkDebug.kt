@@ -9,10 +9,11 @@ import com.lamps.sdk.data.sdk.init.SdkInitDispatcher
 import com.lamps.sdk.data.sdk.provider.SdkProviderRegistry
 import com.lamps.sdk.pay.PayChannelRegistry
 import com.lamps.sdk.data.sdk.reward.SdkRewardDispatcher
+import com.lamps.sdk.data.behavior.BehaviorEventRecorder
 import com.lamps.sdk.data.monitor.MonitorReportRecorder
-import com.lamps.sdk.data.monitor.MonitorUtil
 import com.lamps.sdk.utils.DeviceUtils
 import com.lamps.sdk.utils.LampsApiHost
+import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -204,7 +205,8 @@ object LampsSdkDebug {
                     }
                 }
             },
-            monitorSection()
+            monitorSection(),
+            behaviorSection(),
         )
     }
 
@@ -241,6 +243,46 @@ object LampsSdkDebug {
                 )
             }
         )
+    }
+
+    private fun behaviorSection(): LampsSdkDebugSection {
+        val records = BehaviorEventRecorder.snapshots()
+        if (records.isEmpty()) {
+            return LampsSdkDebugSection(
+                title = "行为回调",
+                body = "暂无行为回调",
+                expandedByDefault = false
+            )
+        }
+        return LampsSdkDebugSection(
+            title = "行为回调",
+            body = "",
+            expandedByDefault = false,
+            items = records.map { record ->
+                LampsSdkDebugItem(
+                    id = "behavior-${record.id}",
+                    title = "${record.event} ${record.pageType}  ${formatTime(record.timeMillis)}",
+                    body = buildString {
+                        line("event", record.event)
+                        line("pageType", record.pageType)
+                        appendLine("data:")
+                        appendLine(formatJson(record.data))
+                        if (record.trackCustomData.isEmpty()) {
+                            line("trackCustomData", "{}")
+                        } else {
+                            appendLine("trackCustomData:")
+                            record.trackCustomData.forEach { (key, value) ->
+                                line("  $key", value)
+                            }
+                        }
+                    }.trimEnd()
+                )
+            }
+        )
+    }
+
+    private fun formatJson(raw: String): String {
+        return runCatching { JSONObject(raw).toString(2) }.getOrDefault(raw)
     }
 
     private fun section(
