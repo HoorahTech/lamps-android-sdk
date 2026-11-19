@@ -2,6 +2,8 @@
 -keep class com.lamps.sdk.core.SdkRuntime { public *; }
 -keep class com.lamps.sdk.config.SdkConfig { public *; }
 -keep class com.lamps.sdk.config.SdkConfig$Companion { *; }
+-keep interface com.lamps.sdk.core.CoreBehaviorCallback { public *; }
+-keep class com.lamps.sdk.core.CoreBehavior { public *; }
 -keep interface com.lamps.sdk.core.CoreInitCallback { public *; }
 -keep interface com.lamps.sdk.core.CoreTrackCallback { public *; }
 -keep interface com.lamps.sdk.core.CoreRewardMonitorCallback { public *; }
@@ -9,6 +11,7 @@
 -keep interface com.lamps.sdk.core.CoreNightModeProvider { public *; }
 -keep class com.lamps.sdk.webview.LampsWebView { *; }
 -keep class com.lamps.sdk.webview.GameCenterPageOptions { public *; }
+-keep class com.lamps.sdk.webview.GamePageOptions { public *; }
 -keep class com.lamps.sdk.provider.LampsProvider { *; }
 -keep class com.lamps.sdk.data.sdk.provider.ISdkProvider$* { *; }
 -keep class com.lamps.sdk.data.sdk.channel.RewardAdSdkLoadCallback$* { *; }

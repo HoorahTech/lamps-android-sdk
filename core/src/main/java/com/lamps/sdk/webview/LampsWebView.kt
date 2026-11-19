@@ -15,6 +15,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import com.lamps.sdk.BuildConfig
 import com.lamps.sdk.config.SdkConfig
+import com.lamps.sdk.data.behavior.GameSession
 import com.lamps.sdk.data.sdk.reward.RewardAdAbilityInstaller
 import com.lamps.sdk.webview.bridge.LampsAbilityInstaller
 import com.lamps.sdk.webview.bridge.LampsWebViewBridge
@@ -49,6 +50,18 @@ open class LampsWebView @JvmOverloads constructor(
      * Exposed to H5 as `hideTitle`: 1 hidden, 0 shown. Set before loading the page.
      */
     var hideTitle: Boolean = false
+
+    /** 所在游戏页的本局数据，激励视频按它计数；不在游戏页时为空。 */
+    internal var gameSession: GameSession? = null
+
+    /**
+     * 打开本页时携带的自定义数据。游戏中心页里再打开单个游戏时，带给该游戏的行为回调。
+     */
+    internal var trackCustomData: Map<String, String> = emptyMap()
+
+    fun setTrackCustomData(data: Map<String, String>) {
+        trackCustomData = LinkedHashMap(data)
+    }
 
     private var destroyed = false
 

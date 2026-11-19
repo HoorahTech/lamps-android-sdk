@@ -164,9 +164,37 @@ LampsSdk.registerRewardMonitorCallback(rewardMonitorCallback)
 LampsSdk.unregisterRewardMonitorCallback(rewardMonitorCallback)
 ```
 
+## 用户行为回调
+
+打开、退出单个游戏和整页游戏中心（`navigateToGameCenter`）时回调；内嵌的 `GameCenterView` 不回调。回调参数是 `Behavior`：`event` 为 `BehaviorEvent.OPEN` 或 `BehaviorEvent.CLOSE`，`pageType` 为 `BehaviorPageType.GAME` 或 `BehaviorPageType.GAME_CENTER`，`data` 是埋点 `params` 的 `JSONObject`，`trackCustomData` 是宿主传入的原始数据。`data` 和 `trackCustomData` 每个回调各拿一份副本，可以直接修改；`model` / `event` 等外层字段由接入方补充。回调发生在产生事件的线程，回调里不要做耗时操作。同一回调实例重复注册只会收到一次。
+
+- 打开：页面打开即成功；跳转前校验失败（地址未下发、`gameId` 为空、地址无效）为失败，带 `code`、`msg`。
+- 退出：手动关闭页面时回调。时长单位秒，只在退后台、熄屏时停表。游戏中心时长只看自身打开到退出，不累加游戏时长；`game_list` 带本次访问内玩过的游戏，同一游戏合并为一条。
+- 自定义数据：`GameCenterConfig.setTrackCustomData` / `GameConfig.setTrackCustomData` 的每个字段会直接写进本次打开、失败和退出的 `data`。在游戏中心里打开单个游戏时，沿用进入该游戏中心时的 `setTrackCustomData`，内嵌游戏中心也同样，打开失败也带上。未设置或空 map 时不额外写字段。`updateConfig` 不会改已经回调过的数据。内嵌游戏中心自身的打开和退出不回调。
+- 广告：`ad_req` 为激励视频请求次数，`ad_show` 曝光次数，`ad_clk` 点击次数，`price` 为各次曝光的 eCPM 之和，单位分。
+
+```json
+// open
+{"type":"游戏","status":"失败","id":"999","code":1101,"msg":"gamePlayPageTemplate is empty","biz":"feed"}
+// close
+{"type":"游戏中心","duration":120,"game_list":[{"id":"999","duration":60,"ad_req":2,"ad_show":1,"ad_clk":0,"price":3500}],"biz":"home"}
+```
+
+```kotlin
+import com.lamps.sdk.core.BehaviorCallback
+
+val behaviorCallback = BehaviorCallback { behavior ->
+    // behavior.event、behavior.pageType、behavior.data、behavior.trackCustomData
+}
+
+LampsSdk.registerBehaviorCallback(behaviorCallback)
+// 不再需要时
+LampsSdk.unregisterBehaviorCallback(behaviorCallback)
+```
+
 ## 游戏中心
 
-打开游戏中心时可传入 `GameCenterConfig`。日夜间优先 `setNightMode`；未设则每次从 `LampsConfig.setNightModeProvider` 读取；仍没有则默认日间。`setHideTitle(true)` 隐藏标题，默认不隐藏。后续扩展字段加在 Builder 上。
+打开游戏中心时可传入 `GameCenterConfig`。日夜间优先 `setNightMode`；未设则每次从 `LampsConfig.setNightModeProvider` 读取；仍没有则默认日间。`setHideTitle(true)` 隐藏标题，默认不隐藏。`setEncodedQuery` 透传 deeplink 原始 query。`setTrackCustomData` 带上本次打开的自定义数据，会进入行为回调。后续扩展字段加在 Builder 上。
 
 ```kotlin
 import com.lamps.sdk.config.GameCenterConfig
@@ -175,19 +203,14 @@ import com.lamps.sdk.config.NightMode
 val gameCenterConfig = GameCenterConfig.Builder()
     .setNightMode(NightMode.NIGHT) // 可选；不设则用全局 provider
     .setHideTitle(true) // 可选；true 隐藏标题，默认 false
+    .setEncodedQuery(uri.encodedQuery) // 可选；deeplink 原始 query
+    .setTrackCustomData(mapOf("biz" to "home")) // 可选；字段直接进入行为回调 data
     .build()
 
 LampsSdk.navigateToGameCenter(this, gameCenterConfig)
 ```
 
-如从 deeplink 打开，可把 deeplink 的原始 query 一并透传给 H5；SDK 会按原编码追加到 `gameCenterPage`，不重新编码和解码。模板是 hash 路由（`#/path` 或 `#/path?a=1`）时，参数合并进 `#` 后面的 query；普通链接仍追加在 `#` 前面。模板已有同名参数时，以 deeplink 的值为准：
-
-```kotlin
-LampsSdk.navigateToGameCenter(
-    this,
-    encodedQuery = uri.encodedQuery,
-)
-```
+`setEncodedQuery` 在 `navigateToGameCenter` 和 `getGameCenterView` 打开时生效。SDK 会按原编码追加到 `gameCenterPage`，不重新编码和解码。模板是 hash 路由（`#/path` 或 `#/path?a=1`）时，参数合并进 `#` 后面的 query；普通链接仍追加在 `#` 前面。模板已有同名参数时，以 deeplink 的值为准。`updateConfig` 不会改已打开页面的 query。
 
 可获取 `GameCenterView` 并添加到宿主布局。实现方式如下：
 
@@ -221,7 +244,7 @@ gameCenterView?.updateConfig(
 
 说明：
 
-- 目前生效字段为日夜间。传入的 `GameCenterConfig` 未设 `setNightMode` 时，按 `LampsConfig.setNightModeProvider` 现取；都没有则日间。`setHideTitle` 只在打开时生效。
+- 目前生效字段为日夜间。传入的 `GameCenterConfig` 未设 `setNightMode` 时，按 `LampsConfig.setNightModeProvider` 现取；都没有则日间。`setHideTitle`、`setEncodedQuery`、`setTrackCustomData` 只在打开时生效。
 - 与当前值相同时不会重复下发，不会触发 H5 重复渲染。
 - 可从任意线程调用；`destroy()` 之后调用无效果，不会抛异常。
 - 整页模式 `navigateToGameCenter` 的日夜间在打开时确定，没有这个入口。
@@ -247,23 +270,23 @@ override fun onDestroyView() {
 
 ## 打开游戏
 
-初始化完成后，可传入 `gameId` 打开游戏页。SDK 会用服务端下发的 `gamePlayPageTemplate` 将 `__GAMEID__` 替换为传入的 `gameId`，再跳转到游戏 WebView。
+初始化完成后，可传入 `gameId` 打开游戏页。SDK 会用服务端下发的 `gamePlayPageTemplate` 将 `__GAMEID__` 替换为传入的 `gameId`，再跳转到游戏 WebView。deeplink 原始 query 放在 `GameConfig.setEncodedQuery`。
 
 ```kotlin
+import com.lamps.sdk.config.GameConfig
+
 LampsSdk.navigateToGame(this, gameId)
+
+val gameConfig = GameConfig.Builder()
+    .setEncodedQuery(uri.encodedQuery)
+    .setTrackCustomData(mapOf("biz" to "feed"))
+    .build()
+LampsSdk.navigateToGame(this, gameId, gameConfig)
 ```
 
-从 deeplink 打开时，可同时把原始 query 透传给 H5。`gameId` 仍按上述规则替换模板，不会改变原有逻辑；其余 query 按原编码合并。模板形如 `index.html#/play?gameId=802&inClient=Y&v=9` 时，追加结果是 `#/play?gameId=802&inClient=Y&v=9&utm_source=1`，不会把新参数写到 `#` 前面：
+`gameId` 仍按上述规则替换模板，不会改变原有逻辑；其余 query 按原编码合并。模板形如 `index.html#/play?gameId=802&inClient=Y&v=9` 时，追加结果是 `#/play?gameId=802&inClient=Y&v=9&utm_source=1`，不会把新参数写到 `#` 前面。
 
-```kotlin
-LampsSdk.navigateToGame(
-    this,
-    gameId,
-    encodedQuery = uri.encodedQuery,
-)
-```
-
-`gameId` 为空、模板未下发或替换后不是完整 `http(s)` URL 时不会跳转。`encodedQuery` 中的 `gameId` 会被忽略，避免和模板替换重复；其余同名参数以 `encodedQuery` 的值为准，deeplink 内部重复参数以最后一个为准。参数为空时链接不变。普通锚点 `#fragment` 仍留在末尾，query 写在它前面。
+`gameId` 为空、模板未下发或替换后不是完整 `http(s)` URL 时不会跳转。`setEncodedQuery` 中的 `gameId` 会被忽略，避免和模板替换重复；其余同名参数以这份 query 的值为准，deeplink 内部重复参数以最后一个为准。参数为空时链接不变。普通锚点 `#fragment` 仍留在末尾，query 写在它前面。
 
 ## 初始化错误码
 

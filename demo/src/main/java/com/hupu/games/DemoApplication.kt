@@ -5,6 +5,7 @@ import android.util.Log
 import com.lamps.sdk.LampsSdk
 import com.lamps.sdk.config.LampsConfig
 import com.lamps.sdk.config.NightMode
+import com.lamps.sdk.core.BehaviorCallback
 import com.lamps.sdk.core.InitCallback
 import com.lamps.sdk.core.RewardMonitorCallback
 import com.lamps.sdk.core.TrackCallback
@@ -30,6 +31,12 @@ class DemoApplication : Application() {
         })
         LampsSdk.registerRewardMonitorCallback(RewardMonitorCallback { event, payload ->
             Log.i(TAG, "reward monitor event=$event payload=$payload")
+        })
+        LampsSdk.registerBehaviorCallback(BehaviorCallback { behavior ->
+            Log.i(
+                TAG,
+                "behavior event=${behavior.event} pageType=${behavior.pageType} data=${behavior.data}"
+            )
         })
 
         LampsSdk.startAsync(object : InitCallback {

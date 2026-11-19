@@ -7,6 +7,8 @@ import android.os.Bundle
 import android.view.Gravity
 import android.view.View
 import android.widget.FrameLayout
+import com.lamps.sdk.data.behavior.BehaviorTracker
+import com.lamps.sdk.data.behavior.GameSession
 import com.lamps.sdk.data.init.AppInitDataLoader
 import com.lamps.sdk.webview.bridge.back.BackAbilityUtil
 import com.lamps.sdk.webview.view.GameWebViewActionBar
@@ -15,6 +17,7 @@ import com.lamps.sdk.webview.view.StatusBarApplier
 internal class GameWebViewActivity : Activity() {
     private lateinit var webView: LampsWebView
     private lateinit var initialUrl: String
+    private var session: GameSession? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,6 +29,12 @@ internal class GameWebViewActivity : Activity() {
         }
 
         setContentView(createContentView())
+        val options = pageOptions()
+        session = BehaviorTracker.openGame(
+            options.gameId.trim(),
+            options.trackCustomData.orEmpty(),
+        )
+            .also { webView.gameSession = it }
         StatusBarApplier.applyDefault(this, webView)
         attachActionBar()
         AppInitDataLoader.refreshIfStale()
@@ -54,14 +63,23 @@ internal class GameWebViewActivity : Activity() {
     }
 
     override fun onDestroy() {
+        session?.let(BehaviorTracker::closeGame)
         if (::webView.isInitialized) {
             webView.destroy()
         }
         super.onDestroy()
     }
 
+    private fun pageOptions(): GamePageOptions {
+        @Suppress("DEPRECATION")
+        return intent.getSerializableExtra(EXTRA_PAGE_OPTIONS) as? GamePageOptions
+            ?: GamePageOptions()
+    }
+
     private fun createContentView(): View {
-        webView = LampsWebView(this)
+        webView = LampsWebView(this).apply {
+            setTrackCustomData(pageOptions().trackCustomData.orEmpty())
+        }
         return FrameLayout(this).apply {
             addView(
                 webView,
@@ -95,15 +113,18 @@ internal class GameWebViewActivity : Activity() {
 
     companion object {
         const val EXTRA_URL = "extra_url"
+        const val EXTRA_PAGE_OPTIONS = "extra_page_options"
 
         @JvmStatic
         @JvmOverloads
         fun buildIntent(
             context: Context,
             url: String,
+            pageOptions: GamePageOptions = GamePageOptions(),
         ): Intent {
             return Intent(context, GameWebViewActivity::class.java).apply {
                 putExtra(EXTRA_URL, url)
+                putExtra(EXTRA_PAGE_OPTIONS, pageOptions)
                 if (context !is Activity) {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }

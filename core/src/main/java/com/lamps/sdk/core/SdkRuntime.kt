@@ -4,6 +4,8 @@ import android.app.Activity
 import android.content.Context
 import android.net.Uri
 import com.lamps.sdk.config.SdkConfig
+import com.lamps.sdk.data.behavior.BehaviorTracker
+import com.lamps.sdk.data.behavior.ForegroundClock
 import com.lamps.sdk.data.init.AppInitDataLoader
 import com.lamps.sdk.data.sdk.channel.SdkInitCallback
 import com.lamps.sdk.data.sdk.init.SdkInitDispatcher
@@ -19,6 +21,7 @@ import com.lamps.sdk.utils.ThreadUtils
 import com.lamps.sdk.utils.TrackSdk
 import com.lamps.sdk.webview.CommonWebViewActivity
 import com.lamps.sdk.webview.GameCenterPageOptions
+import com.lamps.sdk.webview.GamePageOptions
 import com.lamps.sdk.webview.GameWebViewActivity
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicReference
@@ -41,6 +44,7 @@ object SdkRuntime {
             SdkLog.e("init success")
             SdkConfig.init(context, config)
             LampsApiHost.restore(context.applicationContext)
+            ForegroundClock.install(context)
             return true
         } else {
             SdkLog.e("init failed: sdk has initialized_v2:${runtime.get()}")
@@ -63,6 +67,14 @@ object SdkRuntime {
 
     fun unregisterRewardMonitorCallback(owner: Any) {
         RewardMonitor.removeListener(owner)
+    }
+
+    fun registerBehaviorCallback(owner: Any, callback: CoreBehaviorCallback) {
+        BehaviorTracker.addListener(owner, callback)
+    }
+
+    fun unregisterBehaviorCallback(owner: Any) {
+        BehaviorTracker.removeListener(owner)
     }
 
     fun startAsync(callback: CoreInitCallback) {
@@ -242,16 +254,21 @@ object SdkRuntime {
     fun navigateToGameCenter(
         context: Context,
         options: GameCenterPageOptions = GameCenterPageOptions(),
-        encodedQuery: String? = null,
     ) {
-        val url = SdkConfig.current?.appInitData?.gameCenterPage
-            ?.takeIf { it.isNotBlank() }
-            ?: return
-        val targetUrl = appendEncodedQuery(url, encodedQuery)
+        val url = getGameCenterUrl(options.encodedQuery)
+        if (url == null) {
+            SdkLog.e("navigateToGameCenter failed: gameCenterPage is empty")
+            BehaviorTracker.centerOpenFailed(
+                LampsErrorCode.PAGE_URL_EMPTY,
+                "gameCenterPage is empty",
+                options.trackCustomData.orEmpty(),
+            )
+            return
+        }
         context.startActivity(
             CommonWebViewActivity.buildIntent(
                 context = context,
-                url = targetUrl,
+                url = url,
                 pageOptions = options,
             )
         )
@@ -260,39 +277,48 @@ object SdkRuntime {
     @JvmOverloads
     fun navigateToGame(
         context: Context,
-        gameId: String,
-        encodedQuery: String? = null,
+        options: GamePageOptions = GamePageOptions(),
     ) {
+        val id = options.gameId.trim()
+        val trackCustomData = options.trackCustomData.orEmpty()
         val template = SdkConfig.current?.appInitData?.gamePlayPageTemplate
             ?.takeIf { it.isNotBlank() }
         if (template == null) {
             SdkLog.e("navigateToGame failed: gamePlayPageTemplate is empty")
+            BehaviorTracker.gameOpenFailed(
+                id,
+                LampsErrorCode.PAGE_URL_EMPTY,
+                "gamePlayPageTemplate is empty",
+                trackCustomData,
+            )
             return
         }
-        val id = gameId.trim()
         if (id.isEmpty()) {
             SdkLog.e("navigateToGame failed: gameId is empty")
+            BehaviorTracker.gameOpenFailed(id, LampsErrorCode.GAME_ID_EMPTY, "gameId is empty", trackCustomData)
             return
         }
         val url = template.replace(GAME_ID_PLACEHOLDER, id)
         if (!isHttpUrl(url)) {
             SdkLog.e("navigateToGame failed: invalid url=$url")
+            BehaviorTracker.gameOpenFailed(id, LampsErrorCode.PAGE_URL_INVALID, "invalid game url", trackCustomData)
             return
         }
-        val targetUrl = appendEncodedQuery(url, encodedQuery, GAME_ID_PARAM)
+        val targetUrl = appendEncodedQuery(url, options.encodedQuery, GAME_ID_PARAM)
         context.startActivity(
             GameWebViewActivity.buildIntent(
                 context = context,
                 url = targetUrl,
+                pageOptions = options,
             )
         )
     }
 
-    fun getGameCenterUrl(): String? {
+    fun getGameCenterUrl(encodedQuery: String? = null): String? {
         val url = SdkConfig.current?.appInitData?.gameCenterPage
             ?.takeIf { it.isNotBlank() }
             ?: return null
-        return url
+        return appendEncodedQuery(url, encodedQuery)
     }
 
     private fun appendEncodedQuery(

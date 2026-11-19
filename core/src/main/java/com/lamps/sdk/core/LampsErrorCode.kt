@@ -11,4 +11,9 @@ object LampsErrorCode {
     const val YLH_SDK_INIT_FAILED = 1008
     const val NOAH_SDK_INIT_FAILED = 1009
     const val THIRD_SDK_INIT_DISPATCH_FAILED = 1010
+
+    /** 游戏中心地址或游戏页模板未下发，通常是初始化未完成。 */
+    const val PAGE_URL_EMPTY = 1101
+    const val GAME_ID_EMPTY = 1102
+    const val PAGE_URL_INVALID = 1103
 }

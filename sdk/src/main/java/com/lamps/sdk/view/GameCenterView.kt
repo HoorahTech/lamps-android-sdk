@@ -20,6 +20,7 @@ class GameCenterView(
             displayMode = pageOptions.displayMode
             night = pageOptions.night
             hideTitle = pageOptions.hideTitle
+            setTrackCustomData(config.trackCustomData)
             loadUrl(this@GameCenterView.url)
         }
         webView = wv
@@ -30,7 +31,7 @@ class GameCenterView(
      * 运行时更新配置，供宿主在自身状态变化（如日夜间切换）时调用，调用时机由宿主控制。
      *
      * 目前生效字段：日夜间。`config` 未设 `setNightMode` 时按 `LampsConfig` 的 NightModeProvider
-     * 现取，都没有则日间。`DisplayMode`、`hideTitle` 等创建时确定的字段会被忽略。
+     * 现取，都没有则日间。`DisplayMode`、`hideTitle`、`encodedQuery`、`trackCustomData` 等创建时确定的字段会被忽略。
      *
      * 与创建时相同的值不会重复下发；`destroy()` 之后调用无效果；可从任意线程调用。
      */

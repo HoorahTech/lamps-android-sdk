@@ -7,7 +7,13 @@
 -keep class com.lamps.sdk.config.GameCenterConfig { public *; }
 -keep class com.lamps.sdk.config.GameCenterConfig$Builder { public *; }
 -keep class com.lamps.sdk.config.GameCenterConfig$DisplayMode { public *; }
+-keep class com.lamps.sdk.config.GameConfig { public *; }
+-keep class com.lamps.sdk.config.GameConfig$Builder { public *; }
 -keep class com.lamps.sdk.config.NightMode { public *; }
+-keep interface com.lamps.sdk.core.BehaviorCallback { public *; }
+-keep class com.lamps.sdk.core.Behavior { public *; }
+-keep class com.lamps.sdk.core.BehaviorEvent { public *; }
+-keep class com.lamps.sdk.core.BehaviorPageType { public *; }
 -keep interface com.lamps.sdk.core.InitCallback { public *; }
 -keep interface com.lamps.sdk.core.TrackCallback { public *; }
 -keep interface com.lamps.sdk.core.RewardMonitorCallback { public *; }

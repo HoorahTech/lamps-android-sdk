@@ -7,6 +7,8 @@ class GameCenterPageOptions(
     val night: Boolean = false,
     val displayMode: String = "",
     val hideTitle: Boolean = false,
+    val encodedQuery: String? = null,
+    val trackCustomData: Map<String, String> = emptyMap(),
 ) : Serializable {
     companion object {
         private const val serialVersionUID = 1L

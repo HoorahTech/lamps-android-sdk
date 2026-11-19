@@ -2,7 +2,13 @@ package com.lamps.sdk
 
 import android.content.Context
 import com.lamps.sdk.config.GameCenterConfig
+import com.lamps.sdk.config.GameConfig
 import com.lamps.sdk.config.LampsConfig
+import com.lamps.sdk.core.Behavior
+import com.lamps.sdk.core.BehaviorCallback
+import com.lamps.sdk.core.BehaviorEvent
+import com.lamps.sdk.core.BehaviorPageType
+import com.lamps.sdk.core.CoreBehaviorCallback
 import com.lamps.sdk.core.CoreRewardMonitorCallback
 import com.lamps.sdk.core.CoreTrackCallback
 import com.lamps.sdk.core.InitCallback
@@ -65,6 +71,32 @@ object LampsSdk {
     }
 
     /**
+     * 抛出单个游戏、整页游戏中心的打开 / 退出数据，内嵌游戏中心不回调。
+     * 同一实例重复注册只会回调一次。回调发生在产生事件的线程，接入方应尽快返回。
+     */
+    @JvmStatic
+    fun registerBehaviorCallback(callback: BehaviorCallback) {
+        SdkRuntime.registerBehaviorCallback(
+            callback,
+            CoreBehaviorCallback { behavior ->
+                callback.onBehavior(
+                    Behavior(
+                        event = BehaviorEvent.valueOf(behavior.event),
+                        data = behavior.data,
+                        pageType = BehaviorPageType.valueOf(behavior.pageType),
+                        trackCustomData = behavior.trackCustomData,
+                    )
+                )
+            }
+        )
+    }
+
+    @JvmStatic
+    fun unregisterBehaviorCallback(callback: BehaviorCallback) {
+        SdkRuntime.unregisterBehaviorCallback(callback)
+    }
+
+    /**
      * 同步当前登录用户。整份覆盖，可在 init 前后调用，只保存在进程内存。
      * userId 去掉空白后为空时忽略本次调用，并保留上一份快照。
      *
@@ -96,13 +128,11 @@ object LampsSdk {
     fun navigateToGameCenter(
         context: Context,
         config: GameCenterConfig = GameCenterConfig.Builder().build(),
-        encodedQuery: String? = null,
     ) {
         SdkRuntime.navigateToGameCenter(
             context,
             config.withDisplayMode(GameCenterConfig.DisplayMode.PAGE)
                 .toPageOptions(),
-            encodedQuery,
         )
     }
 
@@ -111,9 +141,9 @@ object LampsSdk {
     fun navigateToGame(
         context: Context,
         gameId: String,
-        encodedQuery: String? = null,
+        config: GameConfig = GameConfig.Builder().build(),
     ) {
-        SdkRuntime.navigateToGame(context, gameId, encodedQuery)
+        SdkRuntime.navigateToGame(context, config.toPageOptions(gameId))
     }
 
     @JvmStatic
@@ -122,7 +152,7 @@ object LampsSdk {
         context: Context,
         config: GameCenterConfig = GameCenterConfig.Builder().build()
     ): GameCenterView? {
-        return SdkRuntime.getGameCenterUrl()?.let {
+        return SdkRuntime.getGameCenterUrl(config.encodedQuery)?.let {
             GameCenterView(
                 context,
                 it,

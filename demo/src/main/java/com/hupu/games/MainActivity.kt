@@ -22,6 +22,7 @@ class MainActivity : Activity() {
         findViewById<Button>(R.id.navigateGameCenterButton).setOnClickListener {
             val config = GameCenterConfig.Builder()
                 .setNightMode(NightMode.NIGHT)
+                .setTrackCustomData(hashMapOf("a" to "aaa"))
                 .build()
             LampsSdk.navigateToGameCenter(this, config)
         }

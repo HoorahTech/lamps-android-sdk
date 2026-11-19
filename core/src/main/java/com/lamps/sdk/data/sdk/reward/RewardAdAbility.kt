@@ -75,6 +75,7 @@ private class RewardAdAbility : LampsAbility {
         runCatching {
             val forwardSource = params.optString("forward_source")
                 .ifBlank { params.optString("forwardSource") }
+            webView.gameSession?.run { adReq++ }
             SdkRuntime.loadReward(
                 activity!!,
                 createLoadCallback(webView, activity),
@@ -126,7 +127,7 @@ private class RewardAdAbility : LampsAbility {
                 }
                 pendingAd = ad
                 sendEvent(webView, "onLoadSuccess")
-                ad.show(activity, createShowCallback(webView))
+                ad.show(activity, createShowCallback(webView, ad))
             }
 
             override fun onAdLoadFailed(code: Int, message: String?) {
@@ -135,12 +136,20 @@ private class RewardAdAbility : LampsAbility {
         }
     }
 
-    private fun createShowCallback(webView: LampsWebView): RewardAdShowCallback {
+    private fun createShowCallback(webView: LampsWebView, ad: LampsRewardAd): RewardAdShowCallback {
         return object : RewardAdShowCallback {
             private var rewarded = false
 
             override fun onAdShown() {
+                webView.gameSession?.run {
+                    adShow++
+                    ecpmSum += ad.price
+                }
                 sendEvent(webView, "onShowSuccess")
+            }
+
+            override fun onAdClicked() {
+                webView.gameSession?.run { adClk++ }
             }
 
             override fun onAdRewarded() {

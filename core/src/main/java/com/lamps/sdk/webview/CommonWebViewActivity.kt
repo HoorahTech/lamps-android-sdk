@@ -6,6 +6,8 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.FrameLayout
+import com.lamps.sdk.data.behavior.BehaviorTracker
+import com.lamps.sdk.data.behavior.GameCenterSession
 import com.lamps.sdk.webview.bridge.back.BackAbilityUtil
 import com.lamps.sdk.webview.view.StatusBarApplier
 
@@ -13,6 +15,7 @@ internal class CommonWebViewActivity : Activity() {
     private lateinit var webView: LampsWebView
     private lateinit var loadGuard: PageLoadGuard
     private lateinit var initialUrl: String
+    private var session: GameCenterSession? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,6 +29,7 @@ internal class CommonWebViewActivity : Activity() {
         setContentView(createContentView())
         StatusBarApplier.applyDefault(this, webView)
         loadGuard.load(initialUrl)
+        session = BehaviorTracker.openCenter(pageOptions().trackCustomData.orEmpty())
     }
 
     override fun onResume() {
@@ -50,6 +54,7 @@ internal class CommonWebViewActivity : Activity() {
     }
 
     override fun onDestroy() {
+        session?.let(BehaviorTracker::closeCenter)
         if (::webView.isInitialized) {
             loadGuard.destroy()
             webView.destroy()
@@ -63,6 +68,7 @@ internal class CommonWebViewActivity : Activity() {
             displayMode = options.displayMode
             night = options.night
             hideTitle = options.hideTitle
+            setTrackCustomData(pageOptions().trackCustomData.orEmpty())
         }
         return FrameLayout(this).apply {
             addView(
