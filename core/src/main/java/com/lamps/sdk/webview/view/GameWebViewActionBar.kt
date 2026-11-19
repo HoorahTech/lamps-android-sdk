@@ -103,7 +103,8 @@ internal class GameWebViewActionBar @JvmOverloads constructor(
     }
 
     override fun onDetachedFromWindow() {
-        firstRunGuide?.dismiss(resumeCollapse = false)
+        // 父容器正在遍历子 View 分发 detach，此时移除兄弟 View 会导致 NPE
+        firstRunGuide?.dismiss(resumeCollapse = false, removeBubble = false)
         firstRunGuide = null
         animate().cancel()
         menuPopup?.setOnDismissListener(null)

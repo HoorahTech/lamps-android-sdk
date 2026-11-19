@@ -25,11 +25,11 @@ internal class GameActionBarGuide private constructor(
         bubble.y = bar.y + bar.height + gap
     }
 
-    fun dismiss(resumeCollapse: Boolean) {
+    fun dismiss(resumeCollapse: Boolean, removeBubble: Boolean = true) {
         if (dismissed) return
         dismissed = true
         bar.removeCallbacks(dismissRunnable)
-        (bubble.parent as? ViewGroup)?.removeView(bubble)
+        if (removeBubble) (bubble.parent as? ViewGroup)?.removeView(bubble)
         bar.onGuideDismissed(this)
         if (resumeCollapse) bar.resumeAutoCollapse()
     }
