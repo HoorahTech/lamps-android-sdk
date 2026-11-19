@@ -13,6 +13,7 @@ import com.lamps.sdk.data.monitor.MonitorConstant.PRICE
 import com.lamps.sdk.data.monitor.MonitorConstant.REQUEST_ID
 import com.lamps.sdk.data.monitor.MonitorConstant.SLOT_ID
 import com.lamps.sdk.data.monitor.MonitorConstant.UNION_NAME
+import com.lamps.sdk.data.sdk.channel.SdkChannel
 import com.lamps.sdk.reward.LampsRewardAd
 import com.lamps.sdk.utils.SdkLog
 import org.json.JSONObject
@@ -138,9 +139,19 @@ internal object MonitorReporter {
             REQUEST_ID to ad.requestId,
             FORWARD_SOURCE to ad.forwardSource,
             PRICE to ad.price.asMonitorPrice(),
-            UNION_NAME to ad.channelName,
+            UNION_NAME to ad.monitorUnionName(),
             SLOT_ID to ad.slotId
         )
+    }
+
+    /** 穿山甲、优量汇按广告位类型区分，例如 `穿山甲BD`、`优量汇PD`；汇川报 `汇川SDK`；其他渠道保持原名。 */
+    private fun LampsRewardAd.monitorUnionName(): String {
+        val channel = SdkChannel.values().firstOrNull { it.matches(channelName) }
+        return when (channel) {
+            SdkChannel.CSJ, SdkChannel.GDT -> channel.displayName + slot.type.name
+            SdkChannel.NOAH -> channel.displayName + "SDK"
+            null -> channelName
+        }
     }
 
     private fun Double.asMonitorPrice(): String {
