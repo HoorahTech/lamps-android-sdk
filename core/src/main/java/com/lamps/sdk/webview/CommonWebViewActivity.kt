@@ -13,7 +13,7 @@ import com.lamps.sdk.webview.view.StatusBarApplier
 
 internal class CommonWebViewActivity : Activity() {
     private lateinit var webView: LampsWebView
-    private lateinit var loadGuard: PageLoadGuard
+    private lateinit var content: FrameLayout
     private lateinit var initialUrl: String
     private var session: GameCenterSession? = null
 
@@ -28,7 +28,7 @@ internal class CommonWebViewActivity : Activity() {
 
         setContentView(createContentView())
         StatusBarApplier.applyDefault(this, webView)
-        loadGuard.load(initialUrl)
+        webView.loadWithErrorGuard(content, initialUrl)
         session = BehaviorTracker.openCenter(pageOptions().trackCustomData.orEmpty())
     }
 
@@ -56,7 +56,6 @@ internal class CommonWebViewActivity : Activity() {
     override fun onDestroy() {
         session?.let(BehaviorTracker::closeCenter)
         if (::webView.isInitialized) {
-            loadGuard.destroy()
             webView.destroy()
         }
         super.onDestroy()
@@ -70,7 +69,7 @@ internal class CommonWebViewActivity : Activity() {
             hideTitle = options.hideTitle
             setTrackCustomData(pageOptions().trackCustomData.orEmpty())
         }
-        return FrameLayout(this).apply {
+        content = FrameLayout(this).apply {
             addView(
                 webView,
                 FrameLayout.LayoutParams(
@@ -78,8 +77,8 @@ internal class CommonWebViewActivity : Activity() {
                     FrameLayout.LayoutParams.MATCH_PARENT
                 )
             )
-            loadGuard = PageLoadGuard(webView, this)
         }
+        return content
     }
 
     private fun pageOptions(): GameCenterPageOptions {

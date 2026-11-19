@@ -21,10 +21,10 @@ class GameCenterView(
             night = pageOptions.night
             hideTitle = pageOptions.hideTitle
             setTrackCustomData(config.trackCustomData)
-            loadUrl(this@GameCenterView.url)
         }
         webView = wv
         addView(wv, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
+        wv.loadWithErrorGuard(this, url)
     }
 
     /**

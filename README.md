@@ -216,6 +216,8 @@ LampsSdk.navigateToGameCenter(this, gameCenterConfig)
 
 内嵌在可左右滑动的 Tab / ViewPager 中时，横向滑动先滚动页面里的内容，这个方向已经滚不动之后，后续滑动才交给外层切页。
 
+页面主文档或 js/css 加载失败、或 10 秒内没加载完时，`GameCenterView` 内会盖一层"网络连接失败"兜底页，只提供"重新加载"，不提供返回，不会关闭宿主页面。配色跟随日夜间，包括 `updateConfig` 的运行时切换。
+
 ```kotlin
 val gameCenterView = LampsSdk.getGameCenterView(this, gameCenterConfig)
 if (gameCenterView != null) {

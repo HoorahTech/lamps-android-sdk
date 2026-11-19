@@ -19,10 +19,11 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import com.lamps.sdk.utils.DeviceUtils
 
-/** 页面没加载出来时盖在 WebView 上的兜底页：左上角返回 + 无网图标 + 文案 + 重新加载。 */
+/** 页面没加载出来时盖在 WebView 上的兜底页：无网图标 + 文案 + 重新加载。整页模式再加左上角返回。 */
 internal class LoadErrorView(
     context: Context,
     night: Boolean,
+    showBack: Boolean,
     onRetry: () -> Unit,
 ) : FrameLayout(context) {
     private val back = BackGlyph(context).apply {
@@ -54,13 +55,17 @@ internal class LoadErrorView(
             addView(retry, LinearLayout.LayoutParams(dp(112), dp(36)).apply { topMargin = dp(24) })
         }
         addView(content, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
-        back.setOnClickListener { findActivity()?.finish() }
-        addView(back, LayoutParams(dp(44), dp(44)).apply {
-            leftMargin = dp(4)
-            topMargin = DeviceUtils.statusBarHeight(context)
-        })
+        if (showBack) {
+            back.setOnClickListener { findActivity()?.finish() }
+            addView(back, LayoutParams(dp(44), dp(44)).apply {
+                leftMargin = dp(4)
+                topMargin = DeviceUtils.statusBarHeight(context)
+            })
+        }
         applyNight(night)
     }
+
+    fun updateNight(night: Boolean) = applyNight(night)
 
     private fun applyNight(night: Boolean) {
         val palette = if (night) NIGHT else DAY
@@ -93,7 +98,9 @@ internal class LoadErrorView(
     }
 
     override fun onDetachedFromWindow() {
+        // 内嵌在列表里可能被滑走再滑回，直接恢复按钮，不然失败态下没人再把它改回来。
         removeCallbacks(resetRetry)
+        showLoading(false)
         super.onDetachedFromWindow()
     }
 

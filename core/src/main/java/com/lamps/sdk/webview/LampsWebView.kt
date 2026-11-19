@@ -10,9 +10,12 @@ import android.view.ViewGroup
 import android.webkit.CookieManager
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
+import android.webkit.WebResourceError
+import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.FrameLayout
 import com.lamps.sdk.BuildConfig
 import com.lamps.sdk.config.SdkConfig
 import com.lamps.sdk.data.behavior.GameSession
@@ -32,6 +35,8 @@ open class LampsWebView @JvmOverloads constructor(
     private val NEST_SCROLL_NAME = "LampsNestedScroll"
     private val bridge = LampsWebViewBridge(this)
     private val horizontalNesting = HorizontalNesting(this)
+    private var pageLoadObserver: PageLoadObserver? = null
+    private var loadGuard: PageLoadGuard? = null
 
     /** 展示形态，取值见 [DISPLAY_MODE_PAGE] / [DISPLAY_MODE_EMBED]，未指定为空串。 */
     var displayMode: String = ""
@@ -74,12 +79,23 @@ open class LampsWebView @JvmOverloads constructor(
         webViewClient = object : WebViewClient() {
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                 horizontalNesting.onPageStarted()
+                pageLoadObserver?.onPageStarted(url)
                 super.onPageStarted(view, url, favicon)
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
                 horizontalNesting.install()
+                pageLoadObserver?.onPageFinished(url)
+            }
+
+            override fun onReceivedError(
+                view: WebView?,
+                request: WebResourceRequest?,
+                error: WebResourceError?
+            ) {
+                super.onReceivedError(view, request, error)
+                pageLoadObserver?.onReceivedError(request, error)
             }
         }
         webChromeClient = WebChromeClient()
@@ -110,6 +126,7 @@ open class LampsWebView @JvmOverloads constructor(
         }
         if (destroyed || this.night == night) return
         this.night = night
+        loadGuard?.updateNight(night)
         send(
             NightModeEvent.SEND_NIGHT_MODE_CHANGE,
             JSONObject().put("night", if (night) 1 else 0)
@@ -129,12 +146,30 @@ open class LampsWebView @JvmOverloads constructor(
     }
 
     /**
+     * 打开 [url]，并用 [container] 上的兜底页接住主文档或 js/css 加载失败。
+     * 内嵌模式只显示重新加载，不放返回，避免关掉宿主页面。
+     *
+     * 兜底页只挂在第一次传入的 [container] 上，之后再调用沿用它。[destroy] 之后调用无效果。
+     */
+    fun loadWithErrorGuard(container: FrameLayout, url: String) {
+        if (destroyed) return
+        val guard = loadGuard ?: PageLoadGuard(this, container).also { loadGuard = it }
+        guard.load(url)
+    }
+
+    internal fun setPageLoadObserver(observer: PageLoadObserver?) {
+        pageLoadObserver = observer
+    }
+
+    /**
      * Releases the WebView. Idempotent: later calls are ignored, so a host that destroys the
      * embedded view itself and a container that destroys it again cannot hit a torn-down WebView.
      */
     override fun destroy() {
         if (destroyed) return
         destroyed = true
+        loadGuard?.destroy()
+        loadGuard = null
         horizontalNesting.destroy()
         removeJavascriptInterface(BRIDGE_NAME)
         removeJavascriptInterface(NEST_SCROLL_NAME)
